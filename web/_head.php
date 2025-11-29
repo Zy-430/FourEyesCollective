@@ -16,7 +16,7 @@
         <nav>
             <div id="left-sidebar">
                 <a href="/">
-                    <img src="/images/WIS_logo_1.png" alt="Four Eyes Collective Logo">
+                    <img src="/images/WIS_logo_1.png" alt="Four Eyes Collective Logo" id="logo">
                     Four Eyes Collective
                 </a>
             </div>

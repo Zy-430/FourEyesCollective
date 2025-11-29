@@ -46,8 +46,7 @@
         </div>
         
         <div class="footer-bottom">
-            Developed by <b>BAE SUZY</b> &middot;
-            Copyrighted &copy; <?= date('Y') ?>
+            &copy; <?= date('Y') ?> Four Eyes Collective. All rights reserved.
         </div>
     </footer>
 </body>
