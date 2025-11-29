@@ -29,7 +29,7 @@
             </div>
 
             <div id="right-sidebar">
-                <a href="/page/profile_page.php">
+                <a href="/page/membership_page.php">
                     <img src="/images/user.png" alt="User Account">
                 </a>
                 <a href="/page/cart.php">
