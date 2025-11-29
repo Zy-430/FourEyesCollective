@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -17,7 +16,7 @@
         <nav>
             <div id="left-sidebar">
                 <a href="/">
-                    <img src="/images/WIS_logo_1.png" alt="Four Eyes Collective Logo">
+                    <img src="/images/WIS_logo_2.png" alt="Four Eyes Collective Logo">
                     Four Eyes Collective
                 </a>
             </div>
