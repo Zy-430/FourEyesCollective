@@ -1,0 +1,21 @@
+user_id,role,email,password,name,gender,phone,date_of_birth,photo,registration_date,status
+ME0001,member,john.doe@example.com,$2y$10$6tEJ2vE7tK8I9sP1xQ4H.OOe7mBfJc2rG9vQ1bPqA5lX2yR0K3u,John Doe,M,1234567801,1990-05-12,john1.jpg,2025-11-01 9:00:00,active
+ME0002,member,mary.lee@example.com,$2y$10$ZqH8rT1kL5aC7xD3vS2F.QOe6yXbUj9rP4tV2mNqW3kJ0pL1hC5e,Mary Lee,F,1234567802,1992-08-23,mary2.jpg,2025-11-02 10:10:00,active
+ME0003,member,bob.tan@example.com,$2y$10$VxR4pL2jF8qH5dT1kC6N.PMe9aYbRj3uS7wK1fGvL0oX2tQ3dM8y,Bob Tan,M,1234567803,1988-01-05,bob3.jpg,2025-11-03 11:15:00,inactive
+ME0004,member,alice.wong@example.com,$2y$10$QpN7vH3kJ1sR4mT9xD2B.ORe8yFqUk5tC6aL1jGvP0wS3oM4eX9z,Alice Wong,F,1234567804,1995-02-14,alice4.jpg,2025-11-04 12:20:00,active
+ME0005,member,david.chan@example.com,$2y$10$FhL9rQ2pV5dK8mX1cT4Y.PMe7aNjRs3uG6oB0wLpJ9kH2qT1vC5y,David Chan,M,1234567805,1991-07-30,david5.jpg,2025-11-05 13:25:00,active
+ME0006,member,susan.koh@example.com,$2y$10$ZkP5vH3rJ1sQ7mT4xD2B.ORe9yFkUm5tC6aL1jGvP0wS3oM4eX9z,Susan Koh,F,1234567806,1993-09-12,susan6.jpg,2025-11-06 14:30:00,inactive
+ME0007,member,kevin.lim@example.com,$2y$10$KpQ2rT1vL5dH8mX3cT4Y.PMe6aNjRs2uG7oB0wLpJ9kH1qT3vC5y,Kevin Lim,M,1234567807,1989-12-01,kevin7.jpg,2025-11-07 15:35:00,active
+ME0008,member,kelly.ng@example.com,$2y$10$DqL8xF1tV5rJ2kP3cY3Q.PMe4aBjRs9uG1oB2wLpJ5kH7qT0vC8y,Kelly Ng,F,1234567808,1994-03-22,kelly8.jpg,2025-11-08 16:40:00,active
+ME0009,member,eric.tan@example.com,$2y$10$WjV4bK7xP2tQ9rL6fH6N.PMe3yGkUm5tC1aL0jGvP8wS2oM3eX7z,Eric Tan,M,1234567809,1990-06-18,eric9.jpg,2025-11-09 17:45:00,inactive
+ME0010,member,amy.lim@example.com,$2y$10$QkH9fD3rL7pV2bT5yW1M.PMe2aNkRs0uG6oB3wLpJ8kH4qT1vC9y,Amy Lim,F,1234567810,1992-11-05,amy10.jpg,2025-11-10 18:50:00,active
+ME0011,member,ronald.lee@example.com,$2y$10$VdK2pG7tQ4jR1mW6xF5N.PMe1aLjRs0uG9oB2wLpJ3kH5qT6vC8y,Ronald Lee,M,1234567811,1987-04-09,ronald11.jpg,2025-11-11 9:55:00,active
+ME0012,member,julia.tan@example.com,$2y$10$BfQ5wL1jR9xV3pT2kK7M.PMe4aHjRs6uG1oB0wLpJ9kH2qT3vC7y,Julia Tan,F,1234567812,1993-08-12,julia12.jpg,2025-11-12 10:00:00,active
+ME0013,member,brian.choo@example.com,$2y$10$NwT3qK7vL1xR5jD9kF2C.PMe0aBjRs8uG3oB6wLpJ1kH4qT7vC9y,Brian Choo,M,1234567813,1991-10-20,brian13.jpg,2025-11-13 11:05:00,inactive
+ME0014,member,rachel.koh@example.com,$2y$10$GkR8jX2tF5lV0pK3nP7Y.PMe9aBsQe6uH2oB5wLpJ3kH1qT4vC8y,Rachel Koh,F,1234567814,1994-01-25,rachel14.jpg,2025-11-14 12:10:00,active
+ME0015,member,steven.lim@example.com,$2y$10$SxH1cV7lD4jR9kQ2fN5C.PMe8aPjRs3uG6oB1wLpJ7kH2qT0vC4y,Steven Lim,M,1234567815,1989-07-11,steven15.jpg,2025-11-15 13:15:00,active
+AD0001,admin,admin1@example.com,$2y$10$KqD2gV5rJ1xT4pP9lF3N.PMe6aNkRs1uG5oB0wLpJ3kH7qT2vC8y,Admin Yeap,F,1987654321,1985-05-05,admin1.jpg,2025-11-01 9:00:00,active
+AD0002,admin,admin2@example.com,$2y$10$PfT8qR3vL0xP5rJ2kB7M.PMe4aDjRs9uG6oB1wLpJ8kH2qT3vC0y,Admin Lim,M,1987654322,1980-12-12,admin2.jpg,2025-11-02 9:10:00,active
+AD0003,admin,admin3@example.com,$2y$10$XfV4bK1lP2tQ9rJ6dH6N.PMe3yGkRs5uG1oB2wLpJ0kH8qT4vC7y,Admin Quak,F,1987654323,1979-07-07,admin3.jpg,2025-11-03 9:20:00,active
+AD0004,admin,admin4@example.com,$2y$10$VjN5wB2kP1tL6rX3fC3N.PMe7aGjRs4uH9oB2wLpJ1kH5qT6vC3y,Admin Ng,M,1987654324,1982-09-09,admin4.jpg,2025-11-04 9:30:00,active
+AD0005,admin,admin5@example.com,$2y$10$BfQ9wL3jR5xV2pT7kP7M.PMe1aHjRs0uG6oB3wLpJ9kH2qT4vC5y,Admin Low,F,1987654325,1986-03-03,admin5.jpg,2025-11-05 9:40:00,active
