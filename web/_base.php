@@ -1,4 +1,3 @@
-
 <?php
 
 // ============================================================================
@@ -7,6 +6,21 @@
 
 date_default_timezone_set('Asia/Kuala_Lumpur');
 session_start(); //enable session to retain data
+
+
+
+// For demo purposes, automatically log in as a test user
+// Remove this in production
+if (!isset($_SESSION['user_id']) && isset($_GET['demo'])) {
+    $_SESSION['user_id'] = 'ME0001'; // Demo user ID
+    $_SESSION['user_name'] = 'John Doe';
+    $_SESSION['user_email'] = 'john.doe@example.com';
+    $_SESSION['user_role'] = 'member';
+}
+
+
+
+
 
 // ============================================================================
 // General Page Functions
@@ -155,3 +169,4 @@ $current_year = date('Y');
 for($i = $current_year; $i >= $current_year - 100; $i--) {
     $_years[$i] = $i;
 }
+

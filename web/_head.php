@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $_title ?? 'Four Eyes Collective' ?></title>
-    <link rel="shortcut icon" href="/images/WIS_logo_1.png">
+    <link rel="shortcut icon" href="/images/WIS_logo_2.png">
     <link rel="stylesheet" href="/css/app.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="/js/app.js"></script>
@@ -25,11 +26,11 @@
                 <a href="/">Home</a>
                 <a href="/page/shoppage.php">Shop</a>
                 <a href="/page/about_us.php">About Us</a>
-                <a href="/page/membership_page.php">Membership</a>
+                <a href="/page/login.php">Login</a>
             </div>
 
             <div id="right-sidebar">
-                <a href="/page/membership_page.php">
+                <a href="/page/profile_page.php">
                     <img src="/images/user.png" alt="User Account">
                 </a>
                 <a href="/page/cart.php">
