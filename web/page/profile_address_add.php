@@ -47,14 +47,14 @@ if (is_post()){
             ->execute([$user_id]);
     }
 
-    // Generate new ID (AD0001)
+    // Generate new ID (ADRS0001)
     $stmt = $_db->query("SELECT address_id FROM address ORDER BY address_id DESC LIMIT 1");
     $last = $stmt->fetch();
     if ($last) {
-        $num = intval(substr($last->address_id, 2)) + 1;
-        $new_id = "AD" . str_pad($num, 6, "0", STR_PAD_LEFT);
+        $num = intval(substr($last->address_id, 4)) + 1;
+        $new_id = "ADRS" . str_pad($num, 4, "0", STR_PAD_LEFT);
     } else {
-        $new_id = "AD0001"; // First address
+        $new_id = "ADRS0001"; // First address
     }
 
     // Insert
@@ -71,57 +71,62 @@ if (is_post()){
     ]);
 
     $_SESSION['success'] = "Address added successfully.";
-    redirect("profile_address.php");
+    redirect("profile_address_list.php");
 }
 
-$_title= "Add New Address";
-include '../head.php';
+$_title = "Add New Address | Four Eyes Collective";
+include '../_head.php';
 
 ?>
-
-
 
 <section style="padding:60px 0; background:#ecf0f1;">
 <div style="max-width:700px; margin:auto; background:white; padding:40px; border-radius:14px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
 
-<h2 style="margin-bottom:25px;">Add New Address</h2>
+    <h1 style="text-align:center; margin-bottom:30px;">Add New Address</h1>
 
-<form method="post">
+    <form method="post">
 
-    <label>Address Line 1 *</label>
-    <input name="address_line1" required class="form-input">
+        <div class="form-group">
+            <label>Address Line 1 *</label>
+            <input type="text" name="address_line1" class="form-control" required>
+        </div>
 
-    <label>Address Line 2</label>
-    <input name="address_line2" class="form-input">
+        <div class="form-group">
+            <label>Address Line 2</label>
+            <input type="text" name="address_line2" class="form-control">
+        </div>
 
-    <label>City *</label>
-    <input name="city" required class="form-input">
+        <div class="form-group">
+            <label>City *</label>
+            <input type="text" name="city" class="form-control" required>
+        </div>
 
-    <label>State</label>
-        <select name="state" required
-            style="width:100%; padding:12px; border:1px solid #ccc; border-radius:8px; margin-bottom:15px;">
-            <option value="">-- Select State --</option>
-            <?php foreach ($states as $st): ?>
-                <option value="<?= encode($st) ?>"><?= encode($st) ?></option>
-            <?php endforeach; ?>
+        <div class="form-group">
+            <label>State *</label>
+            <select name="state" class="form-control" required>
+                <option value="">-- Select State --</option>
+                <?php foreach ($states as $s): ?>
+                    <option value="<?= $s ?>"><?= $s ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Postcode *</label>
+            <input type="text" name="postcode" class="form-control" required>
+        </div>
+
+        <select name="country">
+            <option value="Malaysia">Malaysia</option>
         </select>
 
-    <label>Postcode *</label>
-    <input name="postcode" required class="form-input">
+        <div class="form-group">
+            <button class="cta-button" type="submit" style="width:100%; margin-top:20px;">
+                Add Address
+            </button>
+        </div>
 
-    <label>Country</label>
-    <input name="country" value="Malaysia" required class="form-input">
-
-    <label style="margin-top:20px;">
-        <input type="checkbox" name="default_flag"> Set as Default Address
-    </label>
-
-    <br><br>
-
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a href="profile_address.php" class="btn btn-secondary">Cancel</a>
-
-</form>
+    </form>
 
 </div>
 </section>

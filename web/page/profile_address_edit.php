@@ -19,6 +19,8 @@ $addresses = $stmt->fetchAll();
 
 $total_addresses = count($addresses);
 
+$_title = "Edit Address | Four Eyes Collective";
+include '../_head.php';
 ?>
 
 <section style="padding:60px 0; background:#ecf0f1;">
