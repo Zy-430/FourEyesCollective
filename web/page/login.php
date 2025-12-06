@@ -29,9 +29,9 @@ if (is_post()) {
 
         if ($u) {
             // Check if user is active
-            if ($u->status === 'inactive') {
-                $_err['email'] = 'Account not verified. Please check your email for verification link. <a href="resend_verification.php?email=' . urlencode($email) . '">Resend verification email</a>';
-            } else {
+            // if ($u->status === 'inactive') {
+            //     $_err['email'] = 'Account not verified. Please check your email for verification link. <a href="resend_verification.php?email=' . urlencode($email) . '">Resend verification email</a>';
+            // } else {
                 temp('info', 'Login successfully');
                 login($u);
                 // Redirect based on role
@@ -40,12 +40,11 @@ if (is_post()) {
                 } else {
                     redirect('/homepage.php');
                 }
-            }
+            //}
         } else {
             $_err['password'] = 'Invalid email or password';
         }
-    }
-}
+    }}
 
 // ----------------------------------------------------------------------------
 $_title = 'Login';
@@ -83,10 +82,10 @@ $_title = 'Login';
                 <div class="alert alert-error">
                     Invalid email or password. Please try again.
                 </div>
-            <?php elseif (isset($_err['email']) && strpos($_err['email'], 'Account is inactive') !== false): ?>
+            <!-- <?php elseif (isset($_err['email']) && strpos($_err['email'], 'Account is inactive') !== false): ?>
                 <div class="alert alert-warning">
                     Account is inactive. Please contact administrator.
-                </div>
+                </div> -->
             <?php endif; ?>
 
             <div class="form-group">
@@ -120,7 +119,7 @@ $_title = 'Login';
                 </div>
 
                 <div class="signup-link">
-                    Don't have an account? <a href="registration.php">Sign Up</a>
+                    Don't have an account? <a href="member_registration.php">Sign Up</a>
                 </div>
             </div>
         </form>

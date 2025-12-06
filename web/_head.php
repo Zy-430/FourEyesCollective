@@ -48,10 +48,12 @@
                         </div>
                     <?php endif ?>
                 </div>
+                 <?php if ($_user): ?>
                 <a href="/page/cart.php">
                     <img src="/images/shopping-bag.png" alt="Shopping Cart">
                 </a>
-                <?php if ($_user): ?>
+                 
+               
                 <a href="/page/logout.php">
                     <img src="/images/logout.png" alt="Logout">
                 </a>

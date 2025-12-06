@@ -332,7 +332,7 @@ $filterQuery = http_build_query($currentParams);
                                 View Details
                             </a>
 
-                            <?php $is_logged_in = isset($_SESSION['user_id']); ?>
+                            <?php $is_logged_in = isset($_SESSION['user']); ?>
 
                             <a href="javascript:void(0)" onclick="addToCart('<?= $p->product_id ?>')"
                                 class="add-to-cart"

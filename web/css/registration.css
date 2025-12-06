@@ -118,6 +118,16 @@ body.registration-page {
     box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
 }
 
+.form-control-phone {
+    width: 90%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+}
+
 /* Radio Group */
 .radio-group {
     display: flex;

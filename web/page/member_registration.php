@@ -102,8 +102,8 @@ if (is_post()) {
     //Validate phone number
     if ($phone == '') {
         $_err['phone'] = 'Required';
-    } else if (!preg_match('/^0\d{2}-\d{7}$/', $phone)) {
-        $_err['phone'] = 'Phone number must be in format 0XX-XXXXXXX';
+    } else if (!preg_match('/^[1-9][0-9]{7,9}$/', $phone)) {
+        $_err['phone'] = 'Phone number must be in format 0XXXXXXXXX';
     }
 
     //Validate day , month , year (later combine for date of borth)
@@ -136,11 +136,11 @@ if (is_post()) {
     // Insert into database
     if (!$_err) {
 
-        $photo = save_photo($photo, '../images/user-photo');
+        $photo = save_photo($photo, '../images/users');
 
         // Make sure these variables have values
-        $role = 'member';
-        $status = 'inactive'; // Default status for new members (wait for email verification)
+        $role = 'Member';
+        $status = 'Inactive'; // Default status for new members (wait for email verification)
 
         // Get current date for registration_date if not provided
         if (empty($registration_date)) {
@@ -258,8 +258,10 @@ $_title = 'Member Registration';
                 <!-- Phone Number -->
                 <div class="form-group">
                     <label for="phone">Phone Number *</label>
-                    <input type="text" id="phone" name="phone" class="form-control"
-                        placeholder="012-3456789"
+                    <span class="phone-prefix">+60 &nbsp;</span>
+                    <input type="text" id="phone" name="phone" class="form-control-phone"
+                        placeholder="123456789"
+                        pattern="[1-9][0-9]{7,9}"
                         value="<?= encode($GLOBALS['phone'] ?? '') ?>">
                     <?= err('phone') ?>
                 </div>

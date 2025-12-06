@@ -2,15 +2,14 @@
 // cart.php
 require '../_base.php';
 require '../lib/db.php';
-auth('Member');
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
+if (!$_user) {
     temp('error', 'Please login to view your cart');
     redirect('/page/login.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));
 }
 
-$user_id = $_SESSION['user_id'];
+$user_id = $_user->user_id;
+
 
 // Handle POST actions
 if (is_post()) {
