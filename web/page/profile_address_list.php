@@ -28,11 +28,19 @@ include '../_head.php';
 <div style="max-width:900px; margin:auto; background:white; padding:40px; border-radius:14px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
 <h1 style="text-align:center; font-size:2.5em; margin-bottom:30px;">My Addresses</h1>
 
-<div style="text-align:center; margin-bottom:20px;">
-    <?php if ($total_addresses < 10): ?>
-    <a href="profile_address_add.php" style="padding:10px 20px; background:#27ae60; color:white; border-radius:6px; text-decoration:none;">Add New Address</a>
-    <?php endif; ?>
-</div>
+<?php if (isset($_SESSION['success'])): ?>
+    <div style="padding:15px; margin-bottom:20px; background:#27ae60; color:white; border-radius:4px; text-align:center;">
+        <?= $_SESSION['success'] ?>
+    </div>
+    <?php unset($_SESSION['success']); ?>
+<?php endif; ?>
+
+<?php if (isset($_SESSION['error'])): ?>
+    <div style="padding:15px; margin-bottom:20px; background:#e74c3c; color:white; border-radius:4px; text-align:center;">
+        <?= $_SESSION['error'] ?>
+    </div>
+    <?php unset($_SESSION['error']); ?>
+<?php endif; ?>
 
 <?php if ($total_addresses === 0): ?>
     <p style="text-align:center; color:#7f8c8d;">No addresses added yet.</p>
@@ -61,9 +69,20 @@ include '../_head.php';
     </div>
 <?php endif; ?>
 
-<div style="text-align:center; margin-top:30px;">
-    <a href="profile_page.php" style="padding:10px 25px; background:#34495e; color:white; border-radius:6px; text-decoration:none;">Back to Profile</a>
+<div style="display:flex; justify-content:center; gap:20px; margin-top:30px;">
+    <?php if ($total_addresses < 10): ?>
+        <a href="profile_address_add.php" 
+           style="padding:10px 20px; background:#27ae60; color:white; border-radius:6px; text-decoration:none;">
+           Add New Address
+        </a>
+    <?php endif; ?>
+
+    <a href="profile_page.php" 
+       style="padding:10px 25px; background:#34495e; color:white; border-radius:6px; text-decoration:none;">
+       Back to Profile
+    </a>
 </div>
+
 </div>
 </section>
 <?php include '../_foot.php'; ?>

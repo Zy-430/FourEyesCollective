@@ -13,21 +13,49 @@ if (!isset($_SESSION['user_id'])) {
 
 $user_id = $_SESSION['user_id'];
 
-$stmt = $_db->prepare("SELECT * FROM address WHERE user_id = ? ORDER BY default_flag DESC, created_at ASC");
-$stmt->execute([$user_id]);
-$addresses = $stmt->fetchAll();
+// Check if delete_id is provided
+if (!isset($_GET['id'])) {
+    $_SESSION['error'] = "No address selected for deletion.";
+    redirect("profile_address_list.php");
+}
 
-$total_addresses = count($addresses);
+$delete_id = $_GET['id'];
 
-$_title = "Delete Address | Four Eyes Collective";
-include '../_head.php';
+// Fetch address info
+$stmt = $_db->prepare("SELECT default_flag FROM address WHERE address_id = ? AND user_id = ?");
+$stmt->execute([$delete_id, $user_id]);
+$addr = $stmt->fetch();
+
+if (!$addr) {
+    $_SESSION['error'] = "Address not found.";
+    redirect("profile_address_list.php");
+}
+
+// Confirm deletion (simple JS confirm)
+if (!isset($_GET['confirm'])) {
+    echo "<script>
+        if(confirm('Are you sure you want to delete this address?')) {
+            window.location.href = 'profile_address_delete.php?id=$delete_id&confirm=1';
+        } else {
+            window.location.href = 'profile_address_list.php';
+        }
+    </script>";
+    exit();
+}
+
+// Delete the address
+$_db->prepare("DELETE FROM address WHERE address_id = ? AND user_id = ?")->execute([$delete_id, $user_id]);
+
+// If deleted address was default, set another as default
+if ($addr->default_flag) {
+    $stmt2 = $_db->prepare("SELECT address_id FROM address WHERE user_id = ? ORDER BY created_at ASC LIMIT 1");
+    $stmt2->execute([$user_id]);
+    $new_default = $stmt2->fetch();
+    if ($new_default) {
+        $_db->prepare("UPDATE address SET default_flag = 1 WHERE address_id = ?")->execute([$new_default->address_id]);
+    }
+}
+
+$_SESSION['success'] = "Address deleted successfully.";
+redirect("profile_address_list.php");
 ?>
-
-<section style="padding:60px 0; background:#ecf0f1;">
-<div style="max-width:900px; margin:auto; background:white; padding:40px; border-radius:14px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
-<h1 style="text-align:center; font-size:2.5em; margin-bottom:30px;">My Addresses</h1>
-
-
-</div>
-</section>
-<?php include '../_foot.php'; ?>

@@ -31,6 +31,7 @@ if (empty($user->photo) || !file_exists($photoPath)) {
 
 $_title = "My Profile | Four Eyes Collective";
 include '../_head.php';
+
 ?>
 
 <!-- Profile Page Wrapper -->
@@ -56,6 +57,13 @@ include '../_head.php';
             margin-bottom: 30px;
             color: #2c3e50;
         ">My Profile</h1>
+
+        <?php if (isset($_SESSION['success'])): ?>
+            <div style="padding:15px; margin-bottom:20px; background:#27ae60; color:white; border-radius:4px; text-align:center;">
+                <?= $_SESSION['success'] ?>
+            </div>
+            <?php unset($_SESSION['success']); // remove after showing ?>
+        <?php endif; ?>
 
         <!-- Profile Top Section: Photo + Basic Info -->
         <div style="
@@ -120,22 +128,22 @@ include '../_head.php';
 
         <!-- Action Buttons -->
         <div style="text-align:center; margin-top: 20px;">
-            <a href="profile_edit.php" 
+            <a href="profile_edit.php" class="cta-button"
                 style="padding: 10px 25px; background:#2c3e50; color:white; text-decoration:none; border-radius:6px; margin-right:10px;">
                 Edit Profile
             </a>
 
-            <a href="profile_change_photo.php" 
+            <a href="profile_change_photo.php" class="cta-button"
                 style="padding: 10px 25px; background:#34495e; color:white; text-decoration:none; border-radius:6px; margin-right:10px;">
                 Change Photo
             </a>
 
-            <a href="profile_change_password.php" 
+            <a href="profile_change_password.php" class="cta-button"
                 style="padding: 10px 25px; background:#e74c3c; color:white; text-decoration:none; border-radius:6px; margin-right:10px;">
                 Change Password
             </a>
 
-            <a href="profile_address_list.php" 
+            <a href="profile_address_list.php" class="cta-button"
                 style="padding: 10px 25px; background:#7f8c8d; color:white; text-decoration:none; border-radius:6px;">
                 My Address
             </a>

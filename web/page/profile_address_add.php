@@ -116,9 +116,20 @@ include '../_head.php';
             <input type="text" name="postcode" class="form-control" required>
         </div>
 
-        <select name="country">
-            <option value="Malaysia">Malaysia</option>
-        </select>
+        <div class="form-group">
+            <label>Country *</label>
+            <select class="form-control" disabled style="pointer-events:none; background:#f1f1f1;">
+                <option value="Malaysia" selected>Malaysia</option>
+            </select>
+            <input type="hidden" name="country" value="Malaysia">
+        </div>
+
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="default_flag" value="1">
+                Set as default address
+            </label>
+        </div>
 
         <div class="form-group">
             <button class="cta-button" type="submit" style="width:100%; margin-top:20px;">
