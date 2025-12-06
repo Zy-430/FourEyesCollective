@@ -2,16 +2,9 @@
 require '../_base.php';
 require '../lib/db.php';
 
-// TEMPORARY: simulate login for testing
-$_SESSION['user_id'] = 'ME0001';
+auth();
 
-// Check login
-if (!isset($_SESSION['user_id'])) {
-    //header("Location: login.php");
-    //exit();
-}
-
-$user_id = $_SESSION['user_id'];
+$user_id = $_user->user_id;
 
 $stmt = $_db->prepare("SELECT * FROM address WHERE user_id = ? ORDER BY default_flag DESC, created_at ASC");
 $stmt->execute([$user_id]);
@@ -58,8 +51,8 @@ include '../_head.php';
             <p><?= encode($addr->country) ?></p>
 
             <div style="margin-top:10px;">
-                <a href="profile_address_edit.php?id=<?= $addr->address_id ?>" style="padding:5px 12px; background:#2c3e50; color:white; border-radius:4px; text-decoration:none; font-size:0.85em;">Edit</a>
-                <a href="profile_address_delete.php?id=<?= $addr->address_id ?>" style="padding:5px 12px; background:#e74c3c; color:white; border-radius:4px; text-decoration:none; font-size:0.85em;" onclick="return confirm('Delete this address?');">Delete</a>
+                <a href="profile_address_edit.php?id=<?= $addr->address_id ?>" class="cta-button" style="padding:5px 12px; background:#2c3e50; color:white; border-radius:4px; text-decoration:none; font-size:0.85em;">Edit</a>
+                <a href="profile_address_delete.php?id=<?= $addr->address_id ?>" class="cta-button" style="padding:5px 12px; background:#e74c3c; color:white; border-radius:4px; text-decoration:none; font-size:0.85em;" onclick="return confirm('Delete this address?');">Delete</a>
                 <?php if (!$addr->default_flag): ?>
                     <a href="profile_address_set_default.php?id=<?= $addr->address_id ?>" style="padding:5px 12px; background:#27ae60; color:white; border-radius:4px; text-decoration:none; font-size:0.85em;">Set Default</a>
                 <?php endif; ?>
@@ -71,13 +64,13 @@ include '../_head.php';
 
 <div style="display:flex; justify-content:center; gap:20px; margin-top:30px;">
     <?php if ($total_addresses < 10): ?>
-        <a href="profile_address_add.php" 
+        <a href="profile_address_add.php" class="cta-button"
            style="padding:10px 20px; background:#27ae60; color:white; border-radius:6px; text-decoration:none;">
            Add New Address
         </a>
     <?php endif; ?>
 
-    <a href="profile_page.php" 
+    <a href="profile_page.php" class="cta-button"
        style="padding:10px 25px; background:#34495e; color:white; border-radius:6px; text-decoration:none;">
        Back to Profile
     </a>

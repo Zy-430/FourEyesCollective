@@ -2,16 +2,9 @@
 require '../_base.php';
 require '../lib/db.php';
 
-// TEMPORARY: simulate login for testing
-$_SESSION['user_id'] = 'ME0001';
+auth();
 
-// Check login
-if (!isset($_SESSION['user_id'])) {
-    //header("Location: login.php");
-    //exit();
-}
-
-$user_id = $_SESSION['user_id'];
+$user_id = $_user->user_id;
 
 // Check if delete_id is provided
 if (!isset($_GET['id'])) {

@@ -39,31 +39,38 @@ CREATE TABLE `address` (
   `postcode` varchar(10) NOT NULL,
   `country` varchar(50) NOT NULL,
   `default_flag` tinyint(1) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `latitude` DECIMAL(10,8) DEFAULT NULL,
+  `longitude` DECIMAL(11,8) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
---
--- Dumping data for table `address`
---
+-- ============================================
+-- Address table insert with lat/lng included
+-- ============================================
 
-INSERT INTO `address` (`address_id`, `user_id`, `address_line1`, `address_line2`, `city`, `state`, `postcode`, `country`, `default_flag`, `created_at`) VALUES
-('ADRS0001', 'ME0001', '123 Main Street', 'Unit 1A', 'Kuala Lumpur', 'W.P. Kuala Lumpur', '50000', 'Malaysia', 1, '2025-11-01 01:05:00'),
-('ADRS0002', 'ME0002', '456 Market Road', '', 'Shah Alam', 'Selangor', '40000', 'Malaysia', 1, '2025-11-02 02:15:00'),
-('ADRS0003', 'ME0003', '789 Hill Street', 'Apt 12B', 'Penang', 'Penang', '10050', 'Malaysia', 1, '2025-11-03 03:20:00'),
-('ADRS0004', 'ME0004', '321 River Lane', '', 'Kota Kinabalu', 'Sabah', '88000', 'Malaysia', 1, '2025-11-04 04:25:00'),
-('ADRS0005', 'ME0005', '654 Garden Avenue', 'Unit 5C', 'Ipoh', 'Perak', '30000', 'Malaysia', 1, '2025-11-05 05:30:00'),
-('ADRS0006', 'ME0006', '987 Sunset Blvd', '', 'Petaling Jaya', 'Selangor', '46000', 'Malaysia', 1, '2025-11-06 06:35:00'),
-('ADRS0007', 'ME0007', '246 Sunrise Street', 'Unit 7B', 'Melaka', 'Melaka', '75000', 'Malaysia', 1, '2025-11-07 07:40:00'),
-('ADRS0008', 'ME0008', '135 Ocean Road', '', 'Ampang', 'Selangor', '68000', 'Malaysia', 1, '2025-11-08 08:45:00'),
-('ADRS0009', 'ME0009', '864 Mountain Lane', '', 'Penang', 'Penang', '10080', 'Malaysia', 1, '2025-11-09 09:50:00'),
-('ADRS0010', 'ME0010', '753 Forest Street', 'Unit 10C', 'Kuala Lumpur', 'W.P. Kuala Lumpur', '50450', 'Malaysia', 1, '2025-11-10 10:55:00'),
-('ADRS0011', 'ME0011', '951 Riverbank Rd', '', 'Putrajaya', 'W.P. Putrajaya', '62000', 'Malaysia', 1, '2025-11-11 01:00:00'),
-('ADRS0012', 'ME0012', '159 Hilltop Ave', 'Unit 12B', 'Penang', 'Penang', '10100', 'Malaysia', 1, '2025-11-12 02:05:00'),
-('ADRS0013', 'ME0013', '357 Valley Street', 'Unit 13C', 'Kota Bharu', 'Kelantan', '15000', 'Malaysia', 1, '2025-11-13 03:10:00'),
-('ADRS0014', 'ME0014', '753 Garden Lane', '', 'Pahang', 'Pahang', '25000', 'Malaysia', 1, '2025-11-14 04:15:00'),
-('ADRS0015', 'ME0015', '951 Lakeview Blvd', 'Unit 15A', 'Selangor', 'Selangor', '43000', 'Malaysia', 1, '2025-11-15 05:20:00'),
-('ADRS0016', 'ME0012', '1', '1', '1', 'Kuala Lumpur', '1', 'Malaysia', 0, '2025-12-06 02:39:54'),
-('ADRS0017', 'ME0012', '2', '2', '2', 'Labuan', '2', 'Malaysia', 0, '2025-12-06 02:40:16');
+INSERT INTO address 
+(address_id, user_id, address_line1, address_line2, city, state, postcode, country, default_flag, created_at, latitude, longitude)
+VALUES
+('ADRS0001','ME0001','123 Main Street','Unit 1A','Kuala Lumpur','W.P. Kuala Lumpur','50000','Malaysia',1,'2025-11-01 09:05:00',3.1390,101.6869),
+('ADRS0002','ME0002','456 Market Road','','Shah Alam','Selangor','40000','Malaysia',1,'2025-11-02 10:15:00',3.0738,101.5183),
+('ADRS0003','ME0003','789 Hill Street','Apt 12B','Penang','Penang','10050','Malaysia',1,'2025-11-03 11:20:00',5.4164,100.3327),
+('ADRS0004','ME0004','321 River Lane','','Kota Kinabalu','Sabah','88000','Malaysia',1,'2025-11-04 12:25:00',5.9804,116.0735),
+('ADRS0005','ME0005','654 Garden Avenue','Unit 5C','Ipoh','Perak','30000','Malaysia',1,'2025-11-05 13:30:00',4.5975,101.0901),
+('ADRS0006','ME0006','987 Sunset Blvd','','Petaling Jaya','Selangor','46000','Malaysia',1,'2025-11-06 14:35:00',3.1073,101.6067),
+('ADRS0007','ME0007','246 Sunrise Street','Unit 7B','Melaka','Melaka','75000','Malaysia',1,'2025-11-07 15:40:00',2.1896,102.2501),
+('ADRS0008','ME0008','135 Ocean Road','','Ampang','Selangor','68000','Malaysia',1,'2025-11-08 16:45:00',3.1448,101.7415),
+('ADRS0009','ME0009','864 Mountain Lane','','Penang','Penang','10080','Malaysia',1,'2025-11-09 17:50:00',5.4164,100.3327),
+('ADRS0010','ME0010','753 Forest Street','Unit 10C','Kuala Lumpur','W.P. Kuala Lumpur','50450','Malaysia',1,'2025-11-10 18:55:00',3.1390,101.6869),
+('ADRS0011','ME0011','951 Riverbank Rd','','Putrajaya','W.P. Putrajaya','62000','Malaysia',1,'2025-11-11 09:00:00',2.9264,101.6964),
+('ADRS0012','ME0012','159 Hilltop Ave','Unit 12B','Penang','Penang','10100','Malaysia',1,'2025-11-12 10:05:00',5.4164,100.3327),
+('ADRS0013','ME0013','357 Valley Street','Unit 13C','Kota Bharu','Kelantan','15000','Malaysia',1,'2025-11-13 11:10:00',6.1250,102.2383),
+('ADRS0014','ME0014','753 Garden Lane','','Pahang','Pahang','25000','Malaysia',1,'2025-11-14 12:15:00',3.8071,103.3262),
+('ADRS0015','ME0015','951 Lakeview Blvd','Unit 15A','Selangor','Selangor','43000','Malaysia',1,'2025-11-15 13:20:00',3.0738,101.5183),
+('ADRS0016','ME0016','900 Blue Street','','Kuala Lumpur','W.P. Kuala Lumpur','50450','Malaysia',1,'2025-11-01 09:10:00',3.1390,101.6869),
+('ADRS0017','ME0017','399 Star Street','','Penang','Penang','10050','Malaysia',1,'2025-11-02 09:15:00',5.4164,100.3327),
+('ADRS0018','ME0018','15 Relax Street','','Kota Bharu','Kelantan','15000','Malaysia',1,'2025-11-03 09:20:00',6.1250,102.2383),
+('ADRS0019','ME0019','88 Rich Street','','Ampang','Selangor','68000','Malaysia',1,'2025-11-04 09:25:00',3.1448,101.7415),
+('ADRS0020','ME0020','78 Sleep Street','','Petaling Jaya','Selangor','46000','Malaysia',1,'2025-11-05 09:30:00',3.1073,101.6067);
 
 -- --------------------------------------------------------
 

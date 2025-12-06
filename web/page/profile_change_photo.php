@@ -2,14 +2,9 @@
 require '../_base.php';
 require '../lib/db.php';
 
-// TEMPORARY: simulate login
-$_SESSION['user_id'] = 'ME0001';
+auth();
 
-if (!isset($_SESSION['user_id'])) {
-    redirect('login.php');
-}
-
-$user_id = $_SESSION['user_id'];
+$user_id = $_user->user_id;
 
 // Fetch user
 $stmt = $_db->prepare("SELECT * FROM users WHERE user_id = ?");
@@ -81,17 +76,25 @@ $current_photo = (!empty($user->photo) && file_exists('../images/users/' . $user
 </h1>
 
 <?php if (!empty($error)): ?>
-    <p style="color:red;"><?= encode($error) ?></p>
+
+```
+<p style="color:red;"><?= encode($error) ?></p>
+```
+
 <?php endif; ?>
 
 <img id="photo_preview" src="../images/users/<?= encode($current_photo) ?>?t=<?= time() ?>" 
-    style="width:150px; height:150px; border-radius:50%; object-fit:cover; margin-bottom:20px;">
+ style="width:150px; height:150px; border-radius:50%; object-fit:cover; margin-bottom:20px;">
 
-<form method="post" enctype="multipart/form-data">
-    <input type="file" name="profile_photo" accept="image/*" id="photo_input" required 
-        style="width:100%; padding:12px 15px; border:1px solid #ccc; border-radius:8px; margin-bottom:20px;">
-    <br>
-    <button type="submit" style="
+<form method="post" enctype="multipart/form-data" id="upload_form">
+    <div id="drop_zone" style="
+        width:100%; padding:40px; border:2px dashed #ccc; border-radius:8px;
+        margin-bottom:20px; cursor:pointer; transition:0.3s;
+    ">
+        Drag & Drop your photo here or click to select
+    </div>
+    <input type="file" name="profile_photo" accept="image/*" id="photo_input" required style="display:none;">
+    <button type="submit" class="cta-button" style="
         background:#27ae60;
         color:white;
         padding:10px 20px;
@@ -100,7 +103,7 @@ $current_photo = (!empty($user->photo) && file_exists('../images/users/' . $user
         cursor:pointer;
         font-size:1em;
     ">Upload</button>
-    <a href="profile_page.php" style="
+    <a href="profile_page.php" class="cta-button" style="
         background:#34495e;
         color:white;
         padding:10px 20px;
@@ -112,23 +115,54 @@ $current_photo = (!empty($user->photo) && file_exists('../images/users/' . $user
 </form>
 
 <script>
-    const input = document.getElementById("photo_input");
-    const preview = document.getElementById("photo_preview");
+const input = document.getElementById("photo_input");
+const preview = document.getElementById("photo_preview");
+const dropZone = document.getElementById("drop_zone");
 
-    input.addEventListener("change", function() {
-        const file = this.files[0];
-        if(file){
-            const reader = new FileReader();
-            reader.onload = e => preview.src = e.target.result;
-            reader.readAsDataURL(file);
-        }
-    });
+dropZone.addEventListener("click", () => input.click());
+
+input.addEventListener("change", function() {
+    if(this.files[0]) previewFile(this.files[0]);
+});
+
+// Drag & Drop
+dropZone.addEventListener("dragover", e => {
+    e.preventDefault();
+    dropZone.style.borderColor = "#27ae60";
+    dropZone.style.background = "#ecf9f1";
+});
+
+dropZone.addEventListener("dragleave", e => {
+    dropZone.style.borderColor = "#ccc";
+    dropZone.style.background = "#fff";
+});
+
+dropZone.addEventListener("drop", e => {
+    e.preventDefault();
+    dropZone.style.borderColor = "#ccc";
+    dropZone.style.background = "#fff";
+    const file = e.dataTransfer.files[0];
+    if(file) {
+        input.files = e.dataTransfer.files; // set file to input
+        previewFile(file);
+    }
+});
+
+function previewFile(file){
+    const reader = new FileReader();
+    reader.onload = e => preview.src = e.target.result;
+    reader.readAsDataURL(file);
+}
 </script>
+
+<?php if (!empty($success)): ?>
 
 <script>
     alert("<?= $success ?>");
     window.location.href = "profile_page.php";
 </script>
+
+<?php endif; ?>
 
 </div>
 </section>

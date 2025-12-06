@@ -1,6 +1,7 @@
 <?php
 require '../_base.php';
 require '../lib/db.php';
+auth('Admin');
 
 $_title = 'Add Product';
 include '../_head.php';

@@ -2,14 +2,9 @@
 require '../_base.php';
 require '../lib/db.php';
 
-// TEMPORARY: simulate login
-$_SESSION['user_id'] = 'ME0001';
+auth();
 
-if (!isset($_SESSION['user_id'])) {
-    redirect('login.php');
-}
-
-$user_id = $_SESSION['user_id'];
+$user_id = $_user->user_id;
 
 // Fetch user
 $stmt = $_db->prepare("SELECT * FROM users WHERE user_id = ?");

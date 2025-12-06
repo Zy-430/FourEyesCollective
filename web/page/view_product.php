@@ -1,6 +1,7 @@
 <?php
 require '../_base.php';
 require '../lib/db.php';
+auth('Admin');
 
 $_title = 'Manage Products';
 include '../_head.php';
