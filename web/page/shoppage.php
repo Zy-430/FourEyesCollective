@@ -10,11 +10,13 @@ $selectedCat = get('cat');
 
 // Fetch products (filtered or all)
 if ($selectedCat) {
-    $stm = $_db->prepare("SELECT * FROM product WHERE category_id = ?");
+    $stm = $_db->prepare("SELECT * FROM product 
+                          WHERE category_id = ? AND product_status = 1");
     $stm->execute([$selectedCat]);
     $products = $stm->fetchAll();
 } else {
-    $products = $_db->query("SELECT * FROM product")->fetchAll();
+    $products = $_db->query("SELECT * FROM product 
+                             WHERE product_status = 1")->fetchAll();
 }
 
 // Category → folder mapping
