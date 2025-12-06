@@ -126,15 +126,15 @@ $filterQuery = http_build_query($currentParams);
             <input type="hidden" name="page" value="1">
             <input type="hidden" name="sort" value="<?= $sort ?>">
             <input type="hidden" name="dir" value="<?= $dir ?>">
-            
+
             <!-- SEARCH -->
             <div style="margin-bottom: 30px;">
                 <h3 style="margin-bottom: 10px; color: #2c3e50;">Search</h3>
-                <input type="text" 
-                       name="search" 
-                       placeholder="Search products..."
-                       value="<?= htmlspecialchars($search) ?>"
-                       style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <input type="text"
+                    name="search"
+                    placeholder="Search products..."
+                    value="<?= htmlspecialchars($search) ?>"
+                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
             </div>
 
             <!-- CATEGORY FILTER -->
@@ -142,20 +142,20 @@ $filterQuery = http_build_query($currentParams);
                 <h3 style="margin-bottom: 10px; color: #2c3e50;">Category</h3>
                 <div style="display: flex; flex-direction: column; gap: 8px;">
                     <label style="display: flex; align-items: center; gap: 8px;">
-                        <input type="radio" 
-                               name="cat" 
-                               value="" 
-                               <?= !$selectedCat ? 'checked' : '' ?>
-                               onchange="this.form.submit()">
+                        <input type="radio"
+                            name="cat"
+                            value=""
+                            <?= !$selectedCat ? 'checked' : '' ?>
+                            onchange="this.form.submit()">
                         <span>All Products</span>
                     </label>
                     <?php foreach ($categoryNames as $id => $name): ?>
                         <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="radio" 
-                                   name="cat" 
-                                   value="<?= $id ?>" 
-                                   <?= ($selectedCat === $id) ? 'checked' : '' ?>
-                                   onchange="this.form.submit()">
+                            <input type="radio"
+                                name="cat"
+                                value="<?= $id ?>"
+                                <?= ($selectedCat === $id) ? 'checked' : '' ?>
+                                onchange="this.form.submit()">
                             <span><?= $name ?></span>
                         </label>
                     <?php endforeach; ?>
@@ -165,25 +165,25 @@ $filterQuery = http_build_query($currentParams);
             <!-- PRICE RANGE FILTER -->
             <div style="margin-bottom: 30px;">
                 <h3 style="margin-bottom: 10px; color: #2c3e50;">Price Range</h3>
-                
+
                 <!-- Predefined price ranges -->
                 <div style="margin-bottom: 15px;">
                     <div style="display: flex; flex-direction: column; gap: 8px;">
                         <label style="display: flex; align-items: center; gap: 8px;">
-                            <input type="radio" 
-                                   name="price_range" 
-                                   value="" 
-                                   <?= !$priceRange ? 'checked' : '' ?>
-                                   onchange="this.form.submit()">
+                            <input type="radio"
+                                name="price_range"
+                                value=""
+                                <?= !$priceRange ? 'checked' : '' ?>
+                                onchange="this.form.submit()">
                             <span>All Prices</span>
                         </label>
                         <?php foreach ($priceRanges as $range => $label): ?>
                             <label style="display: flex; align-items: center; gap: 8px;">
-                                <input type="radio" 
-                                       name="price_range" 
-                                       value="<?= $range ?>" 
-                                       <?= ($priceRange === $range) ? 'checked' : '' ?>
-                                       onchange="this.form.submit()">
+                                <input type="radio"
+                                    name="price_range"
+                                    value="<?= $range ?>"
+                                    <?= ($priceRange === $range) ? 'checked' : '' ?>
+                                    onchange="this.form.submit()">
                                 <span><?= $label ?></span>
                             </label>
                         <?php endforeach; ?>
@@ -196,39 +196,39 @@ $filterQuery = http_build_query($currentParams);
                         Custom Range:
                     </div>
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                        <input type="number" 
-                               name="min_price" 
-                               value="<?= $minPrice ?>"
-                               min="0" 
-                               max="<?= $actualMaxPrice ?>"
-                               step="10"
-                               style="width: 80px; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+                        <input type="number"
+                            name="min_price"
+                            value="<?= $minPrice ?>"
+                            min="0"
+                            max="<?= $actualMaxPrice ?>"
+                            step="10"
+                            style="width: 80px; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
                         <span>to</span>
-                        <input type="number" 
-                               name="max_price" 
-                               value="<?= $maxPrice ?>"
-                               min="0" 
-                               max="<?= $actualMaxPrice ?>"
-                               step="10"
-                               style="width: 80px; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+                        <input type="number"
+                            name="max_price"
+                            value="<?= $maxPrice ?>"
+                            min="0"
+                            max="<?= $actualMaxPrice ?>"
+                            step="10"
+                            style="width: 80px; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
                     </div>
-                    <button type="submit" 
-                            style="padding: 8px 16px; background: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    <button type="submit"
+                        style="padding: 8px 16px; background: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer;">
                         Apply Price
                     </button>
                 </div>
             </div>
 
             <!-- APPLY SEARCH BUTTON -->
-            <button type="submit" 
-                    style="width: 100%; padding: 10px; background: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+            <button type="submit"
+                style="width: 100%; padding: 10px; background: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
                 Apply Filters
             </button>
 
             <!-- CLEAR FILTERS BUTTON -->
             <?php if ($search || $selectedCat || $priceRange || $minPrice > 0 || $maxPrice < 1000): ?>
-                <a href="shoppage.php?sort=<?= $sort ?>&dir=<?= $dir ?>" 
-                   style="display: block; padding: 10px; background: #e74c3c; color: white; text-align: center; border-radius: 4px; text-decoration: none; margin-top: 10px;">
+                <a href="shoppage.php?sort=<?= $sort ?>&dir=<?= $dir ?>"
+                    style="display: block; padding: 10px; background: #e74c3c; color: white; text-align: center; border-radius: 4px; text-decoration: none; margin-top: 10px;">
                     Clear All Filters
                 </a>
             <?php endif; ?>
@@ -251,7 +251,7 @@ $filterQuery = http_build_query($currentParams);
                     <?php endif; ?>
                 </p>
             </div>
-            
+
             <div style="display: flex; align-items: center; gap: 15px;">
                 <span>Sort by:</span>
                 <div style="display: flex; gap: 10px;">
@@ -262,7 +262,7 @@ $filterQuery = http_build_query($currentParams);
                         'product_price' => 'Price',
                         'product_id' => 'Newest'
                     ];
-                    
+
                     foreach ($sortOptions as $field => $label):
                         // Determine next direction (toggle between asc/desc)
                         $nextDir = ($sort == $field && $dir == 'asc') ? 'desc' : 'asc';
@@ -270,7 +270,7 @@ $filterQuery = http_build_query($currentParams);
                         $currentDir = $isActive ? $dir : '';
                     ?>
                         <a href="?<?= http_build_query(array_merge($currentParams, ['sort' => $field, 'dir' => $nextDir, 'page' => 1])) ?>"
-                           style="padding: 5px 10px; background: <?= $isActive ? '#2c3e50' : '#888' ?>; color: white; border-radius: 4px; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                            style="padding: 5px 10px; background: <?= $isActive ? '#2c3e50' : '#888' ?>; color: white; border-radius: 4px; text-decoration: none; display: flex; align-items: center; gap: 5px;">
                             <?= $label ?>
                             <?php if ($isActive): ?>
                                 <?php if ($currentDir == 'asc'): ?>↑<?php else: ?>↓<?php endif; ?>
@@ -345,28 +345,28 @@ $filterQuery = http_build_query($currentParams);
 
                 <?php endforeach; ?>
             </div>
-            
+
             <!-- PAGINATION -->
             <div style="margin-top: 30px; display: flex; justify-content: center; align-items: center; gap: 10px;">
                 <?php if ($pager->page > 1): ?>
                     <a href="?<?= http_build_query(array_merge($currentParams, ['page' => $pager->page - 1])) ?>"
-                       style="padding: 8px 12px; background: #2c3e50; color: white; border-radius: 4px; text-decoration: none;">
+                        style="padding: 8px 12px; background: #2c3e50; color: white; border-radius: 4px; text-decoration: none;">
                         &laquo; Previous
                     </a>
                 <?php endif; ?>
-                
+
                 <span style="padding: 8px 12px;">
                     Page <?= $pager->page ?> of <?= $pager->page_count ?>
                 </span>
-                
+
                 <?php if ($pager->page < $pager->page_count): ?>
                     <a href="?<?= http_build_query(array_merge($currentParams, ['page' => $pager->page + 1])) ?>"
-                       style="padding: 8px 12px; background: #2c3e50; color: white; border-radius: 4px; text-decoration: none;">
+                        style="padding: 8px 12px; background: #2c3e50; color: white; border-radius: 4px; text-decoration: none;">
                         Next &raquo;
                     </a>
                 <?php endif; ?>
             </div>
-            
+
             <!-- Page Numbers -->
             <div style="margin-top: 10px; display: flex; justify-content: center; flex-wrap: wrap; gap: 5px;">
                 <?php for ($i = 1; $i <= $pager->page_count; $i++): ?>
@@ -376,18 +376,18 @@ $filterQuery = http_build_query($currentParams);
                         </span>
                     <?php else: ?>
                         <a href="?<?= http_build_query(array_merge($currentParams, ['page' => $i])) ?>"
-                           style="padding: 5px 10px; background: #888; color: white; border-radius: 4px; text-decoration: none;">
+                            style="padding: 5px 10px; background: #888; color: white; border-radius: 4px; text-decoration: none;">
                             <?= $i ?>
                         </a>
                     <?php endif; ?>
                 <?php endfor; ?>
             </div>
-            
+
         <?php else: ?>
             <div style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 8px;">
                 <p style="font-size: 18px; color: #666;">No products found matching your criteria.</p>
-                <a href="shoppage.php" 
-                   style="display:inline-block; padding:10px 20px; background:#2c3e50; color:white; border-radius:5px; text-decoration:none;">
+                <a href="shoppage.php"
+                    style="display:inline-block; padding:10px 20px; background:#2c3e50; color:white; border-radius:5px; text-decoration:none;">
                     View All Products
                 </a>
             </div>
@@ -397,7 +397,6 @@ $filterQuery = http_build_query($currentParams);
 </div>
 
 <script>
-    // Keep the existing addToCart function from your original code
     function addToCart(productId) {
         <?php if (!$is_logged_in): ?>
             if (confirm('You need to login to add items to cart. Go to login page?')) {
@@ -427,30 +426,79 @@ $filterQuery = http_build_query($currentParams);
 
     // Function to show notifications
     function showNotification(message, type) {
+        // Remove any existing notifications first
+        const existingNotifications = document.querySelectorAll('.custom-notification');
+        existingNotifications.forEach(notification => notification.remove());
+
         // Create notification element
         const notification = document.createElement('div');
+        notification.className = 'custom-notification';
         notification.style.position = 'fixed';
-        notification.style.top = '20px';
-        notification.style.right = '20px';
-        notification.style.padding = '15px 20px';
-        notification.style.borderRadius = '4px';
+        notification.style.top = '50%';
+        notification.style.left = '50%';
+        notification.style.transform = 'translate(-50%, -50%)';
+        notification.style.padding = '20px 30px';
+        notification.style.borderRadius = '8px';
         notification.style.color = 'white';
         notification.style.zIndex = '10000';
         notification.style.fontWeight = 'bold';
-        
+        notification.style.textAlign = 'center';
+        notification.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+        notification.style.minWidth = '300px';
+        notification.style.maxWidth = '80%';
+        notification.style.cursor = 'pointer';
+        notification.style.transition = 'opacity 0.3s ease';
+
         if (type === 'success') {
-            notification.style.background = '#27ae60';
+            notification.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
+            notification.style.borderLeft = '5px solid #229954';
         } else {
-            notification.style.background = '#e74c3c';
+            notification.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
+            notification.style.borderLeft = '5px solid #922b21';
         }
-        
-        notification.textContent = message;
+
+        // Add icon
+        const icon = document.createElement('span');
+        icon.style.marginRight = '10px';
+        icon.style.fontSize = '20px';
+
+        if (type === 'success') {
+            icon.textContent = '✓';
+        } else {
+            icon.textContent = '✗';
+        }
+
+        const text = document.createElement('span');
+        text.textContent = message;
+
+        notification.appendChild(icon);
+        notification.appendChild(text);
         document.body.appendChild(notification);
-        
+
+        // Add click to remove functionality
+        notification.addEventListener('click', function() {
+            this.style.opacity = '0';
+            setTimeout(() => {
+                if (this.parentNode) {
+                    this.parentNode.removeChild(this);
+                }
+            }, 300); // Match transition duration
+        });
+
         // Remove notification after 3 seconds
-        setTimeout(() => {
-            notification.remove();
+        const timeoutId = setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
         }, 3000);
+
+        // Clear timeout if notification is clicked
+        notification.addEventListener('click', function() {
+            clearTimeout(timeoutId);
+        });
     }
 </script>
 
