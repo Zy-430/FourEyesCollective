@@ -77,7 +77,7 @@ $categoryNames = [
                  style="width:100%; height:180px; object-fit:cover; border-radius:6px; margin-bottom:10px;">
 
             <!-- NAME (fixed height to align grid) -->
-            <div style="height:50px; overflow:hidden; margin-bottom:10px;">
+            <div style="height:51px; overflow:hidden; margin-bottom:10px;">
                 <h3 style="font-size:17px; margin:0;"><?= encode($p->product_name) ?></h3>
             </div>
 
