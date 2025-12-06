@@ -1,5 +1,6 @@
 <?php
 require '../_base.php';
+auth();
 
 $_title = 'Home | User Profile';
 include '../_head.php';
