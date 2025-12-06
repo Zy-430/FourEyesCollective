@@ -1,5 +1,6 @@
 <?php
 require '../_base.php';
+auth('Member');
 
 $_title = 'Page | Cart';
 include '../_head.php';
