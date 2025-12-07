@@ -32,6 +32,7 @@ USE `foureyescollective`;
 CREATE TABLE `address` (
   `address_id` varchar(8) NOT NULL,
   `user_id` varchar(6) NOT NULL,
+  `recipient_name` varchar(255) NOT NULL,
   `address_line1` varchar(255) NOT NULL,
   `address_line2` varchar(255) NOT NULL,
   `city` varchar(100) NOT NULL,
@@ -49,29 +50,28 @@ CREATE TABLE `address` (
 -- ============================================
 
 INSERT INTO address 
-(address_id, user_id, address_line1, address_line2, city, state, postcode, country, default_flag, created_at, latitude, longitude)
+(address_id, user_id, recipient_name, address_line1, address_line2, city, state, postcode, country, default_flag, created_at, latitude, longitude)
 VALUES
-('ADRS0001','ME0001','123 Main Street','Unit 1A','Kuala Lumpur','W.P. Kuala Lumpur','50000','Malaysia',1,'2025-11-01 09:05:00',3.1390,101.6869),
-('ADRS0002','ME0002','456 Market Road','','Shah Alam','Selangor','40000','Malaysia',1,'2025-11-02 10:15:00',3.0738,101.5183),
-('ADRS0003','ME0003','789 Hill Street','Apt 12B','Penang','Penang','10050','Malaysia',1,'2025-11-03 11:20:00',5.4164,100.3327),
-('ADRS0004','ME0004','321 River Lane','','Kota Kinabalu','Sabah','88000','Malaysia',1,'2025-11-04 12:25:00',5.9804,116.0735),
-('ADRS0005','ME0005','654 Garden Avenue','Unit 5C','Ipoh','Perak','30000','Malaysia',1,'2025-11-05 13:30:00',4.5975,101.0901),
-('ADRS0006','ME0006','987 Sunset Blvd','','Petaling Jaya','Selangor','46000','Malaysia',1,'2025-11-06 14:35:00',3.1073,101.6067),
-('ADRS0007','ME0007','246 Sunrise Street','Unit 7B','Melaka','Melaka','75000','Malaysia',1,'2025-11-07 15:40:00',2.1896,102.2501),
-('ADRS0008','ME0008','135 Ocean Road','','Ampang','Selangor','68000','Malaysia',1,'2025-11-08 16:45:00',3.1448,101.7415),
-('ADRS0009','ME0009','864 Mountain Lane','','Penang','Penang','10080','Malaysia',1,'2025-11-09 17:50:00',5.4164,100.3327),
-('ADRS0010','ME0010','753 Forest Street','Unit 10C','Kuala Lumpur','W.P. Kuala Lumpur','50450','Malaysia',1,'2025-11-10 18:55:00',3.1390,101.6869),
-('ADRS0011','ME0011','951 Riverbank Rd','','Putrajaya','W.P. Putrajaya','62000','Malaysia',1,'2025-11-11 09:00:00',2.9264,101.6964),
-('ADRS0012','ME0012','159 Hilltop Ave','Unit 12B','Penang','Penang','10100','Malaysia',1,'2025-11-12 10:05:00',5.4164,100.3327),
-('ADRS0013','ME0013','357 Valley Street','Unit 13C','Kota Bharu','Kelantan','15000','Malaysia',1,'2025-11-13 11:10:00',6.1250,102.2383),
-('ADRS0014','ME0014','753 Garden Lane','','Pahang','Pahang','25000','Malaysia',1,'2025-11-14 12:15:00',3.8071,103.3262),
-('ADRS0015','ME0015','951 Lakeview Blvd','Unit 15A','Selangor','Selangor','43000','Malaysia',1,'2025-11-15 13:20:00',3.0738,101.5183),
-('ADRS0016','ME0016','900 Blue Street','','Kuala Lumpur','W.P. Kuala Lumpur','50450','Malaysia',1,'2025-11-01 09:10:00',3.1390,101.6869),
-('ADRS0017','ME0017','399 Star Street','','Penang','Penang','10050','Malaysia',1,'2025-11-02 09:15:00',5.4164,100.3327),
-('ADRS0018','ME0018','15 Relax Street','','Kota Bharu','Kelantan','15000','Malaysia',1,'2025-11-03 09:20:00',6.1250,102.2383),
-('ADRS0019','ME0019','88 Rich Street','','Ampang','Selangor','68000','Malaysia',1,'2025-11-04 09:25:00',3.1448,101.7415),
-('ADRS0020','ME0020','78 Sleep Street','','Petaling Jaya','Selangor','46000','Malaysia',1,'2025-11-05 09:30:00',3.1073,101.6067);
-
+('ADRS0001','ME0001','Mary Lee','123 Main Street','Unit 1A','Kuala Lumpur','W.P. Kuala Lumpur','50000','Malaysia',1,'2025-11-01 09:05:00',3.1390,101.6869),
+('ADRS0002','ME0002','John Tan','456 Market Road','','Shah Alam','Selangor','40000','Malaysia',1,'2025-11-02 10:15:00',3.0738,101.5183),
+('ADRS0003','ME0003','Lim Wei','789 Hill Street','Apt 12B','Penang','Penang','10050','Malaysia',1,'2025-11-03 11:20:00',5.4164,100.3327),
+('ADRS0004','ME0004','Nur Aini','321 River Lane','','Kota Kinabalu','Sabah','88000','Malaysia',1,'2025-11-04 12:25:00',5.9804,116.0735),
+('ADRS0005','ME0005','Ahmad Faiz','654 Garden Avenue','Unit 5C','Ipoh','Perak','30000','Malaysia',1,'2025-11-05 13:30:00',4.5975,101.0901),
+('ADRS0006','ME0006','Siti Hawa','987 Sunset Blvd','','Petaling Jaya','Selangor','46000','Malaysia',1,'2025-11-06 14:35:00',3.1073,101.6067),
+('ADRS0007','ME0007','Lee Chong','246 Sunrise Street','Unit 7B','Melaka','Melaka','75000','Malaysia',1,'2025-11-07 15:40:00',2.1896,102.2501),
+('ADRS0008','ME0008','Aiman Rahman','135 Ocean Road','','Ampang','Selangor','68000','Malaysia',1,'2025-11-08 16:45:00',3.1448,101.7415),
+('ADRS0009','ME0009','Tan Mei Ling','864 Mountain Lane','','Penang','Penang','10080','Malaysia',1,'2025-11-09 17:50:00',5.4164,100.3327),
+('ADRS0010','ME0010','Kumar Raj','753 Forest Street','Unit 10C','Kuala Lumpur','W.P. Kuala Lumpur','50450','Malaysia',1,'2025-11-10 18:55:00',3.1390,101.6869),
+('ADRS0011','ME0011','Farah Naz','951 Riverbank Rd','','Putrajaya','W.P. Putrajaya','62000','Malaysia',1,'2025-11-11 09:00:00',2.9264,101.6964),
+('ADRS0012','ME0012','Lim Hui','159 Hilltop Ave','Unit 12B','Penang','Penang','10100','Malaysia',1,'2025-11-12 10:05:00',5.4164,100.3327),
+('ADRS0013','ME0013','Aizat Amin','357 Valley Street','Unit 13C','Kota Bharu','Kelantan','15000','Malaysia',1,'2025-11-13 11:10:00',6.1250,102.2383),
+('ADRS0014','ME0014','Hani Syazwani','753 Garden Lane','','Pahang','Pahang','25000','Malaysia',1,'2025-11-14 12:15:00',3.8071,103.3262),
+('ADRS0015','ME0015','Lim Siew','951 Lakeview Blvd','Unit 15A','Selangor','Selangor','43000','Malaysia',1,'2025-11-15 13:20:00',3.0738,101.5183),
+('ADRS0016','ME0016','Jason Tan','900 Blue Street','','Kuala Lumpur','W.P. Kuala Lumpur','50450','Malaysia',1,'2025-11-01 09:10:00',3.1390,101.6869),
+('ADRS0017','ME0017','Nurul Izzah','399 Star Street','','Penang','Penang','10050','Malaysia',1,'2025-11-02 09:15:00',5.4164,100.3327),
+('ADRS0018','ME0018','Ahmad Zaki','15 Relax Street','','Kota Bharu','Kelantan','15000','Malaysia',1,'2025-11-03 09:20:00',6.1250,102.2383),
+('ADRS0019','ME0019','Siti Sarah','88 Rich Street','','Ampang','Selangor','68000','Malaysia',1,'2025-11-04 09:25:00',3.1448,101.7415),
+('ADRS0020','ME0020','Chen Wei','78 Sleep Street','','Petaling Jaya','Selangor','46000','Malaysia',1,'2025-11-05 09:30:00',3.1073,101.6067);
 -- --------------------------------------------------------
 
 --
@@ -201,34 +201,35 @@ CREATE TABLE `order` (
   `order_date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `total_amount` float NOT NULL,
   `status` varchar(20) NOT NULL,
-  `cancelled_reason` varchar(255) DEFAULT NULL
+  `cancelled_reason` varchar(255) DEFAULT NULL,
+  `delivered_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `order`
 --
 
-INSERT INTO `order` (`order_id`, `user_id`, `address_id`, `order_date`, `total_amount`, `status`, `cancelled_reason`) VALUES
-('OR0001', 'ME0001', 'ADRS0001', '2025-11-01 02:00:00', 630, 'completed', NULL),
-('OR0002', 'ME0002', 'ADRS0002', '2025-11-02 03:00:00', 420, 'completed', NULL),
-('OR0003', 'ME0003', 'ADRS0003', '2025-11-03 04:00:00', 210, 'cancelled', 'Ordered by mistake'),
-('OR0004', 'ME0004', 'ADRS0004', '2025-11-04 05:00:00', 1050, 'completed', NULL),
-('OR0005', 'ME0005', 'ADRS0005', '2025-11-05 06:00:00', 840, 'shipped', NULL),
-('OR0006', 'ME0006', 'ADRS0006', '2025-11-06 07:00:00', 315, 'completed', NULL),
-('OR0007', 'ME0007', 'ADRS0007', '2025-11-07 08:00:00', 525, 'completed', NULL),
-('OR0008', 'ME0008', 'ADRS0008', '2025-11-08 09:00:00', 735, 'completed', NULL),
-('OR0009', 'ME0009', 'ADRS0009', '2025-11-09 10:00:00', 420, 'shipped', NULL),
-('OR0010', 'ME0010', 'ADRS0010', '2025-11-10 11:00:00', 630, 'completed', NULL),
-('OR0011', 'ME0011', 'ADRS0011', '2025-11-11 01:00:00', 210, 'cancelled', 'Changed mind'),
-('OR0012', 'ME0012', 'ADRS0012', '2025-11-12 02:30:00', 840, 'shipped', NULL),
-('OR0013', 'ME0013', 'ADRS0013', '2025-11-13 03:15:00', 1050, 'completed', NULL),
-('OR0014', 'ME0014', 'ADRS0014', '2025-11-14 04:45:00', 315, 'completed', NULL),
-('OR0015', 'ME0015', 'ADRS0015', '2025-11-15 05:20:00', 525, 'shipped', NULL),
-('OR0016', 'ME0001', 'ADRS0001', '2025-11-05 02:00:00', 735, 'completed', NULL),
-('OR0017', 'ME0002', 'ADRS0002', '2025-11-06 03:00:00', 420, 'completed', NULL),
-('OR0018', 'ME0003', 'ADRS0003', '2025-11-07 04:00:00', 210, 'completed', NULL),
-('OR0019', 'ME0004', 'ADRS0004', '2025-11-08 05:00:00', 630, 'shipped', NULL),
-('OR0020', 'ME0005', 'ADRS0005', '2025-11-09 06:00:00', 1050, 'completed', NULL);
+INSERT INTO `order` (`order_id`, `user_id`, `address_id`, `order_date`, `total_amount`, `status`, `cancelled_reason`, `delivered_at`) VALUES
+('OR0001','ME0001','ADRS0001','2025-11-01 02:00:00',630,'completed',NULL,'2025-11-02 10:00:00'),
+('OR0002','ME0002','ADRS0002','2025-11-02 03:00:00',420,'delivered',NULL,'2025-11-03 12:00:00'),
+('OR0003','ME0003','ADRS0003','2025-11-03 04:00:00',210,'cancelled','Ordered by mistake',NULL),
+('OR0004','ME0004','ADRS0004','2025-11-04 05:00:00',1050,'cancelled',NULL,NULL),
+('OR0005','ME0005','ADRS0005','2025-11-05 06:00:00',840,'delivered',NULL,'2025-11-06 11:00:00'),
+('OR0006','ME0006','ADRS0006','2025-11-06 07:00:00',315,'delivered',NULL,'2025-11-07 15:00:00'),
+('OR0007','ME0007','ADRS0007','2025-11-07 08:00:00',525,'shipped',NULL,NULL),
+('OR0008','ME0008','ADRS0008','2025-11-08 09:00:00',735,'completed',NULL,'2025-11-10 11:00:00'),
+('OR0009','ME0009','ADRS0009','2025-11-09 10:00:00',420,'cancelled',NULL,NULL),
+('OR0010','ME0010','ADRS0010','2025-11-10 11:00:00',630,'completed',NULL,'2025-11-11 13:00:00'),
+('OR0011','ME0011','ADRS0011','2025-11-11 01:00:00',210,'delivered',NULL,'2025-11-12 08:00:00'),
+('OR0012','ME0012','ADRS0012','2025-11-12 02:30:00',840,'shipped',NULL,NULL),
+('OR0013','ME0013','ADRS0013','2025-11-13 03:15:00',1050,'completed',NULL,'2025-11-14 10:00:00'),
+('OR0014','ME0014','ADRS0014','2025-11-14 04:45:00',315,'cancelled',NULL,NULL),
+('OR0015','ME0015','ADRS0015','2025-11-15 05:20:00',525,'delivered',NULL,'2025-11-17 12:00:00'),
+('OR0016','ME0001','ADRS0001','2025-11-05 02:00:00',735,'completed',NULL,'2025-11-06 12:00:00'),
+('OR0017','ME0002','ADRS0002','2025-11-06 03:00:00',420,'shipped',NULL,NULL),
+('OR0018','ME0003','ADRS0003','2025-11-07 04:00:00',210,'completed',NULL,'2025-11-08 07:00:00'),
+('OR0019','ME0004','ADRS0004','2025-11-08 05:00:00',630,'delivered',NULL,'2025-11-20 10:00:00'),
+('OR0020','ME0005','ADRS0005','2025-11-09 06:00:00',1050,'cancelled',NULL,NULL);
 
 -- --------------------------------------------------------
 
@@ -241,56 +242,73 @@ CREATE TABLE `order_history` (
   `order_id` varchar(10) NOT NULL,
   `status` varchar(100) NOT NULL,
   `changed_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `changed_by` varchar(10) NOT NULL
+  `changed_by` varchar(10) NOT NULL,
+  `message` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `order_history`
 --
 
-INSERT INTO `order_history` (`history_id`, `order_id`, `status`, `changed_at`, `changed_by`) VALUES
-('HIS0001', 'OR0001', 'processing', '2025-11-01 02:00:00', 'ME0001'),
-('HIS0002', 'OR0001', 'shipped', '2025-11-01 06:00:00', 'AD0001'),
-('HIS0003', 'OR0001', 'completed', '2025-11-02 01:00:00', 'AD0001'),
-('HIS0004', 'OR0002', 'processing', '2025-11-02 03:00:00', 'ME0002'),
-('HIS0005', 'OR0002', 'completed', '2025-11-03 02:00:00', 'AD0002'),
-('HIS0006', 'OR0003', 'processing', '2025-11-03 04:00:00', 'ME0003'),
-('HIS0007', 'OR0003', 'cancelled', '2025-11-03 04:30:00', 'ME0003'),
-('HIS0008', 'OR0004', 'processing', '2025-11-04 05:00:00', 'ME0004'),
-('HIS0009', 'OR0004', 'shipped', '2025-11-04 07:00:00', 'AD0003'),
-('HIS0010', 'OR0004', 'completed', '2025-11-05 02:00:00', 'AD0003'),
-('HIS0011', 'OR0005', 'processing', '2025-11-05 06:00:00', 'ME0005'),
-('HIS0012', 'OR0005', 'shipped', '2025-11-05 10:00:00', 'AD0002'),
-('HIS0013', 'OR0006', 'processing', '2025-11-06 07:00:00', 'ME0006'),
-('HIS0014', 'OR0006', 'completed', '2025-11-07 02:00:00', 'AD0004'),
-('HIS0015', 'OR0007', 'processing', '2025-11-07 08:00:00', 'ME0007'),
-('HIS0016', 'OR0007', 'completed', '2025-11-08 01:00:00', 'AD0001'),
-('HIS0017', 'OR0008', 'processing', '2025-11-08 09:00:00', 'ME0008'),
-('HIS0018', 'OR0008', 'completed', '2025-11-10 03:00:00', 'AD0005'),
-('HIS0019', 'OR0009', 'processing', '2025-11-09 10:00:00', 'ME0009'),
-('HIS0020', 'OR0009', 'shipped', '2025-11-10 00:00:00', 'AD0003'),
-('HIS0021', 'OR0010', 'processing', '2025-11-10 11:00:00', 'ME0010'),
-('HIS0022', 'OR0010', 'completed', '2025-11-11 01:00:00', 'AD0004'),
-('HIS0023', 'OR0011', 'processing', '2025-11-11 01:00:00', 'ME0011'),
-('HIS0024', 'OR0011', 'cancelled', '2025-11-11 01:30:00', 'ME0011'),
-('HIS0025', 'OR0012', 'processing', '2025-11-12 02:30:00', 'ME0012'),
-('HIS0026', 'OR0012', 'shipped', '2025-11-12 07:00:00', 'AD0002'),
-('HIS0027', 'OR0013', 'processing', '2025-11-13 03:15:00', 'ME0013'),
-('HIS0028', 'OR0013', 'completed', '2025-11-14 01:00:00', 'AD0005'),
-('HIS0029', 'OR0014', 'processing', '2025-11-14 04:45:00', 'ME0014'),
-('HIS0030', 'OR0014', 'completed', '2025-11-15 01:00:00', 'AD0001'),
-('HIS0031', 'OR0015', 'processing', '2025-11-15 05:20:00', 'ME0015'),
-('HIS0032', 'OR0015', 'shipped', '2025-11-16 02:00:00', 'AD0003'),
-('HIS0033', 'OR0016', 'processing', '2025-11-05 02:00:00', 'ME0001'),
-('HIS0034', 'OR0016', 'completed', '2025-11-06 02:00:00', 'AD0002'),
-('HIS0035', 'OR0017', 'processing', '2025-11-06 03:00:00', 'ME0002'),
-('HIS0036', 'OR0017', 'completed', '2025-11-07 01:00:00', 'AD0004'),
-('HIS0037', 'OR0018', 'processing', '2025-11-07 04:00:00', 'ME0003'),
-('HIS0038', 'OR0018', 'completed', '2025-11-08 01:00:00', 'AD0001'),
-('HIS0039', 'OR0019', 'processing', '2025-11-08 05:00:00', 'ME0004'),
-('HIS0040', 'OR0019', 'shipped', '2025-11-09 02:00:00', 'AD0005'),
-('HIS0041', 'OR0020', 'processing', '2025-11-09 06:00:00', 'ME0005'),
-('HIS0042', 'OR0020', 'completed', '2025-11-10 02:00:00', 'AD0003');
+INSERT INTO `order_history` (`history_id`,`order_id`,`status`,`changed_at`,`changed_by`,`message`) VALUES
+('HIS0001','OR0001','pending','2025-11-01 02:00:00','ME0001','Your order has been placed.'),
+('HIS0002','OR0001','shipped','2025-11-01 06:00:00','AD0001','Your parcel has been picked up.'),
+('HIS0003','OR0001','delivered','2025-11-02 10:00:00','AD0001','Your order has been delivered.'),
+('HIS0004','OR0001','completed','2025-11-05 02:00:00','AD0001','Order completed. Thank you!'),
+('HIS0005','OR0002','pending','2025-11-02 03:00:00','ME0002','Your order has been placed.'),
+('HIS0006','OR0002','shipped','2025-11-02 08:00:00','AD0002','Your parcel has been picked up.'),
+('HIS0007','OR0002','delivered','2025-11-03 12:00:00','AD0002','Your order has been delivered.'),
+('HIS0008','OR0003','pending','2025-11-03 04:00:00','ME0003','Your order has been placed.'),
+('HIS0009','OR0003','cancelled','2025-11-03 10:00:00','ME0003','Your order has been cancelled.'),
+('HIS0010','OR0004','pending','2025-11-04 05:00:00','ME0004','Your order has been placed.'),
+('HIS0011','OR0004','cancelled','2025-11-04 06:00:00','ME0004','Your order has been cancelled.'),
+('HIS0012','OR0005','pending','2025-11-05 06:00:00','ME0005','Your order has been placed.'),
+('HIS0013','OR0005','shipped','2025-11-05 10:00:00','AD0002','Your parcel has been picked up.'),
+('HIS0014','OR0005','delivered','2025-11-06 11:00:00','AD0002','Your order has been delivered.'),
+('HIS0015','OR0006','pending','2025-11-06 07:00:00','ME0006','Your order has been placed.'),
+('HIS0016','OR0006','shipped','2025-11-06 12:00:00','AD0004','Your parcel has been picked up.'),
+('HIS0017','OR0006','delivered','2025-11-07 15:00:00','AD0004','Your order has been delivered.'),
+('HIS0018','OR0007','pending','2025-11-07 08:00:00','ME0007','Your order has been placed.'),
+('HIS0019','OR0007','shipped','2025-11-07 14:00:00','AD0001','Your parcel has been picked up.'),
+('HIS0020','OR0008','pending','2025-11-08 09:00:00','ME0008','Your order has been placed.'),
+('HIS0021','OR0008','shipped','2025-11-08 13:00:00','AD0005','Your parcel has been picked up.'),
+('HIS0022','OR0008','delivered','2025-11-10 11:00:00','AD0005','Your order has been delivered.'),
+('HIS0023','OR0008','completed','2025-11-10 11:30:00','AD0005','Order completed. Thank you!'),
+('HIS0024','OR0009','pending','2025-11-09 10:00:00','ME0009','Your order has been placed.'),
+('HIS0025','OR0009','cancelled','2025-11-09 12:00:00','ME0009','Your order has been cancelled.'),
+('HIS0026','OR0010','pending','2025-11-10 11:00:00','ME0010','Your order has been placed.'),
+('HIS0027','OR0010','shipped','2025-11-10 16:00:00','AD0004','Your parcel has been picked up.'),
+('HIS0028','OR0010','delivered','2025-11-11 09:00:00','AD0004','Your order has been delivered.'),
+('HIS0029','OR0010','completed','2025-11-12 07:00:00','AD0004','Order completed. Thank you!'),
+('HIS0030','OR0011','pending','2025-11-11 01:00:00','ME0011','Your order has been placed.'),
+('HIS0031','OR0011','shipped','2025-11-11 04:00:00','AD0003','Your parcel has been picked up.'),
+('HIS0032','OR0011','delivered','2025-11-12 08:00:00','AD0003','Your order has been delivered.'),
+('HIS0033','OR0012','pending','2025-11-12 02:30:00','ME0012','Your order has been placed.'),
+('HIS0034','OR0012','shipped','2025-11-12 07:00:00','AD0002','Your parcel has been picked up.'),
+('HIS0035','OR0013','pending','2025-11-13 03:15:00','ME0013','Your order has been placed.'),
+('HIS0036','OR0013','shipped','2025-11-13 10:00:00','AD0005','Your parcel has been picked up.'),
+('HIS0037','OR0013','delivered','2025-11-14 10:00:00','AD0005','Your order has been delivered.'),
+('HIS0038','OR0013','completed','2025-11-15 09:00:00','AD0005','Order completed. Thank you!'),
+('HIS0039','OR0014','pending','2025-11-14 04:45:00','ME0014','Your order has been placed.'),
+('HIS0040','OR0014','cancelled','2025-11-14 06:00:00','ME0014','Your order has been cancelled.'),
+('HIS0041','OR0015','pending','2025-11-15 05:20:00','ME0015','Your order has been placed.'),
+('HIS0042','OR0015','shipped','2025-11-16 02:00:00','AD0003','Your parcel has been picked up.'),
+('HIS0043','OR0015','delivered','2025-11-17 12:00:00','AD0003','Your order has been delivered.'),
+('HIS0044','OR0016','pending','2025-11-16 03:00:00','ME0016','Your order has been placed.'),
+('HIS0045','OR0016','shipped','2025-11-16 09:00:00','AD0002','Your parcel has been picked up.'),
+('HIS0046','OR0016','delivered','2025-11-17 10:00:00','AD0002','Your order has been delivered.'),
+('HIS0047','OR0016','completed','2025-11-18 08:00:00','AD0002','Order completed. Thank you!'),
+('HIS0048','OR0017','pending','2025-11-17 04:00:00','ME0017','Your order has been placed.'),
+('HIS0049','OR0017','shipped','2025-11-17 12:00:00','AD0001','Your parcel has been picked up.'),
+('HIS0050','OR0018','pending','2025-11-18 06:00:00','ME0018','Your order has been placed.'),
+('HIS0051','OR0018','shipped','2025-11-18 11:00:00','AD0004','Your parcel has been picked up.'),
+('HIS0052','OR0018','delivered','2025-11-19 09:00:00','AD0004','Your order has been delivered.'),
+('HIS0053','OR0018','completed','2025-11-20 08:00:00','AD0004','Order completed. Thank you!'),
+('HIS0054','OR0019','pending','2025-11-19 05:00:00','ME0019','Your order has been placed.'),
+('HIS0055','OR0019','shipped','2025-11-19 12:00:00','AD0005','Your parcel has been picked up.'),
+('HIS0056','OR0019','delivered','2025-11-20 10:00:00','AD0005','Your order has been delivered.'),
+('HIS0057','OR0020','pending','2025-11-20 06:00:00','ME0020','Your order has been placed.'),
+('HIS0058','OR0020','cancelled','2025-11-20 08:00:00','ME0020','Your order has been cancelled.');
 
 -- --------------------------------------------------------
 
@@ -308,36 +326,36 @@ CREATE TABLE `order_item` (
   `user_rating` int(11) DEFAULT NULL,
   `user_comment` text DEFAULT NULL,
   `rated_at` timestamp NULL DEFAULT NULL,
-  `rating_photo` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`rating_photo`)),
-  `rating_video` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`rating_video`))
+  `rating_photo` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(rating_photo)),
+  `rating_video` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(rating_video))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `order_item`
 --
 
-INSERT INTO `order_item` (`order_item_id`, `order_id`, `product_id`, `product_qty`, `price`, `subtotal`, `user_rating`, `user_comment`, `rated_at`, `rating_photo`, `rating_video`) VALUES
-('OI0001', 'OR0001', 'PR0001', 2, 210, 420, 5, 'Very comfortable and lightweight!', '2025-11-03 02:00:00', '[\"pr0001_review.jpg\"]', NULL),
-('OI0002', 'OR0001', 'PR0002', 2, 105, 210, 4, 'Stylish frame, worth the price.', '2025-11-03 02:05:00', '[\"pr0002_review.jpg\"]', NULL),
-('OI0003', 'OR0002', 'PR0003', 1, 420, 420, 5, 'High-quality and looks premium.', '2025-11-04 03:30:00', '[\"pr0003_review.jpg\"]', NULL),
-('OI0004', 'OR0003', 'PR0001', 1, 210, 210, NULL, NULL, NULL, NULL, NULL),
-('OI0005', 'OR0004', 'PR0004', 3, 350, 1050, 4, 'Great fit, slightly tight at first.', '2025-11-06 04:00:00', '[\"pr0004_review.jpg\"]', NULL),
-('OI0006', 'OR0005', 'PR0002', 4, 105, 420, 4, 'Good product, delivery was fast.', '2025-11-07 07:00:00', '[\"pr0002_review2.jpg\"]', NULL),
-('OI0007', 'OR0006', 'PR0003', 1, 420, 420, 5, 'Excellent clarity and quality.', '2025-11-07 10:20:00', '[\"pr0003_review2.jpg\"]', NULL),
-('OI0008', 'OR0007', 'PR0001', 2, 210, 420, 5, 'My favourite daily glasses!', '2025-11-08 02:30:00', '[\"pr0001_review2.jpg\"]', NULL),
-('OI0009', 'OR0008', 'PR0004', 2, 350, 700, 4, 'Good design, fits well.', '2025-11-11 02:00:00', '[\"pr0004_review2.jpg\"]', NULL),
-('OI0010', 'OR0009', 'PR0002', 4, 105, 420, 4, 'Nice and sturdy.', '2025-11-10 10:30:00', NULL, NULL),
-('OI0011', 'OR0010', 'PR0003', 1, 420, 420, 5, 'Very clear lens, happy with purchase.', '2025-11-12 01:00:00', '[\"pr0003_review3.jpg\"]', NULL),
-('OI00118', 'OR0017', 'PR0002', 4, 105, 420, 5, 'Recommended! Very durable.', '2025-11-07 04:00:00', '[\"pr0002_review4.jpg\"]', NULL),
-('OI0012', 'OR0011', 'PR0001', 1, 210, 210, NULL, NULL, NULL, NULL, NULL),
-('OI0013', 'OR0012', 'PR0004', 2, 350, 700, 4, 'Design is nice, quality is good.', '2025-11-13 08:00:00', NULL, NULL),
-('OI0014', 'OR0013', 'PR0002', 5, 105, 525, 5, 'Bought multiple as gifts, all good!', '2025-11-14 03:00:00', '[\"pr0002_review3.jpg\"]', NULL),
-('OI0015', 'OR0014', 'PR0003', 1, 420, 420, 4, 'Comfortable to wear whole day.', '2025-11-15 03:30:00', NULL, NULL),
-('OI0016', 'OR0015', 'PR0001', 2, 210, 420, 5, 'Great for work and study.', '2025-11-17 01:15:00', '[\"pr0001_review3.jpg\"]', NULL),
-('OI0017', 'OR0016', 'PR0004', 2, 350, 700, 4, 'Good frame quality.', '2025-11-06 04:30:00', NULL, NULL),
-('OI0019', 'OR0019', 'PR0003', 1, 420, 420, 4, 'Happy with the purchase.', '2025-11-10 04:30:00', NULL, NULL),
-('OI0020', 'OR0020', 'PR0001', 3, 210, 630, 5, 'Exactly as advertised!', '2025-11-09 10:30:00', '[\"pr0001_review4.jpg\"]', NULL);
-
+INSERT INTO `order_item` (`order_item_id`,`order_id`,`product_id`,`product_qty`,`price`,`subtotal`,`user_rating`,`user_comment`,`rated_at`,`rating_photo`,`rating_video`) VALUES
+('OI0001','OR0001','PR0001',2,210,420,5,'Very comfortable and lightweight!','2025-11-03 02:00:00','["pr0001_review.jpg"]',NULL),
+('OI0002','OR0001','PR0002',2,105,210,4,'Stylish frame, worth the price.','2025-11-03 02:05:00','["pr0002_review.jpg"]',NULL),
+('OI0003','OR0002','PR0003',1,420,420,5,'High-quality and looks premium.','2025-11-04 03:30:00','["pr0003_review.jpg"]',NULL),
+('OI0004','OR0003','PR0001',1,210,210,NULL,NULL,NULL,NULL,NULL),
+('OI0005','OR0004','PR0004',3,350,1050,4,'Great fit, slightly tight at first.','2025-11-06 04:00:00','["pr0004_review.jpg"]',NULL),
+('OI0006','OR0005','PR0002',4,105,420,4,'Good product, delivery was fast.','2025-11-07 07:00:00','["pr0002_review2.jpg"]',NULL),
+('OI0007','OR0006','PR0003',1,420,420,5,'Excellent clarity and quality.','2025-11-07 10:20:00','["pr0003_review2.jpg"]',NULL),
+('OI0008','OR0007','PR0001',2,210,420,5,'My favourite daily glasses!','2025-11-08 02:30:00','["pr0001_review2.jpg"]',NULL),
+('OI0009','OR0008','PR0004',2,350,700,4,'Good design, fits well.','2025-11-11 02:00:00','["pr0004_review2.jpg"]',NULL),
+('OI0010','OR0009','PR0002',4,105,420,4,'Nice and sturdy.','2025-11-10 10:30:00',NULL,NULL),
+('OI0011','OR0010','PR0003',1,420,420,5,'Very clear lens, happy with purchase.','2025-11-12 01:00:00','["pr0003_review3.jpg"]',NULL),
+('OI0012','OR0011','PR0001',1,210,210,NULL,NULL,NULL,NULL,NULL),
+('OI0013','OR0012','PR0004',2,350,700,4,'Design is nice, quality is good.','2025-11-13 08:00:00',NULL,NULL),
+('OI0014','OR0013','PR0002',5,105,525,5,'Bought multiple as gifts, all good!','2025-11-14 03:00:00','["pr0002_review3.jpg"]',NULL),
+('OI0015','OR0014','PR0003',1,420,420,4,'Comfortable to wear whole day.','2025-11-15 03:30:00',NULL,NULL),
+('OI0016','OR0015','PR0001',2,210,420,5,'Great for work and study.','2025-11-17 01:15:00','["pr0001_review3.jpg"]',NULL),
+('OI0017','OR0016','PR0004',2,350,700,4,'Good frame quality.','2025-11-06 04:30:00',NULL,NULL),
+('OI0018','OR0017','PR0002',4,105,420,5,'Recommended! Very durable.','2025-11-07 04:00:00','["pr0002_review4.jpg"]',NULL),
+('OI0019','OR0018','PR0003',1,420,420,4,'Happy with the purchase.','2025-11-08 07:30:00',NULL,NULL),
+('OI0020','OR0019','PR0003',1,420,420,4,'Happy with the purchase.','2025-11-10 04:30:00',NULL,NULL),
+('OI0021','OR0020','PR0001',3,210,630,5,'Exactly as advertised!','2025-11-09 10:30:00','["pr0001_review4.jpg"]',NULL);
 -- --------------------------------------------------------
 
 --

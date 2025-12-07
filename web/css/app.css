@@ -446,6 +446,22 @@ footer {
     transform: translateY(-2px);
 }
 
+.order-card {
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.4s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+}
+
+.order-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
 /* Premium Features Section */
 .premium-features {
     display: grid;
@@ -672,6 +688,27 @@ footer {
     background: #f8d7da;
     color: #721c24;
     border: 1px solid #f5c6cb;
+}
+
+/* Tab */
+.tab-button { 
+    background:#ecf0f1; 
+    border:none; 
+    padding:10px 20px; 
+    border-radius:4px; 
+    cursor:pointer; 
+    font-weight:600; 
+}
+
+.tab-button.active { 
+    background:#2c3e50; 
+    color:white; 
+}
+
+.tab-content { 
+    display:flex; 
+    flex-direction:column; 
+    gap:20px; 
 }
 
 /* Order Confirmation */

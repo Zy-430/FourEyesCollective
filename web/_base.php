@@ -260,3 +260,16 @@ function auth(...$roles)
 
     redirect('/page/login.php');
 }
+
+function generateHistoryID($db) {
+    // Get the last history_id
+    $last = $db->query("SELECT history_id FROM order_history ORDER BY history_id DESC LIMIT 1")->fetchColumn();
+    
+    if (!$last) {
+        return "HIS0001";
+    }
+
+    // Extract numeric part and increment
+    $num = intval(substr($last, 3)) + 1; // skip 'HIS'
+    return "HIS" . str_pad($num, 4, "0", STR_PAD_LEFT);
+}
