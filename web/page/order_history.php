@@ -34,7 +34,7 @@ include '../_head.php';
 
 <div style="max-width: 1000px; margin: 50px auto;">
     <div class="order-tabs" style="display:flex; gap:15px; margin-bottom:20px;">
-        <button class="tab-button" data-tab="to-ship" style="display:flex; flex-direction:column; align-items:center;">
+        <button class="tab-button active" data-tab="to-ship" style="display:flex; flex-direction:column; align-items:center;">
             <img src="/images/icons/to-ship.png" alt="To Ship" style="width:30px; height:30px; margin-bottom:5px;">
             <span>To Ship</span>
         </button>
@@ -42,7 +42,7 @@ include '../_head.php';
             <img src="/images/icons/to-receive.png" alt="To Receive" style="width:30px; height:30px; margin-bottom:5px;">
             <span>To Receive</span>
         </button>
-        <button class="tab-button active" data-tab="completed" style="display:flex; flex-direction:column; align-items:center;">
+        <button class="tab-button" data-tab="completed" style="display:flex; flex-direction:column; align-items:center;">
             <img src="/images/icons/completed.png" alt="Completed" style="width:30px; height:30px; margin-bottom:5px;">
             <span>Completed</span>
         </button>

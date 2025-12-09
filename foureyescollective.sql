@@ -159,6 +159,7 @@ CREATE TABLE `email_verification` (
   `token` varchar(255) NOT NULL,
   `expiry` datetime NOT NULL,
   `is_used` tinyint(1) NOT NULL DEFAULT 0,
+  `type` varchar(20) NOT NULL DEFAULT 'verification',
   `created_at` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -166,27 +167,27 @@ CREATE TABLE `email_verification` (
 -- Dumping data for table `email_verification`
 --
 
-INSERT INTO `email_verification` (`verification_id`, `user_id`, `token`, `expiry`, `is_used`, `created_at`) VALUES
-(1, 'ME0001', 'a3f9c1d4e7b2178a90bcfe1234abcd56ef90781234cd56ef78ab9012cd45ef67', '2025-11-02 09:00:00', 1, '2025-11-01 09:00:00'),
-(2, 'ME0002', 'b7e4d9c3a1f2567890ab34cd56ef7812cd90ef34567812abcd34ef5678cd12ef', '2025-11-03 10:10:00', 1, '2025-11-02 10:10:00'),
-(3, 'ME0003', 'c1d2e3f4a5b67890cd12ef34ab56cd7890ef12cd34ab56ef7890cd12ef34ab56', '2025-11-04 11:15:00', 0, '2025-11-03 11:15:00'),
-(4, 'ME0004', 'd4c3b2e1f0a98765cd12ef7890ab34ef56cd78ab12ef34cd5678ab12ef90cd34', '2025-11-05 12:20:00', 1, '2025-11-04 12:20:00'),
-(5, 'ME0005', 'e5f6a7b8c9d01234ef90ab12cd34ef78ab12cd56ef7890ab34cd12ef5678cd90', '2025-11-06 13:25:00', 1, '2025-11-05 13:25:00'),
-(6, 'ME0006', 'f9e8d7c6b5a40123cd90ef12ab34cd56ef78ab34cd12ef56ab78cd90ef12ab34', '2025-11-07 14:30:00', 0, '2025-11-06 14:30:00'),
-(7, 'ME0007', 'a1b2c3d4e5f67890cd12ef345678ab12ef90cd34ab56ef7890cd12ef34ab5678', '2025-11-08 15:35:00', 1, '2025-11-07 15:35:00'),
-(8, 'ME0008', 'b2c3d4e5f6a78901ef34cd12ab56ef78cd12ef34ab56cd78ef9012cd34ab5678', '2025-11-09 16:40:00', 1, '2025-11-08 16:40:00'),
-(9, 'ME0009', 'c3d4e5f6a7b89012cd34ef56ab78cd90ef12ab34cd56ef78ab90cd12ef3456ab', '2025-11-10 17:45:00', 0, '2025-11-09 17:45:00'),
-(10, 'ME0010', 'd4e5f6a7b8c90123ef56ab12cd90ef34ab56cd78ef12ab90cd34ef78ab12cd34', '2025-11-11 18:50:00', 1, '2025-11-10 18:50:00'),
-(11, 'ME0011', 'e5f6a7b8c9d01234ab78cd56ef12cd34ef90ab12cd56ef78cd12ef34ab7890cd', '2025-11-12 09:55:00', 1, '2025-11-11 09:55:00'),
-(12, 'ME0012', 'f6a7b8c9d0e12345cd12ef90ab34cd78ef12ab34cd90ef78ab34cd12ef56ab78', '2025-11-13 10:00:00', 1, '2025-11-12 10:00:00'),
-(13, 'ME0013', 'a7b8c9d0e1f23456ef12cd34ab56ef90cd34ab56ef9012cd78ab34ef56cd12ef', '2025-11-14 11:05:00', 0, '2025-11-13 11:05:00'),
-(14, 'ME0014', 'b8c9d0e1f2a34567ab12cd34ef90ab56cd12ef34ab78cd56ef3412ab56cd78ef', '2025-11-15 12:10:00', 1, '2025-11-14 12:10:00'),
-(15, 'ME0015', 'c9d0e1f2a3b45678cd34ab12ef56cd90ab12ef34cd78ab56ef12cd34ab78ef90', '2025-11-16 13:15:00', 1, '2025-11-15 13:15:00'),
-(16, 'AD0001', 'a1c2e3f4b5d67890ef12cd34ab56ef78cd12ab90ef34cd56ab78ef12cd3456ef', '2025-11-02 09:00:00', 1, '2025-11-01 09:00:00'),
-(17, 'AD0002', 'b1d2f3e4c5a78901cd34ef12ab56cd78ef90ab12cd34ef56ab12ef34cd5678ab', '2025-11-03 09:10:00', 1, '2025-11-02 09:10:00'),
-(18, 'AD0003', 'c1e2f3a4d5b89012ef56cd34ab78ef12cd34ab56ef12cd90ab56ef34cd12ab78', '2025-11-04 09:20:00', 1, '2025-11-03 09:20:00'),
-(19, 'AD0004', 'd1f2a3e4c5b90123ab78cd56ef34cd12ab56ef90cd12ef78ab34cd12ef78cd34', '2025-11-05 09:30:00', 1, '2025-11-04 09:30:00'),
-(20, 'AD0005', 'e1a2b3c4d5f01234cd12ef78ab34cd56ef12ab34cd90ef56ab78cd12ef34ab90', '2025-11-06 09:40:00', 1, '2025-11-05 09:40:00');
+INSERT INTO `email_verification` (`verification_id`, `user_id`, `token`, `expiry`, `is_used`, `type`, `created_at`) VALUES
+(1, 'ME0001', 'a3f9c1d4e7b2178a90bcfe1234abcd56ef90781234cd56ef78ab9012cd45ef67', '2025-11-02 09:00:00', 1, 'verification', '2025-11-01 09:00:00'),
+(2, 'ME0002', 'b7e4d9c3a1f2567890ab34cd56ef7812cd90ef34567812abcd34ef5678cd12ef', '2025-11-03 10:10:00', 1, 'verification', '2025-11-02 10:10:00'),
+(3, 'ME0003', 'c1d2e3f4a5b67890cd12ef34ab56cd7890ef12cd34ab56ef7890cd12ef34ab56', '2025-11-04 11:15:00', 0, 'verification', '2025-11-03 11:15:00'),
+(4, 'ME0004', 'd4c3b2e1f0a98765cd12ef7890ab34ef56cd78ab12ef34cd5678ab12ef90cd34', '2025-11-05 12:20:00', 1, 'verification', '2025-11-04 12:20:00'),
+(5, 'ME0005', 'e5f6a7b8c9d01234ef90ab12cd34ef78ab12cd56ef7890ab34cd12ef5678cd90', '2025-11-06 13:25:00', 1, 'verification', '2025-11-05 13:25:00'),
+(6, 'ME0006', 'f9e8d7c6b5a40123cd90ef12ab34cd56ef78ab34cd12ef56ab78cd90ef12ab34', '2025-11-07 14:30:00', 0, 'verification', '2025-11-06 14:30:00'),
+(7, 'ME0007', 'a1b2c3d4e5f67890cd12ef345678ab12ef90cd34ab56ef7890cd12ef34ab5678', '2025-11-08 15:35:00', 1, 'verification', '2025-11-07 15:35:00'),
+(8, 'ME0008', 'b2c3d4e5f6a78901ef34cd12ab56ef78cd12ef34ab56cd78ef9012cd34ab5678', '2025-11-09 16:40:00', 1, 'verification', '2025-11-08 16:40:00'),
+(9, 'ME0009', 'c3d4e5f6a7b89012cd34ef56ab78cd90ef12ab34cd56ef78ab90cd12ef3456ab', '2025-11-10 17:45:00', 0, 'verification', '2025-11-09 17:45:00'),
+(10, 'ME0010', 'd4e5f6a7b8c90123ef56ab12cd90ef34ab56cd78ef12ab90cd34ef78ab12cd34', '2025-11-11 18:50:00', 1, 'verification', '2025-11-10 18:50:00'),
+(11, 'ME0011', 'e5f6a7b8c9d01234ab78cd56ef12cd34ef90ab12cd56ef78cd12ef34ab7890cd', '2025-11-12 09:55:00', 1, 'verification', '2025-11-11 09:55:00'),
+(12, 'ME0012', 'f6a7b8c9d0e12345cd12ef90ab34cd78ef12ab34cd90ef78ab34cd12ef56ab78', '2025-11-13 10:00:00', 1, 'verification', '2025-11-12 10:00:00'),
+(13, 'ME0013', 'a7b8c9d0e1f23456ef12cd34ab56ef90cd34ab56ef9012cd78ab34ef56cd12ef', '2025-11-14 11:05:00', 0, 'verification', '2025-11-13 11:05:00'),
+(14, 'ME0014', 'b8c9d0e1f2a34567ab12cd34ef90ab56cd12ef34ab78cd56ef3412ab56cd78ef', '2025-11-15 12:10:00', 1, 'verification', '2025-11-14 12:10:00'),
+(15, 'ME0015', 'c9d0e1f2a3b45678cd34ab12ef56cd90ab12ef34cd78ab56ef12cd34ab78ef90', '2025-11-16 13:15:00', 1, 'verification', '2025-11-15 13:15:00'),
+(16, 'AD0001', 'a1c2e3f4b5d67890ef12cd34ab56ef78cd12ab90ef34cd56ab78ef12cd3456ef', '2025-11-02 09:00:00', 1, 'verification', '2025-11-01 09:00:00'),
+(17, 'AD0002', 'b1d2f3e4c5a78901cd34ef12ab56cd78ef90ab12cd34ef56ab12ef34cd5678ab', '2025-11-03 09:10:00', 1, 'verification', '2025-11-02 09:10:00'),
+(18, 'AD0003', 'c1e2f3a4d5b89012ef56cd34ab78ef12cd34ab56ef12cd90ab56ef34cd12ab78', '2025-11-04 09:20:00', 1, 'verification', '2025-11-03 09:20:00'),
+(19, 'AD0004', 'd1f2a3e4c5b90123ab78cd56ef34cd12ab56ef90cd12ef78ab34cd12ef78cd34', '2025-11-05 09:30:00', 1, 'verification', '2025-11-04 09:30:00'),
+(20, 'AD0005', 'e1a2b3c4d5f01234cd12ef78ab34cd56ef12ab34cd90ef56ab78cd12ef34ab90', '2025-11-06 09:40:00', 1, 'verification', '2025-11-05 09:40:00');
 
 -- --------------------------------------------------------
 

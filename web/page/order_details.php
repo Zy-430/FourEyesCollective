@@ -91,12 +91,23 @@ include '../_head.php';
 <?php if ($order['status'] == 'completed'): ?>
 <h3>Documents</h3>
 
-<a href="/invoice/order_<?= encode($order['order_id']) ?>.pdf" class="cta-button"
+<!-- PDF download -->
+<a href="/page/order_invoice.php?order_id=<?= encode($order['order_id']) ?>&type=pdf" class="cta-button"
    style="background:#D9BAFC; padding:10px 15px; color:white; border-radius:4px; text-decoration:none;">
-    Download E-Invoice
+    Download PDF
 </a>
 
-<a href="/page/receipt.php?order_id=<?= encode($order['order_id']) ?>" class="cta-button"
+<!-- Send Email -->
+<form method="POST" action="/page/order_invoice.php" style="display:inline;">
+    <input type="hidden" name="order_id" value="<?= encode($order['order_id']) ?>">
+    <input type="hidden" name="type" value="email">
+    <button type="submit" class="cta-button" 
+            style="background:#D9BAFC; padding:13px 15px; color:white; border-radius:4px; border:none; cursor:pointer;">
+        Send to Email
+    </button>
+</form>
+
+<a href="/page/order_receipt.php?order_id=<?= encode($order['order_id']) ?>" class="cta-button"
    style="background:#D9BAFC; padding:10px 15px; color:white; border-radius:4px; text-decoration:none;">
     View Receipt
 </a>
