@@ -1,11 +1,12 @@
 <?php
+//profile_address_add.php - redict profile_address_list
 require '../_base.php';
 require '../lib/db.php';
 
 auth();
 
 $user_id = $_user->user_id;
-$return_url = get('return','checkout.php');
+$return_url = get('return','profile_address_list');
 
 $stmt = $_db->prepare("SELECT * FROM address WHERE user_id = ?");
 $stmt->execute([$user_id]);
