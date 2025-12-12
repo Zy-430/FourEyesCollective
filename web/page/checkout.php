@@ -1,457 +1,462 @@
 <?php
 require '../_base.php';
 require '../lib/db.php';
+require_once '../stripe-php-19.0.0/init.php';
 
-// Check if user is logged in
-if (!isset($_SESSION['user_id'])) {
-    redirect('/page/login.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));
-}
+\Stripe\Stripe::setApiKey('sk_test_51SZZzU2LpkFiPUtITtnxkZtzongU6II64ZL8YSynXO951EcqTfIfRbWAl586Hh8LOXYexaqDtwwaO6rxwdOQvygm006Vp82pdb');
 
-$user_id = $_SESSION['user_id'];
+auth();
 
-// Get checkout items from session
-$checkout_items = $_SESSION['checkout_items'] ?? [];
-if (empty($checkout_items)) {
-    temp('error', 'No items selected for checkout');
-    redirect('/page/cart.php');
-}
+$user_id = $_user->user_id;
 
-// Get cart items for checkout
-$placeholders = str_repeat('?,', count($checkout_items) - 1) . '?';
+// Get items marked as checkout AND don't have order_item_id (not yet purchased)
 $stm = $_db->prepare("
     SELECT ci.*, p.*, c.category_name 
     FROM cart_item ci
     JOIN product p ON ci.product_id = p.product_id
-    JOIN category c ON p.category_id = c.category_id
-    WHERE ci.cart_item_id IN ($placeholders) AND ci.user_id = ? AND ci.item_status = 'in_cart'
+    LEFT JOIN category c ON p.category_id = c.category_id
+    WHERE ci.user_id = ? AND ci.item_status = 'checkout' AND ci.order_item_id IS NULL
+    ORDER BY ci.created_at DESC
 ");
-$params = array_merge($checkout_items, [$user_id]);
-$stm->execute($params);
-$checkout_items_data = $stm->fetchAll();
+$stm->execute([$user_id]);
+$checkout_items = $stm->fetchAll();
 
-if (empty($checkout_items_data)) {
-    temp('error', 'No valid items for checkout');
-    redirect('/page/cart.php');
+if (empty($checkout_items)) {
+    temp('error', 'No items selected for checkout. Please select items from your cart first.');
+    redirect('cart.php');
 }
 
 // Get user addresses
-$stm = $_db->prepare("SELECT * FROM address WHERE user_id = ? ORDER BY default_flag DESC");
+$stm = $_db->prepare("SELECT * FROM address WHERE user_id = ? ORDER BY default_flag DESC, created_at ASC");
 $stm->execute([$user_id]);
 $addresses = $stm->fetchAll();
 
-// Get user payment methods
-$stm = $_db->prepare("SELECT * FROM payment_method WHERE user_id = ? ORDER BY is_default DESC");
-$stm->execute([$user_id]);
-$payment_methods = $stm->fetchAll();
-
-// Calculate totals
-$subtotal = 0;
-foreach ($checkout_items_data as $item) {
-    $subtotal += $item->product_price * $item->product_qty;
+// Calculate total
+$total_amount = 0;
+foreach ($checkout_items as $item) {
+    $total_amount += $item->product_price * $item->product_qty;
 }
-$shipping = 0;
-$total = $subtotal + $shipping;
 
-// Handle checkout submission
+// Process checkout submission
 if (is_post()) {
-    $payment_method_id = post('payment_method');
     $address_id = post('address_id');
-    $use_new_card = post('use_new_card') === '1';
-    $stripe_token = post('stripe_token');
+    $save_card = post('save_card', 0);
     
-    // Validate
+    // Validate address
     if (empty($address_id)) {
-        temp('error', 'Please select a shipping address');
-        redirect();
+        echo json_encode(['success' => false, 'message' => 'Please select delivery address']);
+        exit;
     }
     
-    if (!$use_new_card && empty($payment_method_id)) {
-        temp('error', 'Please select a payment method or add a new card');
-        redirect();
+    // Verify address belongs to user
+    $stm = $_db->prepare("SELECT * FROM address WHERE address_id = ? AND user_id = ?");
+    $stm->execute([$address_id, $user_id]);
+    $address = $stm->fetch();
+    
+    if (!$address) {
+        echo json_encode(['success' => false, 'message' => 'Invalid address']);
+        exit;
     }
     
-    if ($use_new_card && empty($stripe_token)) {
-        temp('error', 'Please add a new payment method');
-        redirect();
-    }
-    
-    // Start transaction
     $_db->beginTransaction();
     
     try {
-        // Create order
-        $order_id = 'OR' . str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT);
+        // Check stock again
+        foreach ($checkout_items as $item) {
+            if ($item->product_stock < $item->product_qty) {
+                throw new Exception("Insufficient stock for {$item->product_name}. Available: {$item->product_stock}");
+            }
+        }
         
+        // Generate Order ID
+        $stm = $_db->query("SELECT MAX(CAST(SUBSTRING(order_id, 3) AS UNSIGNED)) as max_id FROM `order`");
+        $max_id = $stm->fetch()->max_id;
+        $order_id = 'OR' . str_pad($max_id + 1, 4, '0', STR_PAD_LEFT);
+        
+        // Create Order (with address_id) - status is pending until payment
         $stm = $_db->prepare("
             INSERT INTO `order` (order_id, user_id, address_id, order_date, total_amount, status) 
             VALUES (?, ?, ?, NOW(), ?, 'pending')
         ");
-        $stm->execute([$order_id, $user_id, $address_id, $total]);
+        $stm->execute([$order_id, $user_id, $address_id, $total_amount]);
         
-        // Create order items and update cart items
-        foreach ($checkout_items_data as $item) {
-            $order_item_id = 'OI' . str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT);
-            $subtotal_item = $item->product_price * $item->product_qty;
+        // Generate Order Item IDs
+        $stm = $_db->query("SELECT MAX(CAST(SUBSTRING(order_item_id, 3) AS UNSIGNED)) as max_id FROM order_item");
+        $max_item_id = $stm->fetch()->max_id;
+        $next_item_id = $max_item_id + 1;
+        
+        // Create Order Items and update stock
+        foreach ($checkout_items as $item) {
+            $order_item_id = 'OI' . str_pad($next_item_id, 4, '0', STR_PAD_LEFT);
+            $next_item_id++;
             
-            // Create order item
+            // Insert order item
             $stm = $_db->prepare("
-                INSERT INTO order_item (order_item_id, order_id, product_id, product_qty, price, subtotal)
+                INSERT INTO order_item (order_item_id, order_id, product_id, product_qty, price, subtotal) 
                 VALUES (?, ?, ?, ?, ?, ?)
             ");
-            $stm->execute([$order_item_id, $order_id, $item->product_id, $item->product_qty, $item->product_price, $subtotal_item]);
+            $stm->execute([
+                $order_item_id,
+                $order_id,
+                $item->product_id,
+                $item->product_qty,
+                $item->product_price,
+                $item->product_price * $item->product_qty
+            ]);
             
-            // Update cart item
+            // Update product stock
             $stm = $_db->prepare("
-                UPDATE cart_item 
-                SET item_status = 'checkout', checkout_at = NOW(), order_item_id = ?
-                WHERE cart_item_id = ?
+                UPDATE product 
+                SET product_stock = product_stock - ? 
+                WHERE product_id = ?
             ");
-            $stm->execute([$order_item_id, $item->cart_item_id]);
+            $stm->execute([$item->product_qty, $item->product_id]);
         }
         
-        // Process payment with Stripe
-        if ($use_new_card) {
-            // Save new payment method
-            $payment_method_id = 'PM' . str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT);
-            
-            // Note: In a real application, you would:
-            // 1. Use Stripe API to create a customer/payment method
-            // 2. Store the Stripe customer ID and payment method ID
-            // For this example, we'll simulate it
-            
-            $stm = $_db->prepare("
-                INSERT INTO payment_method (payment_method_id, user_id, provider, token, brand, last4, expiry_month, exiry_year, is_default)
-                VALUES (?, ?, 'stripe', ?, ?, ?, ?, ?, 1)
-            ");
-            // You would get these from Stripe response
-            $stm->execute([$payment_method_id, $user_id, $stripe_token, 'Visa', '4242', 12, 2030]);
+        // Prepare line items for Stripe
+        $lineItems = [];
+        foreach ($checkout_items as $item) {
+            $lineItems[] = [
+                'price_data' => [
+                    'currency' => 'myr',
+                    'product_data' => [
+                        'name' => $item->product_name,
+                        'metadata' => [
+                            'product_id' => $item->product_id,
+                            'category' => $item->category_name
+                        ]
+                    ],
+                    'unit_amount' => intval($item->product_price * 100), // Convert to cents
+                ],
+                'quantity' => $item->product_qty,
+            ];
         }
         
-        // Create payment record
-        $payment_id = 'PAY' . str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT);
-        $stm = $_db->prepare("
-            INSERT INTO payment (payment_id, order_id, amount, transaction_date, payment_method_id, status)
-            VALUES (?, ?, ?, NOW(), ?, 'succeeded')
-        ");
-        $stm->execute([$payment_id, $order_id, $total, $payment_method_id]);
+        // Add shipping address to metadata
+        $shipping_info = [
+            'name' => $_user->name,
+            'address' => [
+                'line1' => $address->address_line1,
+                'line2' => $address->address_line2 ?? '',
+                'city' => $address->city,
+                'state' => $address->state,
+                'postal_code' => $address->postcode,
+                'country' => $address->country,
+            ]
+        ];
         
-        // Update order status
-        $stm = $_db->prepare("UPDATE `order` SET status = 'processing' WHERE order_id = ?");
-        $stm->execute([$order_id]);
+        // Get base URL
+        $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]";
         
-        // Create order history
-        $history_id = 'HIS' . str_pad(rand(1000, 9999), 4, '0', STR_PAD_LEFT);
-        $stm = $_db->prepare("
-            INSERT INTO order_history (history_id, order_id, status, changed_at, changed_by)
-            VALUES (?, ?, 'processing', NOW(), ?)
-        ");
-        $stm->execute([$history_id, $order_id, $user_id]);
+        // Create Stripe checkout session
+        $checkoutSession = \Stripe\Checkout\Session::create([
+            'payment_method_types' => ['card'],
+            'line_items' => $lineItems,
+            'mode' => 'payment',
+            'success_url' => $baseUrl . '/page/order_success.php?session_id={CHECKOUT_SESSION_ID}&order_id=' . $order_id,
+            'cancel_url' => $baseUrl . '/page/checkout.php',
+            'customer_email' => $_user->email,
+            'metadata' => [
+                'order_id' => $order_id,
+                'user_id' => $user_id,
+                'address_id' => $address_id
+            ],
+            'shipping_address_collection' => [
+                'allowed_countries' => ['MY'],
+            ],
+            'phone_number_collection' => [
+                'enabled' => true,
+            ],
+            'allow_promotion_codes' => false,
+            'billing_address_collection' => 'required',
+        ]);
         
         $_db->commit();
         
-        // Clear checkout session
-        unset($_SESSION['checkout_items']);
-        
-        temp('success', 'Order placed successfully!');
-        redirect('/page/order_confirmation.php?id=' . $order_id);
+        echo json_encode([
+            'success' => true,
+            'message' => 'Redirecting to payment...',
+            'sessionId' => $checkoutSession->id,
+            'redirect' => $checkoutSession->url
+        ]);
         
     } catch (Exception $e) {
         $_db->rollBack();
-        temp('error', 'An error occurred while processing your order. Please try again.');
-        redirect();
+        echo json_encode([
+            'success' => false,
+            'message' => 'Error: ' . $e->getMessage()
+        ]);
     }
+    exit;
 }
 
 $_title = 'Checkout | Four Eyes Collective';
-include '../_head.php';
 ?>
-
-<h1>Checkout</h1>
-
-<!-- Checkout Progress -->
-<div style="display: flex; justify-content: center; margin-bottom: 40px;">
-    <div style="display: flex; align-items: center;">
-        <div style="background: #2c3e50; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-            1
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= $_title ?></title>
+    <link rel="stylesheet" href="/css/checkout.css">
+</head>
+<body>
+    <div class="checkout-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>Secure Checkout</h1>
+            <p>Complete your purchase with confidence</p>
         </div>
-        <div style="width: 100px; height: 2px; background: #2c3e50;"></div>
-        <div style="background: #2c3e50; color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-            2
-        </div>
-        <div style="width: 100px; height: 2px; background: #ddd;"></div>
-        <div style="background: #ddd; color: #666; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-            3
-        </div>
-    </div>
-    <div style="display: flex; justify-content: space-between; width: 400px; margin-top: 10px;">
-        <span style="color: #2c3e50; font-weight: bold;">Cart</span>
-        <span style="color: #2c3e50; font-weight: bold;">Checkout</span>
-        <span style="color: #666;">Confirmation</span>
-    </div>
-</div>
-
-<form method="post" id="checkout-form">
-    <div style="display: grid; grid-template-columns: 1fr 350px; gap: 40px;">
-        <!-- Left Column: Forms -->
-        <div>
-            <!-- Shipping Address -->
-            <div style="margin-bottom: 40px;">
-                <h3 style="margin-bottom: 20px; color: #2c3e50;">Shipping Address</h3>
-                
-                <?php if (empty($addresses)): ?>
-                    <div style="background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; text-align: center;">
-                        <p style="margin-bottom: 15px;">No saved addresses found</p>
-                        <a href="/page/address.php?action=add&redirect=checkout" 
-                           style="color: #2c3e50; text-decoration: none; font-weight: 500;">
-                            Add New Address
-                        </a>
-                    </div>
-                <?php else: ?>
-                    <div style="display: flex; flex-direction: column; gap: 15px;">
-                        <?php foreach ($addresses as $address): ?>
-                            <label style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; cursor: pointer; display: block;">
-                                <input type="radio" name="address_id" value="<?= $address->address_id ?>" 
-                                       <?= $address->default_flag ? 'checked' : '' ?>
-                                       style="margin-right: 10px;">
-                                <div>
-                                    <div style="font-weight: bold; margin-bottom: 5px;">
-                                        <?= encode($address->address_line1) ?>
-                                        <?php if ($address->address_line2): ?>
-                                            , <?= encode($address->address_line2) ?>
-                                        <?php endif; ?>
-                                    </div>
-                                    <div style="color: #666;">
-                                        <?= encode($address->city) ?>, <?= encode($address->state) ?> <?= encode($address->postcoed) ?>
-                                    </div>
-                                    <div style="color: #666;">
-                                        <?= encode($address->country) ?>
-                                    </div>
-                                    <?php if ($address->default_flag): ?>
-                                        <span style="background: #2c3e50; color: white; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; margin-top: 5px; display: inline-block;">
-                                            Default
-                                        </span>
-                                    <?php endif; ?>
-                                </div>
-                            </label>
-                        <?php endforeach; ?>
-                    </div>
-                    
-                    <div style="margin-top: 15px;">
-                        <a href="/page/address.php?action=add&redirect=checkout" 
-                           style="color: #2c3e50; text-decoration: none; font-weight: 500;">
-                            + Add New Address
-                        </a>
-                    </div>
-                <?php endif; ?>
-            </div>
-            
-            <!-- Payment Method -->
+        
+        <!-- Main Content -->
+        <div class="checkout-content">
+            <!-- Left Column: Shipping & Payment -->
             <div>
-                <h3 style="margin-bottom: 20px; color: #2c3e50;">Payment Method</h3>
-                
-                <!-- Saved Payment Methods -->
-                <?php if (!empty($payment_methods)): ?>
-                    <div style="margin-bottom: 30px;">
-                        <h4 style="margin-bottom: 15px; color: #555;">Saved Cards</h4>
-                        <div style="display: flex; flex-direction: column; gap: 15px;">
-                            <?php foreach ($payment_methods as $pm): ?>
-                                <label style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; cursor: pointer; display: block;">
-                                    <input type="radio" name="payment_method" value="<?= $pm->payment_method_id ?>" 
-                                           class="saved-card" 
-                                           <?= $pm->is_default ? 'checked' : '' ?>
-                                           style="margin-right: 10px;">
-                                    <div style="display: flex; align-items: center; gap: 15px;">
-                                        <div style="width: 40px; height: 25px; background: #f0f0f0; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                                            <?= substr($pm->brand, 0, 1) ?>
+                <!-- Shipping Address Section -->
+                <div class="checkout-section">
+                    <h2 class="section-title">Shipping Address</h2>
+                    <?php if (empty($addresses)): ?>
+                        <div class="empty-state">
+                            <div class="empty-state-icon">🏠</div>
+                            <p>No addresses found. Please add a shipping address.</p>
+                            <a href="profile_address_add.php?return=checkout.php" class="btn btn-primary" style="width: auto; margin-top: 20px;">
+                                Add New Address
+                            </a>
+                        </div>
+                    <?php else: ?>
+                        <div class="address-options">
+                            <?php foreach ($addresses as $addr): ?>
+                                <label class="address-option <?= $addr->default_flag ? 'selected' : '' ?>">
+                                    <input type="radio" name="address_id" value="<?= $addr->address_id ?>" required 
+                                           <?= $addr->default_flag ? 'checked' : '' ?>>
+                                    <div class="checkmark"></div>
+                                    <div>
+                                        <div class="address-label">
+                                            <?php if ($addr->default_flag): ?>
+                                                <span style="color: #27ae60; font-size: 0.8rem; margin-right: 10px;">✓ Default</span>
+                                            <?php endif; ?>
+                                            <?= encode($addr->address_line1) ?>
                                         </div>
-                                        <div>
-                                            <div style="font-weight: bold;">
-                                                <?= ucfirst($pm->brand) ?> •••• <?= $pm->last4 ?>
-                                            </div>
-                                            <div style="color: #666; font-size: 0.9em;">
-                                                Expires <?= str_pad($pm->expiry_month, 2, '0', STR_PAD_LEFT) ?>/<?= $pm->exiry_year ?>
-                                            </div>
+                                        <div class="address-details">
+                                            <?php if (!empty($addr->address_line2)): ?>
+                                                <?= encode($addr->address_line2) ?><br>
+                                            <?php endif; ?>
+                                            <?= encode($addr->city . ', ' . $addr->state . ' ' . $addr->postcode) ?><br>
+                                            <?= encode($addr->country) ?>
                                         </div>
                                     </div>
                                 </label>
                             <?php endforeach; ?>
                         </div>
-                    </div>
-                <?php endif; ?>
+                        <div class="error-message" id="addressError"></div>
+                        <div style="margin-top: 20px;">
+                            <a href="profile_address_add.php?return=checkout.php" class="back-link" target="_self">
+                                + Add New Address
+                            </a>
+                        </div>
+                    <?php endif; ?>
+                </div>
                 
-                <!-- New Card Option -->
-                <div style="margin-bottom: 30px;">
-                    <label style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                        <input type="radio" name="use_new_card" value="1" id="use-new-card" 
-                               <?= empty($payment_methods) ? 'checked' : '' ?>
-                               style="margin-right: 5px;">
-                        <span style="font-weight: bold;">Add New Card</span>
-                    </label>
-                    
-                    <!-- Stripe Card Element -->
-                    <div id="card-element" style="<?= empty($payment_methods) ? '' : 'display: none;' ?>">
-                        <div style="border: 1px solid #ddd; border-radius: 4px; padding: 15px; background: white;">
-                            <div id="stripe-card" style="min-height: 40px;"></div>
-                            <div id="card-errors" role="alert" style="color: #e74c3c; margin-top: 10px; font-size: 0.9em;"></div>
+                <!-- Payment Information -->
+                <div class="checkout-section">
+                    <h2 class="section-title">Payment Information</h2>
+                    <div class="payment-info">
+                        <p style="color: #7f8c8d; margin-bottom: 15px;">
+                            You will be redirected to Stripe's secure payment page to complete your purchase.
+                        </p>
+                        <div class="security-note">
+                            <div class="security-icon">🔒</div>
+                            <div>
+                                <strong>Secure Payment</strong><br>
+                                Your payment information is encrypted and secure. We never store your full card details.
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- Right Column: Order Summary -->
-        <div>
-            <div style="border: 1px solid #e0e0e0; border-radius: 8px; padding: 25px; background: #f8f9fa; position: sticky; top: 100px;">
-                <h3 style="margin-top: 0; margin-bottom: 20px; color: #2c3e50;">Order Summary</h3>
-                
-                <!-- Order Items -->
-                <div style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
-                    <?php foreach ($checkout_items_data as $item): ?>
-                        <div style="display: flex; gap: 15px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
-                            <?php 
-                            $folder = [
-                                'CA0001' => 'glasses',
-                                'CA0002' => 'sunglasses', 
-                                'CA0003' => 'contactlens',
-                                'CA0004' => 'kids'
-                            ][$item->category_id] ?? 'others';
-                            
-                            $images = explode(',', $item->product_image);
-                            $firstImage = trim($images[0]);
-                            $imgPath = "/images/product/$folder/$firstImage";
+            
+            <!-- Right Column: Order Summary -->
+            <div class="order-summary">
+                <div class="checkout-section">
+                    <h2 class="section-title">Order Summary</h2>
+                    
+                    <div class="order-items">
+                        <?php foreach ($checkout_items as $item): ?>
+                            <?php
+                                $folder = [
+                                    'CA0001' => 'glasses',
+                                    'CA0002' => 'sunglasses',
+                                    'CA0003' => 'contactlens',
+                                    'CA0004' => 'kids'
+                                ][$item->category_id] ?? 'others';
+                                $imgArray = explode(',', $item->product_image);
+                                $firstImage = trim($imgArray[0]);
+                                $imgPath = "/images/product/$folder/$firstImage";
                             ?>
-                            
-                            <img src="<?= $imgPath ?>" alt="<?= encode($item->product_name) ?>" 
-                                 style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px;">
-                            
-                            <div style="flex: 1;">
-                                <div style="font-weight: bold; font-size: 0.9em; margin-bottom: 5px;">
-                                    <?= encode($item->product_name) ?>
+                            <div class="order-item">
+                                <img src="<?= $imgPath ?>" alt="<?= encode($item->product_name) ?>" class="order-item-image">
+                                <div class="item-details">
+                                    <div class="item-name"><?= encode($item->product_name) ?></div>
+                                    <div class="item-meta">Qty: <?= $item->product_qty ?></div>
                                 </div>
-                                <div style="color: #666; font-size: 0.8em;">
-                                    Qty: <?= $item->product_qty ?>
-                                </div>
-                                <div style="font-weight: bold; color: #2c3e50; font-size: 0.9em; margin-top: 5px;">
-                                    RM <?= number_format($item->product_price * $item->product_qty, 2) ?>
-                                </div>
+                                <div class="item-total">RM <?= number_format($item->product_price * $item->product_qty, 2) ?></div>
                             </div>
+                        <?php endforeach; ?>
+                    </div>
+                    
+                    <div class="summary-totals">
+                        <div class="total-row">
+                            <span>Subtotal</span>
+                            <span>RM <?= number_format($total_amount, 2) ?></span>
                         </div>
-                    <?php endforeach; ?>
-                </div>
-                
-                <!-- Order Totals -->
-                <div style="border-top: 1px solid #ddd; padding-top: 15px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <span>Subtotal</span>
-                        <span>RM <?= number_format($subtotal, 2) ?></span>
+                        <div class="total-row">
+                            <span>Shipping</span>
+                            <span>FREE</span>
+                        </div>
+                        <div class="total-row">
+                            <span>Tax</span>
+                            <span>Included</span>
+                        </div>
                     </div>
                     
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                        <span>Shipping</span>
-                        <span>FREE</span>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2em; border-top: 1px solid #ddd; padding-top: 10px; margin-top: 10px;">
+                    <div class="total-row total-amount">
                         <span>Total</span>
-                        <span>RM <?= number_format($total, 2) ?></span>
+                        <span>RM <?= number_format($total_amount, 2) ?></span>
                     </div>
-                </div>
-                
-                <!-- Submit Button -->
-                <div style="margin-top: 30px;">
-                    <button type="submit" id="submit-payment" 
-                            style="background: #2c3e50; color: white; border: none; padding: 15px; width: 100%; border-radius: 4px; font-size: 1.1em; font-weight: bold; cursor: pointer; transition: background 0.3s ease;">
-                        Place Order
+                    
+                    <!-- Payment Button -->
+                    <button type="button" class="btn btn-success btn-full" id="submitBtn" onclick="processPayment()">
+                        <span id="btnText">Pay RM <?= number_format($total_amount, 2) ?></span>
+                        <span id="btnLoading" style="display: none;" class="loading"></span>
                     </button>
                     
-                    <p style="text-align: center; margin-top: 15px; color: #666; font-size: 0.9em;">
-                        By placing your order, you agree to our <a href="#" style="color: #2c3e50;">Terms & Conditions</a>
-                    </p>
+                    <!-- Back to Cart Button (Cancel Checkout) -->
+                    <button type="button" class="btn btn-secondary btn-full" onclick="cancelCheckout()" style="margin-top: 10px;">
+                        Cancel Checkout & Return to Cart
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-    
-    <input type="hidden" name="stripe_token" id="stripe-token">
-</form>
 
-<!-- Load Stripe.js -->
-<script src="https://js.stripe.com/v3/"></script>
-
-<script>
-$(function() {
-    // Initialize Stripe with your publishable key
-    const stripe = Stripe('pk_test_51SZZzU2LpkFiPUtIjT4A3p4jku3AscftExkqT8Nc4O0uu1KspBx6jtWSMQwpQSkoS7NUB4axuVp999twSrbA9Cun00Hr2Ue6Yh');
-    
-    // Create Stripe elements
-    const elements = stripe.elements();
-    const cardElement = elements.create('card', {
-        style: {
-            base: {
-                fontSize: '16px',
-                color: '#333',
-                '::placeholder': {
-                    color: '#aab7c4'
-                }
+    <script>
+        // Cancel checkout and return to cart
+        function cancelCheckout() {
+            if (confirm('Are you sure you want to cancel checkout? Your selected items will return to your cart.')) {
+                // Send AJAX request to restore items to cart
+                const formData = new FormData();
+                formData.append('action', 'cancel_checkout');
+                
+                fetch('cancel_checkout.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        window.location.href = 'cart.php';
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Network error. Please try again.');
+                });
             }
         }
-    });
-    
-    // Mount card element
-    const cardMount = document.getElementById('stripe-card');
-    if (cardMount) {
-        cardElement.mount('#stripe-card');
-    }
-    
-    // Handle card errors
-    cardElement.on('change', function(event) {
-        const displayError = document.getElementById('card-errors');
-        if (event.error) {
-            displayError.textContent = event.error.message;
-        } else {
-            displayError.textContent = '';
-        }
-    });
-    
-    // Toggle new card form
-    $('#use-new-card').on('change', function() {
-        if ($(this).is(':checked')) {
-            $('#card-element').show();
-            $('.saved-card').prop('checked', false);
-        }
-    });
-    
-    $('.saved-card').on('change', function() {
-        if ($(this).is(':checked')) {
-            $('#card-element').hide();
-            $('#use-new-card').prop('checked', false);
-        }
-    });
-    
-    // Form submission
-    $('#checkout-form').on('submit', function(e) {
-        e.preventDefault();
         
-        const submitBtn = $('#submit-payment');
-        submitBtn.prop('disabled', true).text('Processing...');
-        
-        // If using new card, create token
-        if ($('#use-new-card').is(':checked')) {
-            stripe.createToken(cardElement).then(function(result) {
-                if (result.error) {
-                    $('#card-errors').text(result.error.message);
-                    submitBtn.prop('disabled', false).text('Place Order');
+        // Process payment
+        async function processPayment() {
+            const submitBtn = document.getElementById('submitBtn');
+            const btnText = document.getElementById('btnText');
+            const btnLoading = document.getElementById('btnLoading');
+            const paymentError = document.getElementById('paymentError');
+            
+            // Reset messages
+            if (paymentError) {
+                paymentError.style.display = 'none';
+            }
+            
+            // Validate address
+            const addressSelected = document.querySelector('input[name="address_id"]:checked');
+            if (!addressSelected) {
+                document.getElementById('addressError').textContent = 'Please select a shipping address';
+                document.getElementById('addressError').style.display = 'block';
+                document.getElementById('addressError').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+            
+            // Show loading
+            submitBtn.disabled = true;
+            btnText.style.display = 'none';
+            btnLoading.style.display = 'inline-block';
+            
+            try {
+                // Prepare form data
+                const formData = new FormData();
+                formData.append('address_id', addressSelected.value);
+                
+                const response = await fetch('checkout.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Redirect to Stripe Checkout
+                    window.location.href = result.redirect;
                 } else {
-                    $('#stripe-token').val(result.token.id);
-                    $('#checkout-form')[0].submit();
+                    // Payment failed - show error
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'payment-error';
+                    errorDiv.innerHTML = '✗ ' + result.message + '<br><small>Please try again.</small>';
+                    errorDiv.style.display = 'flex';
+                    
+                    // Insert after payment section
+                    const paymentSection = document.querySelector('.payment-info');
+                    paymentSection.appendChild(errorDiv);
+                    
+                    // Enable button for retry
+                    submitBtn.disabled = false;
+                    btnText.style.display = 'inline';
+                    btnLoading.style.display = 'none';
+                    
+                    // Scroll to error message
+                    errorDiv.scrollIntoView({ behavior: 'smooth' });
                 }
-            });
-        } else {
-            // If using saved card, submit directly
-            $('#checkout-form')[0].submit();
+                
+            } catch (error) {
+                // Network or server error
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'payment-error';
+                errorDiv.innerHTML = '✗ Network error: ' + error.message + '<br><small>Please check your connection and try again.</small>';
+                errorDiv.style.display = 'flex';
+                
+                const paymentSection = document.querySelector('.payment-info');
+                paymentSection.appendChild(errorDiv);
+                
+                submitBtn.disabled = false;
+                btnText.style.display = 'inline';
+                btnLoading.style.display = 'none';
+                
+                // Scroll to error message
+                errorDiv.scrollIntoView({ behavior: 'smooth' });
+                
+                console.error('Payment error:', error);
+            }
         }
-    });
-});
-</script>
-
-<?php include '../_foot.php'; ?>
+        
+        // Address selection styling
+        document.querySelectorAll('input[name="address_id"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                document.querySelectorAll('.address-option').forEach(option => {
+                    option.classList.remove('selected');
+                });
+                this.parentElement.classList.add('selected');
+            });
+        });
+    </script>
+</body>
+</html>

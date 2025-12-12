@@ -1,7 +1,18 @@
 // ============================================================================
 // General Functions
 // ============================================================================
+$(document).ready(function () {
+    $(".user-icon").on("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(".user-dropdown").toggleClass("active");
+    });
 
+    // Close dropdown when clicking outside
+    $(document).on("click", function () {
+        $(".user-dropdown").removeClass("active");
+    });
+});
 
 
 // ============================================================================

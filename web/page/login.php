@@ -3,73 +3,127 @@ require '../_base.php';
 require '../lib/db.php';
 
 if (is_post()) {
-    $email = post('email');
-    $password = post('password');
-    
-    // Demo authentication (replace with real authentication)
-    if ($email === 'john@demo.com' && $password === 'demo123') {
-        $_SESSION['user_id'] = 'ME0001';
-        $_SESSION['user_name'] = 'John Doe';
-        $_SESSION['user_email'] = 'john.doe@example.com';
-        $_SESSION['user_role'] = 'member';
-        
-        $redirect = get('redirect', '/page/shoppage.php');
-        redirect($redirect);
-    } else {
-        temp('error', 'Invalid credentials. For demo, use email: john@demo.com, password: demo123');
+    $email    = req('email');
+    $password = req('password');
+
+    // Validate: email
+    if ($email == '') {
+        $_err['email'] = 'Required';
+    } else if (!is_email($email)) {
+        $_err['email'] = 'Invalid email';
     }
-}
 
-$_title = 'Login | Four Eyes Collective';
-include '../_head.php';
+    // Validate: password
+    if ($password == '') {
+        $_err['password'] = 'Required';
+    }
+
+    // Login user
+    if (!$_err) {
+        $stm = $_db->prepare('
+            SELECT * FROM users
+            WHERE email = ? AND password = SHA1(?)
+        ');
+        $stm->execute([$email, $password]);
+        $u = $stm->fetch();
+
+        if ($u) {
+            // Check if user is active
+            // if ($u->status === 'inactive') {
+            //     $_err['email'] = 'Account not verified. Please check your email for verification link. <a href="resend_verification.php?email=' . urlencode($email) . '">Resend verification email</a>';
+            // } else {
+                temp('info', 'Login successfully');
+                login($u);
+                // Redirect based on role
+                if ($u->role === 'admin' || $u->role === 'staff') {
+                    redirect('/homepage.php');
+                } else {
+                    redirect('/homepage.php');
+                }
+            //}
+        } else {
+            $_err['password'] = 'Invalid email or password';
+        }
+    }}
+
+// ----------------------------------------------------------------------------
+$_title = 'Login';
 ?>
+<!DOCTYPE html>
+<html lang="en">
 
-<div style="max-width: 400px; margin: 0 auto; padding: 40px 0;">
-    <h1 style="text-align: center; margin-bottom: 30px;">Login</h1>
-    
-    <?php if (temp('error')): ?>
-        <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 20px;">
-            <?= encode(temp('error')) ?>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><?= $_title ?? 'Four Eyes Collective' ?></title>
+    <link rel="shortcut icon" href="/images/WIS_logo_1.png">
+    <link rel="stylesheet" href="/css/app.css">
+    <link rel="stylesheet" href="/css/login.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+
+<body class="login-page">
+    <div class="login-container">
+        <div class="login-header">
+            <div class="header-content">
+                <div class="logo-container">
+                    <img src="/images/WIS_logo_white.png" alt="Four Eyes Collective Logo" class="header-logo">
+                </div>
+                <div class="header-text">
+                    <h1>Welcome Back</h1>
+                    <p>Sign in to your account to continue</p>
+                </div>
+            </div>
         </div>
-    <?php endif; ?>
-    
-    <div style="background: #f8f9fa; border-radius: 8px; padding: 30px; border: 1px solid #e0e0e0;">
-        <form method="post">
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #2c3e50;">
-                    Email
-                </label>
-                <input type="email" name="email" required 
-                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;"
-                       placeholder="john@demo.com">
+
+        <form method="post" class="login-form">
+            <!-- Display error message if exists -->
+            <?php if (isset($_err['email']) && strpos($_err['email'], 'Invalid email or password') !== false): ?>
+                <div class="alert alert-error">
+                    Invalid email or password. Please try again.
+                </div>
+            <!-- <?php elseif (isset($_err['email']) && strpos($_err['email'], 'Account is inactive') !== false): ?>
+                <div class="alert alert-warning">
+                    Account is inactive. Please contact administrator.
+                </div> -->
+            <?php endif; ?>
+
+            <div class="form-group">
+                <label for="email">Email *</label>
+                <input type="email" id="email" name="email" class="form-control"
+                    placeholder="your@email.com" maxlength="100"
+                    value="<?= encode($GLOBALS['email'] ?? '') ?>">
+                <?= err('email') ?>
             </div>
-            
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #2c3e50;">
-                    Password
-                </label>
-                <input type="password" name="password" required 
-                       style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;"
-                       placeholder="demo123">
+
+            <div class="form-group">
+                <label for="password">Password *</label>
+                <input type="password" id="password" name="password" class="form-control"
+                    placeholder="Enter your password" maxlength="100">
+                <?= err('password') ?>
             </div>
-            
-            <button type="submit" 
-                    style="background: #2c3e50; color: white; border: none; padding: 12px 30px; width: 100%; border-radius: 4px; font-size: 16px; cursor: pointer; transition: background 0.3s ease;">
-                Login
-            </button>
+
+            <!-- Submit Buttons -->
+            <div class="button-row">
+                <button type="submit" class="btn btn-primary">Sign In</button>
+                <button type="reset" class="btn btn-secondary">Reset</button>
+            </div>
+
+            <div class="links-container">
+                <div class="forgot-link">
+                    <a href="forgot-password.php">Forgot Password?</a>
+                </div>
+
+                <div class="back-link">
+                    <a href="/">Back to Home</a>
+                </div>
+
+                <div class="signup-link">
+                    Don't have an account? <a href="member_registration.php">Sign Up</a>
+                </div>
+            </div>
         </form>
-        
-        <div style="margin-top: 20px; padding: 20px; background: #e8f4f8; border-radius: 4px;">
-            <h4 style="margin-top: 0; color: #2c3e50;">Demo Credentials</h4>
-            <p style="margin: 10px 0; color: #555;">
-                <strong>Email:</strong> john@demo.com<br>
-                <strong>Password:</strong> demo123
-            </p>
-            <p style="margin: 10px 0; color: #555; font-size: 0.9em;">
-                Or click <a href="/?demo=1" style="color: #2c3e50; font-weight: bold;">here</a> to auto-login.
-            </p>
-        </div>
     </div>
-</div>
+</body>
 
-<?php include '../_foot.php'; ?>
+</html>
