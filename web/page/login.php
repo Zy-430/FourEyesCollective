@@ -2,44 +2,95 @@
 require '../_base.php';
 require '../lib/db.php';
 
+define('MAX_ATTEMPTS', 3);
+define('LOCK_MINUTES', 15);
+
 $temp_message = temp('success');
 
 if (is_post()) {
+
     $email    = req('email');
     $password = req('password');
 
-    // Validate: email
+
     if (!is_email($email)) {
         $_err['email'] = 'Invalid email';
     }
 
-    // Login user
     if (!$_err) {
-        $stm = $_db->prepare('
-            SELECT * FROM users
-            WHERE email = ? AND password = SHA1(?)
-        ');
-        $stm->execute([$email, $password]);
+        // Get user by email
+        $stm = $_db->prepare("SELECT * FROM users WHERE email = ?");
+        $stm->execute([$email]);
         $user = $stm->fetch();
 
         if ($user) {
-            // Check if user is active
-            if ($user->status === 'Inactive') {
-                $_err['email'] = 'Your account is not activated ! <br> Please check your email for the verification link or
-                         <a href="resend_verification.php?email=' . urlencode($email) . '" style="color: #1580ebff; font-size: 17px;">Resend verification email</a>';
-            } else {
-                temp('info', 'Login successfully!');
-                // Redirect based on role
-                if ($user->role === 'Member') {
-                    login($user, '/page/homepage.php');
-                } elseif ($user->role === 'Admin') {
-                    login($user, '/page/admin_dashboard.php');
+
+            /* Check temporary lock */
+            if ($user->lock_until && strtotime($user->lock_until) > time()) {
+                $remainingSeconds = strtotime($user->lock_until) - time();
+                $remainingMinutes = ceil($remainingSeconds / 60);
+
+                $_err['email'] =
+                    'Too many failed attempts. Please try again in ' .
+                    $remainingMinutes . ' minute(s).';
+            }/* Correct password */ 
+            elseif ($user->password === sha1($password)) {
+
+                // Then will reset attempts
+                $_db->prepare("
+                    UPDATE users 
+                    SET failed_attempts = 0, lock_until = NULL 
+                    WHERE user_id = ?
+                ")->execute([$user->user_id]);
+
+                // Check active status (if inactive then ask to activated account)
+                if ($user->status === 'Inactive') {
+                    $_err['email'] = 'Your account is not activated!';
                 } else {
-                    login($user, '/homepage.php');
+
+                    temp('info', 'Login successfully!');
+
+                    // Redirect by role
+                    if ($user->role === 'Member') {
+                        login($user, '/page/homepage.php');
+                    } elseif ($user->role === 'Admin') {
+                        login($user, '/page/admin_dashboard.php');
+                    } else {
+                        login($user, '/homepage.php');
+                    }
+                }
+            }/* Wrong password - attempt keep increasing (max = 3 , then will lock for 15 minutes)*/ 
+            else {
+                $attempts = $user->failed_attempts + 1;
+
+                if ($attempts >= MAX_ATTEMPTS) {
+
+                    $lockUntil = date(
+                        'Y-m-d H:i:s',
+                        strtotime('+' . LOCK_MINUTES . ' minutes')
+                    );
+
+                    $_db->prepare("
+                        UPDATE users 
+                        SET failed_attempts = ?, lock_until = ?
+                        WHERE user_id = ?
+                    ")->execute([$attempts, $lockUntil, $user->user_id]);
+
+                    $_err['password'] =
+                        'Too many attempts. Account locked for 15 minutes.';
+                } else {
+                    $_db->prepare("
+                        UPDATE users 
+                        SET failed_attempts = ?
+                        WHERE user_id = ?
+                    ")->execute([$attempts, $user->user_id]);
+
+                    $_err['password'] =
+                        'Invalid email or password. Attempt ' . $attempts . '/3';
                 }
             }
         } else {
-            $_err['password'] = 'Invalid email or password. Please try again.';
+            $_err['password'] = 'Invalid email or password.';
         }
     }
 }
@@ -60,6 +111,7 @@ $_title = 'Login';
     <link rel="stylesheet" href="/css/user.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
+
 <body class="login-page">
 
     <?php if ($temp_message): ?>
