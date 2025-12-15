@@ -41,7 +41,9 @@ if (is_post()) {
     $date_of_birth = "$year-$month-$date";
 
     //Validate email
-    if (strlen($email) > 100) {
+    if ($email == '') {
+        $_err['email'] = 'Required';
+    } else if (strlen($email) > 100) {
         $_err['email'] = 'Maximum 100 characters';
     } else if (!is_email($email)) {
         $_err['email'] = 'Invalid email format';
@@ -50,33 +52,41 @@ if (is_post()) {
     }
 
     //Validate name
-    if (strlen($name) > 100) {
+    if ($name == '') {
+        $_err['name'] = 'Required';
+    } else if (strlen($name) > 100) {
         $_err['name'] = 'Maximum length 100';
     }
 
     //Validate password
+    if ($password == '') {
+        $_err['password'] = 'Required';
+    } else {
+        $password = trim($password);
 
-    $password = trim($password);
+        //Password format
+        // Min length 8 charcater
+        if (strlen($password) < 8) {
+            $_err['password'] = 'Password must be at least 8 characters';
+        }
 
-    //Password format
-    // Min length 8 charcater
-    if (strlen($password) < 8) {
-        $_err['password'] = 'Password must be at least 8 characters';
+        // Max length 15 character
+        else if (strlen($password) > 15) {
+            $_err['password'] = 'Password maximum length is 15 characters';
+        }
     }
-
-    // Max length 15 character
-    else if (strlen($password) > 15) {
-        $_err['password'] = 'Password maximum length is 15 characters';
-    }
-
 
     //Validate Confirm password 
-    if ($password !== $confirm_password) {
+    if ($confirm_password == '') {
+        $_err['confirm_password'] = 'Required';
+    } else if ($password !== $confirm_password) {
         $_err['confirm_password'] = 'Passwords do not match. Please try again!';
     }
 
     //Validate gender
-    if (!array_key_exists($gender, $_genders)) {
+    if ($gender == '') {
+        $_err['gender'] = 'Required';
+    } else if (!array_key_exists($gender, $_genders)) {
         $_err['gender'] = 'Invalid value';
     }
 
@@ -91,30 +101,34 @@ if (is_post()) {
     }
 
     //Validate phone number
-    if (!preg_match('/^[1-9][0-9]{7,9}$/', $phone)) {
+    if ($phone == '') {
+        $_err['phone'] = 'Required';
+    } else if (!preg_match('/^[1-9][0-9]{7,9}$/', $phone)) {
         $_err['phone'] = 'Phone number must be in format 0XXXXXXXXX';
     }
 
     //Validate day , month , year (later combine for date of borth)
-
-    // Check if date is valid for the selected month
-    $days_in_month = cal_days_in_month(CAL_GREGORIAN, $month, $year);
-
-    if ($date > $days_in_month) {
-        $_err['date_of_birth'] = "February has only $days_in_month days in $year";
-    } else if (!checkdate($month, $date, $year)) {
-        $_err['date_of_birth'] = 'Invalid date of birth';
+    if ($date == '' || $month == '' || $year == '') {
+        $_err['date_of_birth'] = 'Date of birth is required';
     } else {
-        //Age restriction (member must be at least 12 years old)
-        $current_year = date('Y');
-        $age = $current_year - $year;
-        if ($age < 12) {
-            $_err['date_of_birth'] = 'You must be at least 12 years old';
-        } else if ($age > 100) {
-            $_err['date_of_birth'] = 'Please enter a valid date of birth';
+        // Check if date is valid for the selected month
+        $days_in_month = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+
+        if ($date > $days_in_month) {
+            $_err['date_of_birth'] = "February has only $days_in_month days in $year";
+        } else if (!checkdate($month, $date, $year)) {
+            $_err['date_of_birth'] = 'Invalid date of birth';
+        } else {
+            //Age restriction (member must be at least 12 years old)
+            $current_year = date('Y');
+            $age = $current_year - $year;
+            if ($age < 12) {
+                $_err['date_of_birth'] = 'You must be at least 12 years old';
+            } else if ($age > 100) {
+                $_err['date_of_birth'] = 'Please enter a valid date of birth';
+            }
         }
     }
-
 
     $registration_date = date('Y-m-d');
 
@@ -212,7 +226,7 @@ if (is_post()) {
                         <a href='$verification_url' class='button'>Verify Account</a>
                     </p>
                     
-                    <p>You may also use the link below:</p>
+                    <p>Or copy and paste this link into your browser:</p>
                     <p><code>$verification_url</code></p>
                     
                     <div class='warning'>
@@ -223,6 +237,7 @@ if (is_post()) {
                     <strong>The Four Eyes Collective Team</strong></p>
                 </div>
                 <div class='footer'>
+                    <p>This is an automated message, please do not reply to this email.</p>
                     <p>&copy; " . date('Y') . " Four Eyes Collective. All rights reserved.</p>
                 </div>
             </div>
@@ -276,7 +291,7 @@ $_title = 'Member Registration';
                     <label for="email">Email *</label>
                     <input type="email" id="email" name="email" class="form-control"
                         placeholder="your@email.com" maxlength="100"
-                        value="<?= encode($GLOBALS['email'] ?? '') ?>" required>
+                        value="<?= encode($GLOBALS['email'] ?? '') ?>">
                     <?= err('email') ?>
                 </div>
 
@@ -285,7 +300,7 @@ $_title = 'Member Registration';
                     <label for="name">Name *</label>
                     <input type="text" id="name" name="name" class="form-control"
                         placeholder="Your full name" maxlength="100"
-                        value="<?= encode($GLOBALS['name'] ?? '') ?>" required>
+                        value="<?= encode($GLOBALS['name'] ?? '') ?>">
                     <?= err('name') ?>
                 </div>
             </div>
@@ -295,7 +310,7 @@ $_title = 'Member Registration';
                 <div class="form-group">
                     <label for="password">Password *</label>
                     <input type="password" id="password" name="password" class="form-control"
-                        placeholder="Create a password (8-15 characters)" maxlength="15" required>
+                        placeholder="Create a password (8-15 characters)" maxlength="15">
                     <?= err('password') ?>
                 </div>
 
@@ -303,7 +318,7 @@ $_title = 'Member Registration';
                 <div class="form-group">
                     <label for="confirm_password">Confirm Password *</label>
                     <input type="password" id="confirm_password" name="confirm_password" class="form-control"
-                        placeholder="Re-enter your password" maxlength="15" required>
+                        placeholder="Re-enter your password" maxlength="15">
                     <?= err('confirm_password') ?>
                 </div>
             </div>
@@ -316,7 +331,7 @@ $_title = 'Member Registration';
                         <?php foreach ($_genders as $id => $text): ?>
                             <div class="radio-option">
                                 <input type="radio" id="gender_<?= $id ?>" name="gender" value="<?= $id ?>"
-                                    <?= ($GLOBALS['gender'] ?? '') == $id ? 'checked' : '' ?> required>
+                                    <?= ($GLOBALS['gender'] ?? '') == $id ? 'checked' : '' ?>>
                                 <label for="gender_<?= $id ?>"><?= $text ?></label>
                             </div>
                         <?php endforeach; ?>
@@ -332,7 +347,7 @@ $_title = 'Member Registration';
                         placeholder="123456789"
                         pattern="[1-9][0-9]{7,9}"
                         maxlength="9"
-                        value="<?= encode($GLOBALS['phone'] ?? '') ?>" required>
+                        value="<?= encode($GLOBALS['phone'] ?? '') ?>">
                     <?= err('phone') ?>
                 </div>
             </div>
@@ -361,7 +376,7 @@ $_title = 'Member Registration';
                     <label>Date of Birth *</label>
                     <div class="dob-group">
                         <div class="dob-selectors">
-                            <select id="date" name="date" class="dob-select" required>
+                            <select id="date" name="date" class="dob-select">
                                 <option value="">Day</option>
                                 <?php foreach ($_days as $id => $text): ?>
                                     <option value="<?= $id ?>" <?= ($GLOBALS['date'] ?? '') == $id ? 'selected' : '' ?>>
@@ -370,7 +385,7 @@ $_title = 'Member Registration';
                                 <?php endforeach; ?>
                             </select>
 
-                            <select id="month" name="month" class="dob-select" required>
+                            <select id="month" name="month" class="dob-select">
                                 <option value="">Month</option>
                                 <?php foreach ($_months as $id => $text): ?>
                                     <option value="<?= $id ?>" <?= ($GLOBALS['month'] ?? '') == $id ? 'selected' : '' ?>>
@@ -379,7 +394,7 @@ $_title = 'Member Registration';
                                 <?php endforeach; ?>
                             </select>
 
-                            <select id="year" name="year" class="dob-select" required>
+                            <select id="year" name="year" class="dob-select">
                                 <option value="">Year</option>
                                 <?php foreach ($_years as $id => $text): ?>
                                     <option value="<?= $id ?>" <?= ($GLOBALS['year'] ?? '') == $id ? 'selected' : '' ?>>
