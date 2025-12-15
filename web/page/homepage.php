@@ -1,9 +1,25 @@
 <?php
 require '../_base.php';
 
+$temp_message = temp('info');
+
 $_title = 'Four Eyes Collective - Premium Eyewear';
 include '../_head.php';
 ?>
+
+<?php if ($temp_message): ?>
+<div class="temp-message" style="position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: #11c35bff; color: white; padding: 15px 30px; border-radius: 4px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation:fadeInDrop 0.5s ease-out forwards">
+    <?= encode($temp_message) ?>
+</div>
+
+<script>
+    // Disappear after 3 seconds
+    setTimeout(function() {
+        var msg = document.querySelector('.temp-message');
+        if (msg) msg.style.display = 'none';
+    }, 3000);
+</script>
+<?php endif; ?>
 
 <!-- Hero Section -->
 <section class="hero-section" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 100px 0; text-align: center;">

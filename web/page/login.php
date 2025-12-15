@@ -2,20 +2,15 @@
 require '../_base.php';
 require '../lib/db.php';
 
+$temp_message = temp('success');
+
 if (is_post()) {
     $email    = req('email');
     $password = req('password');
 
     // Validate: email
-    if ($email == '') {
-        $_err['email'] = 'Required';
-    } else if (!is_email($email)) {
+    if (!is_email($email)) {
         $_err['email'] = 'Invalid email';
-    }
-
-    // Validate: password
-    if ($password == '') {
-        $_err['password'] = 'Required';
     }
 
     // Login user
@@ -25,30 +20,34 @@ if (is_post()) {
             WHERE email = ? AND password = SHA1(?)
         ');
         $stm->execute([$email, $password]);
-        $u = $stm->fetch();
+        $user = $stm->fetch();
 
-        if ($u) {
+        if ($user) {
             // Check if user is active
-            // if ($u->status === 'inactive') {
-            //     $_err['email'] = 'Account not verified. Please check your email for verification link. <a href="resend_verification.php?email=' . urlencode($email) . '">Resend verification email</a>';
-            // } else {
-                temp('info', 'Login successfully');
-                login($u);
+            if ($user->status === 'Inactive') {
+                $_err['email'] = 'Your account is not activated ! <br> Please check your email for the verification link or
+                         <a href="resend_verification.php?email=' . urlencode($email) . '" style="color: #1580ebff; font-size: 17px;">Resend verification email</a>';
+            } else {
+                temp('info', 'Login successfully!');
                 // Redirect based on role
-                if ($u->role === 'admin' || $u->role === 'staff') {
-                    redirect('/homepage.php');
+                if ($user->role === 'Member') {
+                    login($user, '/page/homepage.php');
+                } elseif ($user->role === 'Admin') {
+                    login($user, '/page/admin_dashboard.php');
                 } else {
-                    redirect('/homepage.php');
+                    login($user, '/homepage.php');
                 }
-            //}
+            }
         } else {
-            $_err['password'] = 'Invalid email or password';
+            $_err['password'] = 'Invalid email or password. Please try again.';
         }
-    }}
+    }
+}
 
 // ----------------------------------------------------------------------------
 $_title = 'Login';
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -58,11 +57,25 @@ $_title = 'Login';
     <title><?= $_title ?? 'Four Eyes Collective' ?></title>
     <link rel="shortcut icon" href="/images/WIS_logo_1.png">
     <link rel="stylesheet" href="/css/app.css">
-    <link rel="stylesheet" href="/css/login.css">
+    <link rel="stylesheet" href="/css/user.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
-
 <body class="login-page">
+
+    <?php if ($temp_message): ?>
+        <div class="temp-message" style="position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: #11c35bff; color: white; padding: 15px 30px; border-radius: 4px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation:fadeInDrop 0.5s ease-out forwards">
+            <?= encode($temp_message) ?>
+        </div>
+
+        <script>
+            // Disappear after 6 seconds
+            setTimeout(function() {
+                var msg = document.querySelector('.temp-message');
+                if (msg) msg.style.display = 'none';
+            }, 6000);
+        </script>
+    <?php endif; ?>
+
     <div class="login-container">
         <div class="login-header">
             <div class="header-content">
@@ -77,41 +90,27 @@ $_title = 'Login';
         </div>
 
         <form method="post" class="login-form">
-            <!-- Display error message if exists -->
-            <?php if (isset($_err['email']) && strpos($_err['email'], 'Invalid email or password') !== false): ?>
-                <div class="alert alert-error">
-                    Invalid email or password. Please try again.
-                </div>
-            <!-- <?php elseif (isset($_err['email']) && strpos($_err['email'], 'Account is inactive') !== false): ?>
-                <div class="alert alert-warning">
-                    Account is inactive. Please contact administrator.
-                </div> -->
-            <?php endif; ?>
-
             <div class="form-group">
                 <label for="email">Email *</label>
-                <input type="email" id="email" name="email" class="form-control"
-                    placeholder="your@email.com" maxlength="100"
-                    value="<?= encode($GLOBALS['email'] ?? '') ?>">
+                <input type="email" id="email" name="email" class="form-control" placeholder="your@email.com" maxlength="100" value="<?= encode($GLOBALS['email'] ?? '') ?>" required>
                 <?= err('email') ?>
             </div>
 
             <div class="form-group">
                 <label for="password">Password *</label>
-                <input type="password" id="password" name="password" class="form-control"
-                    placeholder="Enter your password" maxlength="100">
+                <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" maxlength="15" required>
                 <?= err('password') ?>
             </div>
 
             <!-- Submit Buttons -->
             <div class="button-row">
-                <button type="submit" class="btn btn-primary">Sign In</button>
-                <button type="reset" class="btn btn-secondary">Reset</button>
+                <button type="submit" class="btn btn-black">Sign In</button>
+                <button type="reset" class="btn btn-white">Reset</button>
             </div>
 
             <div class="links-container">
                 <div class="forgot-link">
-                    <a href="forgot-password.php">Forgot Password?</a>
+                    <a href="forgot_password.php">Forgot Password?</a>
                 </div>
 
                 <div class="back-link">
