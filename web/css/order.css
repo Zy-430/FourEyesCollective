@@ -1,0 +1,163 @@
+.cta-button.large {
+    padding: 15px 40px; 
+    font-size: 15px; 
+    font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+}
+
+.order-card {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 15px;
+}
+
+.order-card .order-status {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 0.75em;
+    font-weight: bold;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 20px;
+}
+
+/* Status colors with pastel background */
+.order-status.pending {
+    background-color: #fde3b0;
+    /* pastel orange */
+    color: #f39c12;
+}
+
+.order-status.shipped {
+    background-color: #cce5ff;
+    /* pastel blue */
+    color: #3498db;
+}
+
+.order-status.delivered,
+.order-status.completed {
+    background-color: #c8f7c5;
+    /* pastel green */
+    color: #27ae60;
+}
+
+.order-status.cancelled {
+    background-color: #f9c8c6;
+    /* pastel red */
+    color: #e74c3c;
+}
+
+.order-status.default {
+    background-color: #d3d3d3;
+    /* pastel grey */
+    color: #7f8c8d;
+}
+
+.order-date {
+    color: #b0b0b0; /* light grey */
+    font-size: 14px;
+}
+
+.order-tabs .tab-button {
+    color: #000; /* default inactive color */
+    text-decoration: none;
+}
+
+.order-tabs .tab-button.active {
+    color: #fff; /* active tab color */
+}
+
+
+/* Timeline container */
+.timeline {
+    position: relative;
+    margin: 20px 0;
+    padding-left: 30px;
+    border-left: 2px solid #ddd;
+    /* vertical line */
+}
+
+/* Each item */
+.timeline-item {
+    position: relative;
+    margin-bottom: 25px;
+    padding: 10px 15px;
+    border-radius: 6px;
+    background: #f9f9f9;
+    /* light background for all items */
+}
+
+/* Dot */
+.timeline-item .timeline-dot {
+    position: absolute;
+    left: -16px;
+    /* place it outside the box */
+    top: 12px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ddd;
+    /* default grey */
+    border: 2px solid white;
+    /* border to separate from line */
+}
+
+/* Status colors */
+.timeline-item.status-pending .timeline-dot {
+    background: #f39c12;
+}
+
+.timeline-item.status-shipped .timeline-dot {
+    background: #3498db;
+}
+
+.timeline-item.status-delivered .timeline-dot {
+    background: #2ecc71;
+}
+
+.timeline-item.status-completed .timeline-dot {
+    background: #27ae60;
+}
+
+.timeline-item.status-cancelled .timeline-dot {
+    background: #e74c3c;
+}
+
+/* Active item */
+.timeline-item.active {
+    background: #f5e6fa;
+    /* subtle background for active item */
+}
+
+.timeline-item.active .timeline-dot {
+    background: #9b59b6;
+    /* active dot color */
+    box-shadow: 0 0 8px rgba(155, 89, 182, 0.7);
+    /* glow consistent with dot color */
+}
+
+.custom-select {
+    appearance: none;       /* remove default arrow */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: #ecf0f1 url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDE0IDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGxpbmUgeDE9IjAiIHkxPSIwIiB4Mj0iNyIgeTI9IjgiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIyIi8+PGxpbmUgeDE9IjciIHkxPSI4IiB4Mj0iMTQiIHkyPSIwIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==') no-repeat right 10px center;
+    border: 1px solid #bdc3c7;
+    border-radius: 6px;
+    padding: 8px 35px 8px 12px;
+    font-size: 14px;
+    color: #2c3e50;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 200px;
+}
+
+.custom-select:focus {
+    outline: none;
+    border-color: #34495e;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}

@@ -5,11 +5,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $_title ?? 'Four Eyes Collective' ?></title>
+
     <link rel="shortcut icon" href="/images/WIS_logo_1.png">
+
+    <!-- Global CSS -->
     <link rel="stylesheet" href="/css/app.css">
+
+    <!-- Page-specific CSS -->
+    <?php if (!empty($_css)): ?>
+        <?php foreach ($_css as $css): ?>
+            <link rel="stylesheet" href="/css/<?= $css ?>">
+        <?php endforeach; ?>
+    <?php endif; ?>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="/js/app.js"></script>
 </head>
+
 
 <body>
     <header>
