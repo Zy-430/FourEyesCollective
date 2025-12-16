@@ -11,33 +11,21 @@ $stmt->execute([$user_id]);
 $addresses = $stmt->fetchAll();
 $total_addresses = count($addresses);
 
-if ($total_addresses >= 10) {
+if ($total_addresses >= 10){
     $_SESSION['error'] = 'You have reached maximum length of saved address';
     redirect('profile_address_list.php');
 }
 
 // Malaysia states
 $states = [
-    "Johor",
-    "Kedah",
-    "Kelantan",
-    "Melaka",
-    "Negeri Sembilan",
-    "Pahang",
-    "Perak",
-    "Perlis",
-    "Pulau Pinang",
-    "Sabah",
-    "Sarawak",
-    "Selangor",
-    "Terengganu",
-    "Kuala Lumpur",
-    "Labuan",
-    "Putrajaya"
+    "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan",
+    "Pahang", "Perak", "Perlis", "Pulau Pinang", "Sabah",
+    "Sarawak", "Selangor", "Terengganu", "Kuala Lumpur",
+    "Labuan", "Putrajaya"
 ];
 
 // Handle form submission
-if (is_post()) {
+if (is_post()){
     $line1 = trim($_POST['address_line1']);
     $line2 = trim($_POST['address_line2']);
     $city = trim($_POST['city']);
@@ -52,16 +40,11 @@ if (is_post()) {
             ->execute([$user_id]);
     }
 
-    // Generate new ID (AD0001)
-    $stmt = $_db->query("SELECT address_id FROM address WHERE address_id LIKE 'ADRS%' ORDER BY address_id DESC LIMIT 1");
+    // Generate new ID (ADRS0001)
+    $stmt = $_db->query("SELECT address_id FROM address ORDER BY address_id DESC LIMIT 1");
     $last = $stmt->fetch();
     if ($last) {
         $num = intval(substr($last->address_id, 4)) + 1;
-        // Ensure we don't exceed 9999
-        if ($num > 9999) {
-            $_SESSION['error'] = 'Maximum address limit reached (9999)';
-            redirect('profile_address_list.php');
-        }
         $new_id = "ADRS" . str_pad($num, 4, "0", STR_PAD_LEFT);
     } else {
         $new_id = "ADRS0001"; // First address
@@ -76,70 +59,79 @@ if (is_post()) {
     ");
 
     $insert->execute([
-        $new_id,
-        $user_id,
-        $line1,
-        $line2,
-        $city,
-        $state,
-        $postcode,
-        $country,
-        $is_default
+        $new_id, $user_id, $line1, $line2,
+        $city, $state, $postcode, $country, $is_default
     ]);
 
     $_SESSION['success'] = "Address added successfully.";
     redirect("profile_address_list.php");
 }
 
-$_title = "Add New Address";
+$_title = "Add New Address | Four Eyes Collective";
 include '../_head.php';
 
 ?>
 
-
-
 <section style="padding:60px 0; background:#ecf0f1;">
-    <div style="max-width:700px; margin:auto; background:white; padding:40px; border-radius:14px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+<div style="max-width:700px; margin:auto; background:white; padding:40px; border-radius:14px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
 
-        <h2 style="margin-bottom:25px;">Add New Address</h2>
+    <h1 style="text-align:center; margin-bottom:30px;">Add New Address</h1>
 
-        <form method="post">
+    <form method="post">
 
+        <div class="form-group">
             <label>Address Line 1 *</label>
-            <input name="address_line1" required class="form-input">
+            <input type="text" name="address_line1" class="form-control" required>
+        </div>
 
+        <div class="form-group">
             <label>Address Line 2</label>
-            <input name="address_line2" class="form-input">
+            <input type="text" name="address_line2" class="form-control">
+        </div>
 
+        <div class="form-group">
             <label>City *</label>
-            <input name="city" required class="form-input">
+            <input type="text" name="city" class="form-control" required>
+        </div>
 
-            <label>State</label>
-            <select name="state" required
-                style="width:100%; padding:12px; border:1px solid #ccc; border-radius:8px; margin-bottom:15px;">
+        <div class="form-group">
+            <label>State *</label>
+            <select name="state" class="form-control" required>
                 <option value="">-- Select State --</option>
-                <?php foreach ($states as $st): ?>
-                    <option value="<?= encode($st) ?>"><?= encode($st) ?></option>
+                <?php foreach ($states as $s): ?>
+                    <option value="<?= $s ?>"><?= $s ?></option>
                 <?php endforeach; ?>
             </select>
+        </div>
 
+        <div class="form-group">
             <label>Postcode *</label>
-            <input name="postcode" required class="form-input">
+            <input type="text" name="postcode" class="form-control" required>
+        </div>
 
-            <label>Country</label>
-            <input name="country" value="Malaysia" required class="form-input">
+        <div class="form-group">
+            <label>Country *</label>
+            <select class="form-control" disabled style="pointer-events:none; background:#f1f1f1;">
+                <option value="Malaysia" selected>Malaysia</option>
+            </select>
+            <input type="hidden" name="country" value="Malaysia">
+        </div>
 
-            <label style="margin-top:20px;">
-                <input type="checkbox" name="default_flag"> Set as Default Address
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="default_flag" value="1">
+                Set as default address
             </label>
+        </div>
 
-            <br><br>
+        <div class="form-group">
+            <button class="cta-button" type="submit" style="width:100%; margin-top:20px;">
+                Add Address
+            </button>
+        </div>
 
-            <button type="submit" class="btn btn-primary">Save</button>
-            <a href="profile_address_list.php" class="btn btn-secondary">Cancel</a>
+    </form>
 
-        </form>
-
-    </div>
+</div>
 </section>
 <?php include '../_foot.php'; ?>

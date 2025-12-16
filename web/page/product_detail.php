@@ -1,23 +1,15 @@
 <?php
 require '../_base.php';
 require '../lib/db.php';
+require '../lib/category.php';
 
 $id = get('id');
 $stm = $_db->prepare("SELECT * FROM product WHERE product_id = ?");
 $stm->execute([$id]);
 $p = $stm->fetch();
 
-function categoryFolder($catId)
-{
-    return [
-        'CA0001' => 'glasses',
-        'CA0002' => 'sunglasses',
-        'CA0003' => 'contactlens',
-        'CA0004' => 'kids'
-    ][$catId] ?? 'others';
-}
+$folder = $categoryFolders[$p->category_id] ?? 'others';
 
-$folder = categoryFolder($p->category_id);
 $images = explode(',', $p->product_image);
 
 $_title = $p->product_name;

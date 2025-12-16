@@ -1,6 +1,7 @@
 <?php
 require '../_base.php';
 require '../lib/db.php';
+require '../lib/category.php';
 auth('Admin');
 
 $_title = 'Add Product';
@@ -18,14 +19,6 @@ function generateProductID($db) {
 
 $product_id = generateProductID($_db);
 
-// CATEGORY MAPPING (folder + name)
-$categories = [
-    'CA0001' => ['name' => 'Glasses', 'folder' => 'glasses'],
-    'CA0002' => ['name' => 'Sunglasses', 'folder' => 'sunglasses'],
-    'CA0003' => ['name' => 'Contact Lens', 'folder' => 'contactlens'],
-    'CA0004' => ['name' => 'Kids', 'folder' => 'kids'],
-];
-
 // FORM SUBMIT
 if (is_post()) {
 
@@ -36,7 +29,7 @@ if (is_post()) {
     $category_id = post('category_id');
     $product_status = post('product_status') ? 1 : 0;
 
-    $folder = $categories[$category_id]['folder'];
+    $folder = $categoryFolders[$category_id] ?? 'others';
 
     // MULTIPLE IMAGE UPLOAD HANDLER
     $uploadedImages = [];
@@ -107,9 +100,10 @@ if (is_post()) {
 
     <label>Category:</label>
     <select name="category_id" required style="width:100%; padding:8px; margin-bottom:15px;">
-        <?php foreach ($categories as $id => $cat): ?>
-            <option value="<?= $id ?>"><?= $cat['name'] ?></option>
+        <?php foreach ($categories as $id => $name): ?>
+            <option value="<?= $id ?>"><?= encode($name) ?></option>
         <?php endforeach; ?>
+
     </select>
 
     <label>Upload Product Images (Multiple):</label>

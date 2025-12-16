@@ -1,6 +1,7 @@
 <?php
 require '../_base.php';
 require '../lib/db.php';
+require '../lib/category.php';
 auth('Admin');
 
 $id = get('id');
@@ -24,6 +25,13 @@ if (isset($_GET['delete_img'])) {
     $updatedImages = array_filter($currentImages, function($img) use ($imgToDelete) {
         return $img !== $imgToDelete;
     });
+    
+    $folder = $categoryFolders[$p->category_id] ?? 'others';
+    $filePath = "../images/product/$folder/$imgToDelete";
+
+    if (file_exists($filePath)) {
+        unlink($filePath);
+    }
 
     // Update DB
     $finalImageString = implode(", ", $updatedImages);
@@ -39,15 +47,7 @@ if (isset($_GET['delete_img'])) {
 $_title = 'Modify Product';
 include '../_head.php';
 
-// Category mapping
-$categories = [
-    'CA0001' => ['name' => 'Glasses', 'folder' => 'glasses'],
-    'CA0002' => ['name' => 'Sunglasses', 'folder' => 'sunglasses'],
-    'CA0003' => ['name' => 'Contact Lens', 'folder' => 'contactlens'],
-    'CA0004' => ['name' => 'Kids', 'folder' => 'kids']
-];
-
-$folder = $categories[$p->category_id]['folder'];
+$folder = $categoryFolders[$p->category_id] ?? 'others';
 
 // If form submitted
 if (is_post()) {
@@ -66,7 +66,8 @@ if (is_post()) {
         foreach ($_FILES['product_images']['name'] as $key => $name) {
             $tmp = $_FILES['product_images']['tmp_name'][$key];
             $safeName = time() . "_" . preg_replace("/[^A-Za-z0-9._-]/", "_", $name);
-            $target = "../images/product/" . $categories[$category_id]['folder'] . "/" . $safeName;
+            $folder = $categoryFolders[$category_id] ?? 'others';
+            $target = "../images/product/$folder/$safeName";
 
             if (move_uploaded_file($tmp, $target)) {
                 $newImages[] = $safeName;
@@ -135,11 +136,12 @@ if (is_post()) {
 
     <label>Category:</label>
     <select name="category_id" required style="width:100%; padding:8px; margin-bottom:15px;">
-        <?php foreach ($categories as $id => $c): ?>
+        <?php foreach ($categories as $id => $name): ?>
             <option value="<?= $id ?>" <?= $id == $p->category_id ? 'selected' : '' ?>>
-                <?= $c['name'] ?>
+                <?= encode($name) ?>
             </option>
         <?php endforeach; ?>
+
     </select>
 
     <label>Existing Images:</label><br>

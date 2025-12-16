@@ -41,23 +41,18 @@ $current_url = $_SERVER['REQUEST_URI'];
                 Member Management
             </a>
 
-            <a href="/page/customer_management.php"
-                class="<?= $current_script == 'customer_management.php' ? 'active' : '' ?>">
-                Customer Management
-            </a>
-
-            <a href="/page/category_management.php"
-                class="<?= $current_script == 'category_management.php' ? 'active' : '' ?>">
+            <a href="/page/view_category.php"
+                class="<?= $current_script == 'view-category.php' ? 'active' : '' ?>">
                 Category Management
             </a>
 
-            <a href="/page/add_product.php"
-                class="<?= $current_script == 'add_product.php' ? 'active' : '' ?>">
+            <a href="/page/view_product.php"
+                class="<?= $current_script == 'view_product.php' ? 'active' : '' ?>">
                 Product Management
             </a>
 
-            <a href="/page/order_history.php"
-                class="<?= $current_script == 'order_history.php' ? 'active' : '' ?>">
+            <a href="/page/admin_order.php"
+                class="<?= $current_script == 'admin_order.php' ? 'active' : '' ?>">
                 Order History
             </a>
         </nav>

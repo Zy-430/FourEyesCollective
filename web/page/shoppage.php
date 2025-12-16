@@ -1,7 +1,7 @@
 <?php
 require '../_base.php';
 require '../lib/db.php';
-
+require '../lib/category.php';
 // Include SimplePager class (assuming it's in lib folder)
 require '../lib/SimplePager.php';
 
@@ -76,24 +76,6 @@ $priceRangeData = $priceStm->fetch();
 $actualMinPrice = $priceRangeData->min_price ?? 0;
 $actualMaxPrice = $priceRangeData->max_price ?? 1000;
 
-// Category mapping
-function categoryFolder($catId)
-{
-    return [
-        'CA0001' => 'glasses',
-        'CA0002' => 'sunglasses',
-        'CA0003' => 'contactlens',
-        'CA0004' => 'kids'
-    ][$catId] ?? 'others';
-}
-
-$categoryNames = [
-    'CA0001' => 'Glasses',
-    'CA0002' => 'Sunglasses',
-    'CA0003' => 'Contact Lens',
-    'CA0004' => 'Kids'
-];
-
 // Predefined price ranges
 $priceRanges = [
     '0-100' => 'Under RM 100',
@@ -149,7 +131,7 @@ $filterQuery = http_build_query($currentParams);
                             onchange="this.form.submit()">
                         <span>All Products</span>
                     </label>
-                    <?php foreach ($categoryNames as $id => $name): ?>
+                    <?php foreach ($categories as $id => $name): ?>
                         <label style="display: flex; align-items: center; gap: 8px;">
                             <input type="radio"
                                 name="cat"
@@ -288,7 +270,7 @@ $filterQuery = http_build_query($currentParams);
 
                 <?php foreach ($products as $p): ?>
                     <?php
-                    $folder = categoryFolder($p->category_id);
+                    $folder = $categoryFolders[$p->category_id] ?? 'others';
                     $imgArray = explode(',', $p->product_image);
                     $firstImage = trim($imgArray[0]);
                     $imgPath = "/images/product/$folder/$firstImage";
@@ -303,15 +285,8 @@ $filterQuery = http_build_query($currentParams);
                             style="width:100%; height:180px; object-fit:cover; border-radius:6px; margin-bottom:10px;">
 
                         <!-- NAME -->
-                        <div style="height:50px; overflow:hidden; margin-bottom:10px;">
+                        <div style="height:51px; overflow:hidden; margin-bottom:10px;">
                             <h3 style="font-size:17px; margin:0;"><?= encode($p->product_name) ?></h3>
-                        </div>
-
-                        <!-- CATEGORY -->
-                        <div style="margin-bottom: 10px;">
-                            <span style="background: #eee; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                <?= $categoryNames[$p->category_id] ?? 'Other' ?>
-                            </span>
                         </div>
 
                         <!-- PRICE -->
@@ -321,8 +296,16 @@ $filterQuery = http_build_query($currentParams);
                         </div>
 
                         <!-- STOCK -->
-                        <div style="margin-bottom: 10px; font-size: 14px; color: #666;">
-                            Stock: <?= number_format($p->product_stock) ?>
+                        <div style="margin-bottom: 10px; font-size: 14px;">
+                            <?php if ($p->product_stock <= 10): ?>
+                                <span style="color: #c0392b; font-weight:bold;">
+                                    Stock: <?= number_format($p->product_stock) ?> (Selling Fast!)
+                                </span>
+                            <?php else: ?>
+                                <span style="color: #666;">
+                                    Stock: <?= number_format($p->product_stock) ?>
+                                </span>
+                            <?php endif; ?>
                         </div>
 
                         <!-- BUTTONS -->
