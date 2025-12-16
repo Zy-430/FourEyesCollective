@@ -7,7 +7,7 @@ require '../lib/db.php';
 // Auto-generate user ID (only for member)
 function generateMemberID($db)
 {
-    $last = $db->query("SELECT user_id FROM users WHERE role='member'ORDER BY user_id DESC LIMIT 1")->fetchColumn();
+    $last = $db->query("SELECT user_id FROM users WHERE role='Member'ORDER BY user_id DESC LIMIT 1")->fetchColumn();
 
     // If no member exists, start with ME0001
     if (!$last) return "ME0001";
@@ -90,13 +90,14 @@ if (is_post()) {
         $_err['gender'] = 'Invalid value';
     }
 
-    // Validate photo
-    if (!$photo) {
-        $_err['photo'] = 'Required';
-    } else if (!str_starts_with($photo->type, 'image/')) {
-        $_err['photo'] = 'Must be image';
-    } else if ($photo->size > 1 * 1024 * 1024) {
-        $_err['photo'] = 'Maximum 1MB';
+    // Validate photo (optional : user can uplaod / use default image)
+    if ($photo && $photo->size > 0) {
+        // Only validate if a photo was uploaded
+        if (!str_starts_with($photo->type, 'image/')) {
+            $_err['photo'] = 'Must be an image';
+        } else if ($photo->size > 1 * 1024 * 1024) {
+            $_err['photo'] = 'Maximum 1MB';
+        }
     }
 
     //Validate phone number
@@ -118,34 +119,42 @@ if (is_post()) {
         } else if (!checkdate($month, $date, $year)) {
             $_err['date_of_birth'] = 'Invalid date of birth';
         } else {
-            //Age restriction (member must be at least 15 years old)
+            //Age restriction (member must be at least 12 years old)
             $current_year = date('Y');
             $age = $current_year - $year;
-            if ($age < 15) {
-                $_err['date_of_birth'] = 'You must be at least 15 years old';
+            if ($age < 12) {
+                $_err['date_of_birth'] = 'You must be at least 12 years old';
             } else if ($age > 100) {
                 $_err['date_of_birth'] = 'Please enter a valid date of birth';
             }
         }
     }
 
-    if (empty($registration_date)) {
-        $registration_date = date('Y-m-d');
-    }
+    $registration_date = date('Y-m-d');
+
 
     // Insert into database
     if (!$_err) {
 
-        $photo = save_photo($photo, '../images/users');
+        if ($photo && $photo->size > 0) {
+            $photo_filename = save_photo($photo, '../images/users');
+        } else {
+            // Use default photo
+            $photo_filename = 'default_user.png';
+        }
 
-        // Make sure these variables have values
+        // Member registration only for member
+        // Default status for new members is inactive (wait for email verification)
         $role = 'Member';
-        $status = 'Inactive'; // Default status for new members (wait for email verification)
+        $status = 'Inactive';
 
-        // Get current date for registration_date if not provided
+        // Get current date for registration_date 
         if (empty($registration_date)) {
             $registration_date = date('Y-m-d');
         }
+
+        // Begin transaction
+        $_db->beginTransaction();
 
         $stm = $_db->prepare('
         INSERT INTO users (user_id, role, email, password, name, gender, phone, date_of_birth, photo, registration_date, status)
@@ -161,12 +170,87 @@ if (is_post()) {
             $gender,
             $phone,
             $date_of_birth,
-            $photo,
+            $photo_filename,
             $registration_date,
             $status
         ]);
 
-        redirect('login.php');
+        // Generate verification token
+        $verification_token = sha1(uniqid() . rand());
+
+        // Then store verification token (it will expires in 24 hours)
+        $stm = $_db->prepare('
+            INSERT INTO token (token_id, expire, user_id, type)
+            VALUES(?, ADDTIME(NOW(), "24:00"), ?, "verification")
+        ');
+        $stm->execute([$verification_token, $user_id]);
+
+        $_db->commit();
+
+        // Send verification email
+        $verification_url = base("page/activate_account.php?token_id=$verification_token");
+
+        $m = get_mail();
+        $m->addAddress($email, $name);
+        $m->isHTML(true);
+        $m->Subject = 'Verify Your Account - Four Eyes Collective';
+
+        $m->Body =  "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+                .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
+                .button { display: inline-block; background: #2c3e50; color: #ddd; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 15px 0; }
+                .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #777; font-size: 12px; }
+                .warning {padding-top: 10px; padding-bottom:10px; color:red; font-style:italic;}
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='header'>
+                    <h2>Four Eyes Collective</h2>
+                    <h3>Account Verification</h3>
+                </div>
+                <div class='content'>
+                    <p>Hello " . htmlspecialchars($name) . ",</p>
+                    
+                    <p>Thank you for registering with Four Eyes Collective!</p>
+                    
+                    <p>To activate your account, please click the button below:</p>
+                    
+                    <p style='text-align: center;'>
+                        <a href='$verification_url' class='button'>Verify Account</a>
+                    </p>
+                    
+                    <p>Or copy and paste this link into your browser:</p>
+                    <p><code>$verification_url</code></p>
+                    
+                    <div class='warning'>
+                        <p>* This link will expire in 24 hours. If you didn't create an account with us, please ignore this email.</p>
+                    </div>
+                    
+                    <p>Best regards,<br>
+                    <strong>The Four Eyes Collective Team</strong></p>
+                </div>
+                <div class='footer'>
+                    <p>This is an automated message, please do not reply to this email.</p>
+                    <p>&copy; " . date('Y') . " Four Eyes Collective. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        ";
+
+        if ($m->send()) {
+            temp('success', 'Registration successful! Please check your email to verify your account.');
+            redirect('login.php');
+        } else {
+            throw new Exception('Failed to send verification email');
+        }
     }
 }
 
@@ -182,13 +266,13 @@ $_title = 'Member Registration';
     <title><?= $_title ?? 'Four Eyes Collective' ?></title>
     <link rel="shortcut icon" href="/images/WIS_logo_1.png">
     <link rel="stylesheet" href="/css/app.css">
-    <link rel="stylesheet" href="/css/registration.css">
+    <link rel="stylesheet" href="/css/user.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 
-<body class="registration-page">
-    <div class="registration-container">
-        <div class="registration-header">
+<body class="registration-page" style="overflow-y: auto;">
+    <div class="registration-container" style="max-width: 900px;">
+        <div class="registration-header" style="border-radius: 25px 25px 0 0;">
             <div class="header-content">
                 <div class="logo-container">
                     <img src="/images/WIS_logo_white.png" alt="Four Eyes Collective Logo" class="header-logo">
@@ -262,6 +346,7 @@ $_title = 'Member Registration';
                     <input type="text" id="phone" name="phone" class="form-control-phone"
                         placeholder="123456789"
                         pattern="[1-9][0-9]{7,9}"
+                        maxlength="9"
                         value="<?= encode($GLOBALS['phone'] ?? '') ?>">
                     <?= err('phone') ?>
                 </div>
@@ -269,26 +354,21 @@ $_title = 'Member Registration';
 
             <!-- Date of Birth -->
             <div class="form-row">
-
-
                 <div class="form-group">
-                    <label>Profile Photo *</label>
+                    <label>Profile Photo </label>
                     <div class="photo-upload-container">
                         <label class="photo-upload-label" for="photo" tabindex="0">
                             <div class="photo-preview">
                                 <img id="photoPreview" src="/images/upload.png">
                             </div>
-                           
+
                             <input type="file" id="photo" name="photo" accept="image/*" style="display: none;">
                         </label>
                         <div class="upload-instructions">
                             <p>• Accepted formats: JPG, PNG</p>
                             <p>• Maximum size: 1MB</p>
-                            <p>• Recommended: Square image for best results</p>
+                            <p>• Optional - you can add later</p>
                         </div>
-                    </div>
-                    <div class="error-message">
-                        <?= err('photo') ?>
                     </div>
                 </div>
 
@@ -328,12 +408,10 @@ $_title = 'Member Registration';
                 </div>
             </div>
 
-
-
             <!-- Submit Buttons -->
             <div class="form-row button-row">
-                <button type="submit" class="btn btn-primary">Register</button>
-                <button type="reset" class="btn btn-secondary">Reset</button>
+                <button type="submit" class="btn btn-black">Register</button>
+                <button type="reset" class="btn btn-white">Reset</button>
             </div>
 
             <div class="links-container">
@@ -349,7 +427,7 @@ $_title = 'Member Registration';
     </div>
 
     <script>
-        // Photo preview functionality
+        // Photo preview function
         document.getElementById('photo').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {

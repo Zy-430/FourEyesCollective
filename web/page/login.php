@@ -2,53 +2,103 @@
 require '../_base.php';
 require '../lib/db.php';
 
+define('MAX_ATTEMPTS', 3);
+define('LOCK_MINUTES', 15);
+
+$temp_message = temp('success');
+
 if (is_post()) {
+
     $email    = req('email');
     $password = req('password');
 
-    // Validate: email
-    if ($email == '') {
-        $_err['email'] = 'Required';
-    } else if (!is_email($email)) {
+
+    if (!is_email($email)) {
         $_err['email'] = 'Invalid email';
     }
 
-    // Validate: password
-    if ($password == '') {
-        $_err['password'] = 'Required';
-    }
-
-    // Login user
     if (!$_err) {
-        $stm = $_db->prepare('
-            SELECT * FROM users
-            WHERE email = ? AND password = SHA1(?)
-        ');
-        $stm->execute([$email, $password]);
-        $u = $stm->fetch();
+        // Get user by email
+        $stm = $_db->prepare("SELECT * FROM users WHERE email = ?");
+        $stm->execute([$email]);
+        $user = $stm->fetch();
 
-        if ($u) {
-            // Check if user is active
-            // if ($u->status === 'inactive') {
-            //     $_err['email'] = 'Account not verified. Please check your email for verification link. <a href="resend_verification.php?email=' . urlencode($email) . '">Resend verification email</a>';
-            // } else {
-                temp('info', 'Login successfully');
-                login($u);
-                // Redirect based on role
-                if ($u->role === 'admin' || $u->role === 'staff') {
-                    redirect('/homepage.php');
+        if ($user) {
+
+            /* Check temporary lock */
+            if ($user->lock_until && strtotime($user->lock_until) > time()) {
+                $remainingSeconds = strtotime($user->lock_until) - time();
+                $remainingMinutes = ceil($remainingSeconds / 60);
+
+                $_err['email'] =
+                    'Too many failed attempts. Please try again in ' .
+                    $remainingMinutes . ' minute(s).';
+            }/* Correct password */ 
+            elseif ($user->password === sha1($password)) {
+
+                // Then will reset attempts
+                $_db->prepare("
+                    UPDATE users 
+                    SET failed_attempts = 0, lock_until = NULL 
+                    WHERE user_id = ?
+                ")->execute([$user->user_id]);
+
+                // Check active status (if inactive then ask to activated account)
+                if ($user->status === 'Inactive') {
+                    $_err['email'] = 'Your account is not activated!';
                 } else {
-                    redirect('/homepage.php');
+
+                    temp('info', 'Login successfully!');
+
+                    // Redirect by role
+                    if ($user->role === 'Member') {
+                        login($user, '/page/homepage.php');
+                    } elseif ($user->role === 'Admin') {
+                        login($user, '/page/admin_dashboard.php');
+                    } else {
+                        login($user, '/homepage.php');
+                    }
                 }
-            //}
+            }/* Wrong password - attempt keep increasing (max = 3 , then will lock for 15 minutes)*/ 
+            else {
+                $attempts = $user->failed_attempts + 1;
+
+                if ($attempts >= MAX_ATTEMPTS) {
+
+                    $lockUntil = date(
+                        'Y-m-d H:i:s',
+                        strtotime('+' . LOCK_MINUTES . ' minutes')
+                    );
+
+                    $_db->prepare("
+                        UPDATE users 
+                        SET failed_attempts = ?, lock_until = ?
+                        WHERE user_id = ?
+                    ")->execute([$attempts, $lockUntil, $user->user_id]);
+
+                    $_err['password'] =
+                        'Too many attempts. Account locked for 15 minutes.';
+                } else {
+                    $_db->prepare("
+                        UPDATE users 
+                        SET failed_attempts = ?
+                        WHERE user_id = ?
+                    ")->execute([$attempts, $user->user_id]);
+
+                    $_err['password'] =
+                        'Invalid email or password. Attempt ' . $attempts . '/3';
+                }
+            }
         } else {
-            $_err['password'] = 'Invalid email or password';
+            $_err['password'] = 'Invalid email or password.';
         }
-    }}
+    }
+}
 
 // ----------------------------------------------------------------------------
 $_title = 'Login';
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -58,11 +108,26 @@ $_title = 'Login';
     <title><?= $_title ?? 'Four Eyes Collective' ?></title>
     <link rel="shortcut icon" href="/images/WIS_logo_1.png">
     <link rel="stylesheet" href="/css/app.css">
-    <link rel="stylesheet" href="/css/login.css">
+    <link rel="stylesheet" href="/css/user.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 
 <body class="login-page">
+
+    <?php if ($temp_message): ?>
+        <div class="temp-message" style="position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: #11c35bff; color: white; padding: 15px 30px; border-radius: 4px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation:fadeInDrop 0.5s ease-out forwards">
+            <?= encode($temp_message) ?>
+        </div>
+
+        <script>
+            // Disappear after 6 seconds
+            setTimeout(function() {
+                var msg = document.querySelector('.temp-message');
+                if (msg) msg.style.display = 'none';
+            }, 6000);
+        </script>
+    <?php endif; ?>
+
     <div class="login-container">
         <div class="login-header">
             <div class="header-content">
@@ -77,41 +142,27 @@ $_title = 'Login';
         </div>
 
         <form method="post" class="login-form">
-            <!-- Display error message if exists -->
-            <?php if (isset($_err['email']) && strpos($_err['email'], 'Invalid email or password') !== false): ?>
-                <div class="alert alert-error">
-                    Invalid email or password. Please try again.
-                </div>
-            <!-- <?php elseif (isset($_err['email']) && strpos($_err['email'], 'Account is inactive') !== false): ?>
-                <div class="alert alert-warning">
-                    Account is inactive. Please contact administrator.
-                </div> -->
-            <?php endif; ?>
-
             <div class="form-group">
                 <label for="email">Email *</label>
-                <input type="email" id="email" name="email" class="form-control"
-                    placeholder="your@email.com" maxlength="100"
-                    value="<?= encode($GLOBALS['email'] ?? '') ?>">
+                <input type="email" id="email" name="email" class="form-control" placeholder="your@email.com" maxlength="100" value="<?= encode($GLOBALS['email'] ?? '') ?>" required>
                 <?= err('email') ?>
             </div>
 
             <div class="form-group">
                 <label for="password">Password *</label>
-                <input type="password" id="password" name="password" class="form-control"
-                    placeholder="Enter your password" maxlength="100">
+                <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" maxlength="15" required>
                 <?= err('password') ?>
             </div>
 
             <!-- Submit Buttons -->
             <div class="button-row">
-                <button type="submit" class="btn btn-primary">Sign In</button>
-                <button type="reset" class="btn btn-secondary">Reset</button>
+                <button type="submit" class="btn btn-black">Sign In</button>
+                <button type="reset" class="btn btn-white">Reset</button>
             </div>
 
             <div class="links-container">
                 <div class="forgot-link">
-                    <a href="forgot-password.php">Forgot Password?</a>
+                    <a href="forgot_password.php">Forgot Password?</a>
                 </div>
 
                 <div class="back-link">

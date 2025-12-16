@@ -3,7 +3,7 @@ require '../_base.php';
 require '../lib/db.php';
 require_once '../stripe-php-19.0.0/init.php';
 
-// Set your Stripe secret key
+// Set Stripe secret key
 \Stripe\Stripe::setApiKey('sk_test_51SZZzU2LpkFiPUtITtnxkZtzongU6II64ZL8YSynXO951EcqTfIfRbWAl586Hh8LOXYexaqDtwwaO6rxwdOQvygm006Vp82pdb');
 
 // Must login
@@ -28,12 +28,13 @@ $stm->execute([$user_id]);
 $cart_items = $stm->fetchAll(PDO::FETCH_OBJ);
 
 if (!$cart_items) {
-    // No items in checkout - redirect to cart
+
     ?>
     <!DOCTYPE html>
     <html>
     <head>
         <title>No Checkout Items | Four Eyes Collective</title>
+        <link rel="stylesheet" href="/css/checkout.css">
         <style>
             body { font-family: 'Roboto', sans-serif; text-align: center; padding: 50px; background: #f8f9fa; }
             .container { max-width: 500px; margin: 0 auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
@@ -70,29 +71,6 @@ $addresses = $stm->fetchAll(PDO::FETCH_OBJ);
 if (is_post()) {
     $address_id = post('address_id');
     $action = post('action');
-
-    if ($action === 'cancel') {
-        // Cancel checkout - restore items to cart
-        $_db->beginTransaction();
-        try {
-            // Update cart items back to in_cart
-            $_db->prepare("
-                UPDATE cart_item 
-                SET item_status = 'in_cart', checkout_at = NULL 
-                WHERE user_id = ? AND item_status = 'checkout' AND order_item_id IS NULL
-            ")->execute([$user_id]);
-            
-            $_db->commit();
-            
-            // Redirect to cart
-            echo '<script>window.location.href = "cart.php";</script>';
-            exit;
-        } catch (Exception $ex) {
-            $_db->rollBack();
-            echo json_encode(['success' => false, 'message' => $ex->getMessage()]);
-            exit;
-        }
-    }
     
     if (!$address_id) {
         echo json_encode(['success' => false, 'message' => 'Please select an address.']);
@@ -147,12 +125,7 @@ if (is_post()) {
                 $i->product_price, $i->product_price * $i->product_qty
             ]);
 
-            // Update cart item with order_item_id and change status
-            $_db->prepare("
-                UPDATE cart_item 
-                SET order_item_id = ?, item_status = 'ordered'
-                WHERE cart_item_id = ? AND user_id = ?
-            ")->execute([$order_item_id, $i->cart_item_id, $user_id]);
+
             
             // Update product stock
             $_db->prepare("
@@ -191,7 +164,7 @@ if (is_post()) {
             'metadata' => ['order_id' => $order_id, 'user_id' => $user_id]
         ]);
 
-        // Insert payment row (no payment_method_id)
+        // Insert payment row
         $stm = $_db->query("SELECT MAX(CAST(SUBSTRING(payment_id, 4) AS UNSIGNED)) AS maxid FROM payment");
         $maxPay = $stm->fetch()->maxid ?? 0;
         $payment_id = "PAY" . str_pad($maxPay + 1, 4, "0", STR_PAD_LEFT);
@@ -200,13 +173,6 @@ if (is_post()) {
             INSERT INTO payment (payment_id, order_id, amount, status, stripe_session_id, transaction_date)
             VALUES (?, ?, ?, 'pending', ?, NOW())
         ")->execute([$payment_id, $order_id, $total_amount, $session->id]);
-
-        // Insert order history
-        $history_id = "HIS" . str_pad(rand(1000, 9999), 4, "0", STR_PAD_LEFT);
-        $_db->prepare("
-            INSERT INTO order_history (history_id, order_id, status, changed_at, changed_by, message)
-            VALUES (?, ?, 'pending_payment', NOW(), ?, 'Order created, awaiting payment')
-        ")->execute([$history_id, $order_id, $user_id]);
 
         $_db->commit();
 
@@ -220,6 +186,7 @@ if (is_post()) {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -227,240 +194,12 @@ if (is_post()) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout | Four Eyes Collective</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        * { box-sizing: border-box; }
-        body { 
-            font-family: 'Roboto', sans-serif; 
-            margin: 0; 
-            padding: 0; 
-            background: #f8f9fa;
-            color: #333;
-            line-height: 1.6;
-        }
-        
-        .checkout-container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-        
-        .page-header {
-            text-align: center;
-            margin-bottom: 40px;
-            padding-bottom: 20px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        
-        .page-header h1 {
-            color: #2c3e50;
-            font-size: 2.2rem;
-            margin-bottom: 10px;
-            font-weight: 600;
-            font-family: 'Playfair Display', serif;
-        }
-        
-        .page-header p {
-            color: #7f8c8d;
-            font-size: 1rem;
-        }
-        
-        .checkout-content {
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 40px;
-        }
-        
-        @media (max-width: 992px) {
-            .checkout-content { grid-template-columns: 1fr; }
-        }
-        
-        .checkout-section {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.08);
-            margin-bottom: 30px;
-            border: 1px solid #e0e0e0;
-        }
-        
-        .section-title {
-            font-size: 1.3rem;
-            color: #2c3e50;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
-            font-weight: 600;
-            font-family: 'Playfair Display', serif;
-        }
-        
-        .address-option {
-            border: 2px solid #eaeaea;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: block;
-        }
-        
-        .address-option:hover {
-            border-color: #2c3e50;
-            background: #f8f9fa;
-        }
-        
-        .address-option.selected {
-            border-color: #2c3e50;
-            background: #f8f9fa;
-        }
-        
-        .address-option input[type="radio"] {
-            display: none;
-        }
-        
-        .order-item {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-        
-        .order-item-image {
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 6px;
-            margin-right: 15px;
-            background: white;
-            border: 1px solid #eee;
-        }
-        
-        .item-details {
-            flex: 1;
-        }
-        
-        .item-name {
-            font-weight: 600;
-            color: #2c3e50;
-            margin-bottom: 5px;
-        }
-        
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            padding: 10px 0;
-        }
-        
-        .total-amount {
-            font-size: 1.5rem;
-            font-weight: bold;
-            border-top: 2px solid #e0e0e0;
-            padding-top: 20px;
-            color: #2c3e50;
-        }
-        
-        .btn {
-            padding: 15px 30px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: block;
-            width: 100%;
-            text-align: center;
-        }
-        
-        .btn-success {
-            background: #27ae60;
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background: #229954;
-            transform: translateY(-2px);
-        }
-        
-        .btn-secondary {
-            background: #ecf0f1;
-            color: #2c3e50;
-            margin-top: 10px;
-        }
-        
-        .btn-secondary:hover {
-            background: #d5dbdb;
-        }
-        
-        .error-message {
-            color: #e74c3c;
-            margin-top: 10px;
-            padding: 10px;
-            background: #fadbd8;
-            border-radius: 5px;
-            display: none;
-        }
-        
-        .success-message {
-            color: #27ae60;
-            margin-top: 10px;
-            padding: 10px;
-            background: #d5f4e6;
-            border-radius: 5px;
-            display: none;
-        }
-        
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,.3);
-            border-radius: 50%;
-            border-top-color: white;
-            animation: spin 1s ease-in-out infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .security-note {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 15px;
-            background: #f0f7ff;
-            border-radius: 8px;
-            margin: 20px 0;
-            color: #2c3e50;
-        }
-        
-        .security-icon {
-            font-size: 1.5rem;
-        }
-        
-        .add-address-link {
-            display: inline-block;
-            color: #2c3e50;
-            text-decoration: none;
-            font-weight: 500;
-            margin-top: 15px;
-            padding: 10px 15px;
-            border: 2px dashed #2c3e50;
-            border-radius: 8px;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        
-        .add-address-link:hover {
-            background: #2c3e50;
-            color: white;
-        }
-    </style>
+    <link rel="stylesheet" href="/css/checkout.css">
+    <link rel="stylesheet" href="/css/app.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/cart_operations.js"></script>
 </head>
-<body>
+<body>    
     <div class="checkout-container">
         <!-- Page Header -->
         <div class="page-header">
@@ -479,7 +218,7 @@ if (is_post()) {
                         <?php if (empty($addresses)): ?>
                             <div style="text-align: center; padding: 30px;">
                                 <p style="color: #7f8c8d; margin-bottom: 20px;">No addresses found. Please add a shipping address.</p>
-                                <a href="profile_address_add.php?return=checkout.php" class="add-address-link">
+                                <a href="address_add.php?return=checkout.php" class="add-address-link">
                                     + Add New Address
                                 </a>
                             </div>
@@ -510,7 +249,7 @@ if (is_post()) {
                             </div>
                             <div id="addressError" class="error-message"></div>
                             <div style="margin-top: 20px;">
-                                <a href="profile_address_add.php?return=checkout.php" class="add-address-link">
+                                <a href="address_add.php?return=checkout.php" class="add-address-link">
                                     + Add New Address
                                 </a>
                             </div>
@@ -592,11 +331,6 @@ if (is_post()) {
                         <button type="button" class="btn btn-success" id="submitBtn" onclick="processPayment()">
                             <span id="btnText">Pay RM <?= number_format($total_amount, 2) ?></span>
                             <span id="btnLoading" style="display: none;" class="loading"></span>
-                        </button>
-                        
-                        <!-- Cancel Checkout Button -->
-                        <button type="button" class="btn btn-secondary" onclick="cancelCheckout()">
-                            Cancel Checkout
                         </button>
                     </div>
                 </div>
@@ -684,16 +418,6 @@ if (is_post()) {
                 btnLoading.style.display = 'none';
                 
                 console.error('Payment error:', error);
-            }
-        }
-        
-        // Cancel checkout
-        function cancelCheckout() {
-            if (confirm('Are you sure you want to cancel checkout? All selected items will be returned to your cart.')) {
-                const form = document.getElementById('checkoutForm');
-                const actionInput = document.getElementById('actionInput');
-                actionInput.value = 'cancel';
-                form.submit();
             }
         }
         

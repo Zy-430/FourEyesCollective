@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 11, 2025 at 03:48 AM
+-- Generation Time: Dec 12, 2025 at 04:07 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -119,11 +119,7 @@ INSERT INTO `cart_item` (`cart_item_id`, `user_id`, `product_id`, `product_qty`,
 ('CI0023', 'ME0001', 'PR0004', 2, 'checkout', '2025-11-05 01:20:00', NULL, '2025-11-05 02:00:00', 'OI0017'),
 ('CI0024', 'ME0002', 'PR0002', 4, 'checkout', '2025-11-06 02:10:00', NULL, '2025-11-06 03:00:00', 'OI0011'),
 ('CI0025', 'ME0003', 'PR0003', 1, 'checkout', '2025-11-07 03:30:00', NULL, '2025-11-07 04:00:00', 'OI0019'),
-('CI0026', 'ME0005', 'PR0001', 3, 'checkout', '2025-11-09 05:20:00', NULL, '2025-11-09 06:00:00', 'OI0020'),
-('CI0027', 'ME0012', 'PR0001', 1, 'in_cart', '2025-12-06 00:56:29', NULL, NULL, NULL),
-('CI0028', 'ME0010', 'PR0001', 3, 'abandoned', '2025-12-06 01:46:54', '2025-12-06 01:46:54', NULL, NULL),
-('CI0029', 'ME0010', 'PR0006', 1, 'abandoned', '2025-12-06 01:46:51', '2025-12-06 01:46:51', NULL, NULL),
-('CI0030', 'ME0010', 'PR0011', 1, 'checkout', '2025-12-06 01:47:24', NULL, '2025-12-06 01:47:24', NULL);
+('CI0026', 'ME0005', 'PR0001', 3, 'checkout', '2025-11-09 05:20:00', NULL, '2025-11-09 06:00:00', 'OI0020');
 
 -- --------------------------------------------------------
 
@@ -368,7 +364,9 @@ CREATE TABLE `payment` (
   `order_id` varchar(10) NOT NULL,
   `amount` float NOT NULL,
   `transaction_date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `payment_method_id` varchar(10) NOT NULL,
+  `stripe_session_id` varchar(255) DEFAULT NULL,
+  `stripe_payment_intent` varchar(255) DEFAULT NULL,
+  `stripe_payment_method` varchar(255) DEFAULT NULL,
   `status` varchar(50) NOT NULL,
   `failed_reason` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -377,57 +375,21 @@ CREATE TABLE `payment` (
 -- Dumping data for table `payment`
 --
 
-INSERT INTO `payment` (`payment_id`, `order_id`, `amount`, `transaction_date`, `payment_method_id`, `status`, `failed_reason`) VALUES
-('PAY0001', 'OR0001', 630, '2025-11-01 02:02:00', 'PM0001', 'succeeded', NULL),
-('PAY0002', 'OR0002', 420, '2025-11-02 03:02:00', 'PM0003', 'succeeded', NULL),
-('PAY0003', 'OR0004', 1050, '2025-11-04 05:02:00', 'PM0005', 'succeeded', NULL),
-('PAY0004', 'OR0006', 315, '2025-11-06 07:05:00', 'PM0007', 'succeeded', NULL),
-('PAY0005', 'OR0007', 525, '2025-11-07 08:02:00', 'PM0008', 'succeeded', NULL),
-('PAY0006', 'OR0008', 735, '2025-11-08 09:03:00', 'PM0009', 'succeeded', NULL),
-('PAY0007', 'OR0010', 630, '2025-11-10 11:02:00', 'PM0010', 'succeeded', NULL),
-('PAY0008', 'OR0012', 840, '2025-11-12 02:32:00', 'PM0003', 'succeeded', NULL),
-('PAY0009', 'OR0013', 1050, '2025-11-13 03:17:00', 'PM0004', 'succeeded', NULL),
-('PAY0010', 'OR0014', 315, '2025-11-14 04:47:00', 'PM0005', 'succeeded', NULL),
-('PAY0011', 'OR0016', 735, '2025-11-05 02:02:00', 'PM0001', 'succeeded', NULL),
-('PAY0012', 'OR0017', 420, '2025-11-06 03:02:00', 'PM0003', 'succeeded', NULL),
-('PAY0013', 'OR0018', 210, '2025-11-07 04:02:00', 'PM0004', 'succeeded', NULL),
-('PAY0014', 'OR0020', 1050, '2025-11-09 06:02:00', 'PM0006', 'succeeded', NULL);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `payment_method`
---
-
-CREATE TABLE `payment_method` (
-  `payment_method_id` varchar(10) NOT NULL,
-  `user_id` varchar(6) NOT NULL,
-  `provider` varchar(20) NOT NULL DEFAULT 'stripe',
-  `token` varchar(60) NOT NULL,
-  `brand` varchar(20) NOT NULL,
-  `last4` char(4) NOT NULL,
-  `expiry_month` tinyint(4) NOT NULL,
-  `expiry_year` smallint(6) NOT NULL,
-  `is_default` tinyint(1) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `active` tinyint(1) NOT NULL DEFAULT 1
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `payment_method`
---
-
-INSERT INTO `payment_method` (`payment_method_id`, `user_id`, `provider`, `token`, `brand`, `last4`, `expiry_month`, `expiry_year`, `is_default`, `created_at`, `active`) VALUES
-('PM0001', 'ME0001', 'stripe', 'pm_test_0001', 'Visa', '4242', 11, 2030, 1, '2025-11-01 01:00:00', 1),
-('PM0002', 'ME0001', 'stripe', 'pm_test_0002', 'Mastercard', '4444', 8, 2031, 0, '2025-11-01 01:05:00', 1),
-('PM0003', 'ME0002', 'stripe', 'pm_test_0003', 'Visa', '4242', 10, 2030, 1, '2025-11-02 02:20:00', 1),
-('PM0004', 'ME0003', 'stripe', 'pm_test_0004', 'Visa', '4242', 9, 2030, 1, '2025-11-03 03:30:00', 1),
-('PM0005', 'ME0004', 'stripe', 'pm_test_0005', 'Mastercard', '4444', 12, 2032, 1, '2025-11-04 04:40:00', 1),
-('PM0006', 'ME0005', 'stripe', 'pm_test_0006', 'Visa', '4242', 11, 2032, 1, '2025-11-05 05:40:00', 1),
-('PM0007', 'ME0006', 'stripe', 'pm_test_0007', 'Visa', '4242', 4, 2030, 1, '2025-11-06 06:40:00', 1),
-('PM0008', 'ME0007', 'stripe', 'pm_test_0008', 'Mastercard', '4444', 1, 2032, 1, '2025-11-07 07:45:00', 1),
-('PM0009', 'ME0008', 'stripe', 'pm_test_0009', 'Visa', '4242', 2, 2033, 1, '2025-11-08 08:50:00', 1),
-('PM0010', 'ME0009', 'stripe', 'pm_test_0010', 'Visa', '4242', 5, 2031, 1, '2025-11-09 09:55:00', 1);
+INSERT INTO `payment` (`payment_id`, `order_id`, `amount`, `transaction_date`, `stripe_session_id`, `stripe_payment_intent`, `stripe_payment_method`, `status`, `failed_reason`) VALUES
+('PAY0001', 'OR0001', 630, '2025-11-01 02:02:00', '', '', '', 'succeeded', NULL),
+('PAY0002', 'OR0002', 420, '2025-11-02 03:02:00', '', '', '', 'succeeded', NULL),
+('PAY0003', 'OR0004', 1050, '2025-11-04 05:02:00', '', '', '', 'succeeded', NULL),
+('PAY0004', 'OR0006', 315, '2025-11-06 07:05:00', '', '', '', 'succeeded', NULL),
+('PAY0005', 'OR0007', 525, '2025-11-07 08:02:00', '', '', '', 'succeeded', NULL),
+('PAY0006', 'OR0008', 735, '2025-11-08 09:03:00', '', '', '', 'succeeded', NULL),
+('PAY0007', 'OR0010', 630, '2025-11-10 11:02:00', '', '', '', 'succeeded', NULL),
+('PAY0008', 'OR0012', 840, '2025-11-12 02:32:00', '', '', '', 'succeeded', NULL),
+('PAY0009', 'OR0013', 1050, '2025-11-13 03:17:00', '', '', '', 'succeeded', NULL),
+('PAY0010', 'OR0014', 315, '2025-11-14 04:47:00', '', '', '', 'succeeded', NULL),
+('PAY0011', 'OR0016', 735, '2025-11-05 02:02:00', '', '', '', 'succeeded', NULL),
+('PAY0012', 'OR0017', 420, '2025-11-06 03:02:00', '', '', '', 'succeeded', NULL),
+('PAY0013', 'OR0018', 210, '2025-11-07 04:02:00', '', '', '', 'succeeded', NULL),
+('PAY0014', 'OR0020', 1050, '2025-11-09 06:02:00', '', '', '', 'succeeded', NULL);
 
 -- --------------------------------------------------------
 
@@ -668,15 +630,7 @@ ALTER TABLE `order_item`
 --
 ALTER TABLE `payment`
   ADD PRIMARY KEY (`payment_id`),
-  ADD KEY `order_id` (`order_id`),
-  ADD KEY `payment_method_id` (`payment_method_id`);
-
---
--- Indexes for table `payment_method`
---
-ALTER TABLE `payment_method`
-  ADD PRIMARY KEY (`payment_method_id`),
-  ADD KEY `user_id` (`user_id`);
+  ADD KEY `order_id` (`order_id`);
 
 --
 -- Indexes for table `product`
@@ -774,14 +728,7 @@ ALTER TABLE `order_item`
 -- Constraints for table `payment`
 --
 ALTER TABLE `payment`
-  ADD CONSTRAINT `payment_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `order` (`order_id`),
-  ADD CONSTRAINT `payment_ibfk_2` FOREIGN KEY (`payment_method_id`) REFERENCES `payment_method` (`payment_method_id`);
-
---
--- Constraints for table `payment_method`
---
-ALTER TABLE `payment_method`
-  ADD CONSTRAINT `payment_method_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`);
+  ADD CONSTRAINT `payment_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `order` (`order_id`);
 
 --
 -- Constraints for table `product`

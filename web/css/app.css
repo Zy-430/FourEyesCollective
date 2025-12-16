@@ -237,6 +237,11 @@ footer {
     transition: color 0.3s ease;
 }
 
+.social-links img {
+    height: 40px;
+    width: 40px;
+}
+
 .social-links a:hover {
     color: #fff;
 }

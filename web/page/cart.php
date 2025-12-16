@@ -144,16 +144,11 @@ if (is_post()) {
         case 'checkout':
             $selected_items = post('selected_items', []);
             if (!empty($selected_items)) {
-                // First clear any existing checkout items
-                $stm = $_db->prepare("UPDATE cart_item SET item_status = 'in_cart' WHERE user_id = ? AND item_status = 'checkout'");
-                $stm->execute([$user_id]);
-
                 // Mark selected items as checkout
                 foreach ($selected_items as $item_id) {
                     $stm = $_db->prepare("UPDATE cart_item SET item_status = 'checkout', checkout_at = NOW() WHERE cart_item_id = ? AND user_id = ?");
                     $stm->execute([$item_id, $user_id]);
                 }
-
                 if (is_ajax()) {
                     echo json_encode([
                         'success' => true,
