@@ -147,6 +147,24 @@ try {
     $paymentIntent = \Stripe\PaymentIntent::retrieve($session->payment_intent);
     $paymentMethod = \Stripe\PaymentMethod::retrieve($paymentIntent->payment_method);
 
+    $methodType = $paymentMethod->type;
+
+    $brand   = null;
+    $funding = null;
+    $last4   = null;
+    $bank    = null;
+
+    if ($methodType === 'card') {
+        $brand   = $paymentMethod->card->brand;     // visa / mastercard
+        $funding = $paymentMethod->card->funding;   // credit / debit
+        $last4   = $paymentMethod->card->last4;
+    }
+
+    if ($methodType === 'fpx') {
+        $bank = $paymentMethod->fpx->bank;           // maybank2u, cimb
+    }
+
+
     // Check if payment already processed
     $stm = $_db->prepare("SELECT * FROM payment WHERE stripe_session_id = ?");
     $stm->execute([$session_id]);
@@ -167,107 +185,128 @@ try {
                 stripe_payment_intent = ?,
                 stripe_payment_method = ?,
                 payment_method_type = ?,
+                card_brand = ?,
+                card_funding = ?,
                 last4 = ?,
+                bank_name = ?,
                 transaction_date = NOW()
             WHERE stripe_session_id = ?
         ")->execute([
             $session->payment_intent,
             $paymentIntent->payment_method,
+            $methodType,
+            $brand,
+            $funding,
+            $last4,
+            $bank,
             $session_id
         ]);
 
         // Update order status
-        $_db->prepare("UPDATE `order` SET status = 'paid' WHERE order_id = ?")->execute([$order_id]);
+        $_db->prepare("UPDATE `order` SET status = 'pending' WHERE order_id = ?")->execute([$order_id]);
 
         // Insert order history
         $history_id = "HIS" . str_pad(rand(1000, 9999), 4, "0", STR_PAD_LEFT);
         $_db->prepare("
             INSERT INTO order_history (history_id, order_id, status, changed_at, changed_by, message)
-            VALUES (?, ?, 'pending', NOW(), ?, 'Your order has been place.')
+            VALUES (?, ?, 'pending', NOW(), ?, 'The order has been placed.')
         ")->execute([$history_id, $order_id, $_user->user_id]);
-
-        // Get order details
-        $stm = $_db->prepare("
-            SELECT o.*, a.* 
-            FROM `order` o
-            JOIN address a ON o.address_id = a.address_id
-            WHERE o.order_id = ? AND o.user_id = ?
-        ");
-        $stm->execute([$order_id, $_user->user_id]);
-        $order_details = $stm->fetch(PDO::FETCH_OBJ);
-
-        // Get order items
-        $stm = $_db->prepare("
-            SELECT oi.*, p.product_name, p.product_image, c.category_name
-            FROM order_item oi
-            JOIN product p ON oi.product_id = p.product_id
-            LEFT JOIN category c ON p.category_id = c.category_id
-            WHERE oi.order_id = ?
-        ");
-        $stm->execute([$order_id]);
-        $order_items = $stm->fetchAll(PDO::FETCH_OBJ);
 
         $_db->commit();
 
         // Display success page
     ?>
+        <?php
+        // ---------------- Payment display preparation ----------------
+        $paymentLabel = '';
+        $paymentExtra = '';
+
+        if ($methodType === 'card') {
+            $paymentLabel = ucfirst($brand) . ' ' . ucfirst($funding) . ' Card';
+            $paymentExtra = '•••• ' . $last4;
+        } elseif ($methodType === 'fpx') {
+            $paymentLabel = 'FPX Online Banking';
+            $paymentExtra = strtoupper($bank);
+        } elseif ($methodType === 'grabpay') {
+            $paymentLabel = 'GrabPay Wallet';
+            $paymentExtra = 'Paid via GrabPay';
+        } else {
+            $paymentLabel = ucfirst($methodType);
+        }
+        ?>
+
         <!DOCTYPE html>
         <html>
 
         <head>
             <title>Payment Successful | Four Eyes Collective</title>
-            <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+            <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
             <style>
                 body {
                     font-family: 'Roboto', sans-serif;
-                    text-align: center;
-                    padding: 50px;
                     background: #f8f9fa;
+                    padding: 40px;
+                    text-align: center;
                 }
 
                 .container {
-                    max-width: 800px;
-                    margin: 0 auto;
-                    background: white;
+                    max-width: 900px;
+                    margin: auto;
+                    background: #fff;
                     padding: 40px;
-                    border-radius: 15px;
-                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+                    border-radius: 16px;
+                    box-shadow: 0 8px 25px rgba(0, 0, 0, .08);
+                }
+
+                .checkmark {
+                    font-size: 4rem;
+                    color: #27ae60;
+                }
+
+                h1 {
+                    font-family: 'Playfair Display', serif;
+                    color: #2c3e50;
                 }
 
                 .success {
-                    background: #d4edda;
-                    color: #155724;
+                    background: #eafaf1;
+                    border-left: 6px solid #27ae60;
                     padding: 25px;
+                    margin: 30px 0;
                     border-radius: 8px;
-                    margin: 30px 0;
-                    border-left: 5px solid #28a745;
                 }
 
-                .btn {
-                    display: inline-block;
-                    padding: 12px 25px;
-                    background: #2c3e50;
-                    color: white;
-                    text-decoration: none;
-                    border-radius: 5px;
-                    margin: 15px 10px;
-                    font-weight: bold;
+                .order-info {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                    gap: 20px;
+                    margin-top: 25px;
                 }
 
-                .btn-primary {
-                    background: #27ae60;
-                }
-
-                .order-details {
-                    text-align: left;
-                    background: #f8f9fa;
-                    padding: 25px;
+                .info-box {
+                    border: 1px solid #e0e0e0;
                     border-radius: 10px;
-                    margin: 30px 0;
+                    padding: 15px;
+                    background: #fafafa;
                 }
 
-                .order-details h3 {
+                .info-label {
+                    font-size: .85rem;
+                    color: #7f8c8d;
+                }
+
+                .info-value {
+                    font-weight: bold;
+                    margin-top: 5px;
                     color: #2c3e50;
+                }
+
+                .section {
+                    text-align: left;
+                    margin-top: 40px;
+                }
+
+                .section h3 {
                     border-bottom: 2px solid #e0e0e0;
                     padding-bottom: 10px;
                     font-family: 'Playfair Display', serif;
@@ -275,142 +314,107 @@ try {
 
                 .order-item {
                     display: flex;
-                    align-items: center;
+                    justify-content: space-between;
                     padding: 15px;
-                    background: white;
-                    border-radius: 8px;
-                    margin: 10px 0;
-                    border: 1px solid #e0e0e0;
+                    border-bottom: 1px solid #eee;
                 }
 
-                .order-item img {
-                    width: 60px;
-                    height: 60px;
-                    object-fit: cover;
+                .btn {
+                    display: inline-block;
+                    margin: 20px 10px;
+                    padding: 12px 25px;
                     border-radius: 6px;
-                    margin-right: 15px;
-                }
-
-                .checkmark {
-                    font-size: 4rem;
-                    color: #27ae60;
-                    margin: 20px 0;
-                }
-
-                .order-info {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                    gap: 20px;
-                    margin: 20px 0;
-                }
-
-                .info-box {
-                    background: white;
-                    padding: 15px;
-                    border-radius: 8px;
-                    border: 1px solid #e0e0e0;
-                }
-
-                .info-label {
-                    color: #7f8c8d;
-                    font-size: 0.9rem;
-                }
-
-                .info-value {
+                    text-decoration: none;
+                    color: #fff;
                     font-weight: bold;
-                    color: #2c3e50;
-                    margin-top: 5px;
+                    background: #2c3e50;
+                }
+
+                .btn-primary {
+                    background: #27ae60;
                 }
             </style>
         </head>
 
         <body>
             <div class="container">
+
                 <div class="checkmark">✅</div>
-                <h1 style="color: #2c3e50; font-family: 'Playfair Display', serif;">🎉 Payment Successful!</h1>
+                <h1>Payment Successful</h1>
 
                 <div class="success">
-                    <h2 style="margin-top: 0;">Thank You for Your Order!</h2>
-                    <p>Your order <strong><?= encode($order_id) ?></strong> has been confirmed.</p>
-                    <p>A confirmation email has been sent to <?= encode($_user->email) ?></p>
+                    <p>Thank you <strong><?= encode($_user->name) ?></strong></p>
+                    <p>Your order <strong><?= encode($order->order_id) ?></strong> has been confirmed.</p>
+                    <p>A confirmation email has been sent to <strong><?= encode($_user->email) ?></strong></p>
                 </div>
 
+                <!-- Order Summary -->
                 <div class="order-info">
                     <div class="info-box">
                         <div class="info-label">Order ID</div>
-                        <div class="info-value"><?= encode($order_id) ?></div>
+                        <div class="info-value"><?= encode($order->order_id) ?></div>
                     </div>
                     <div class="info-box">
                         <div class="info-label">Order Date</div>
-                        <div class="info-value"><?= date('F j, Y H:i', strtotime($order_details->order_date)) ?></div>
+                        <div class="info-value"><?= date('d M Y, H:i') ?></div>
+                    </div>
+                    <div class="info-box">
+                        <div class="info-label">Order Status</div>
+                        <div class="info-value" style="color:#27ae60;">Paid</div>
                     </div>
                     <div class="info-box">
                         <div class="info-label">Total Amount</div>
-                        <div class="info-value" style="color: #27ae60;">RM <?= number_format($order_details->total_amount, 2) ?></div>
-                    </div>
-                    <div class="info-box">
-                        <div class="info-label">Status</div>
-                        <div class="info-value" style="color: #27ae60; font-weight: bold;">Paid</div>
+                        <div class="info-value" style="color:#27ae60;">
+                            RM <?= number_format($order->total_amount, 2) ?>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Order Details -->
-                <div class="order-details">
-                    <h3>Shipping Address</h3>
-                    <p style="line-height: 1.8;">
-                        <strong><?= encode($order_details->recipient_name) ?></strong><br>
-                        <?= encode($order_details->address_line1) ?><br>
-                        <?php if ($order_details->address_line2): ?>
-                            <?= encode($order_details->address_line2) ?><br>
+                <!-- Payment Details -->
+                <div class="section">
+                    <h3>Payment Details</h3>
+                    <div class="order-info">
+                        <div class="info-box">
+                            <div class="info-label">Payment Method</div>
+                            <div class="info-value"><?= encode($paymentLabel) ?></div>
+                        </div>
+                        <?php if ($paymentExtra): ?>
+                            <div class="info-box">
+                                <div class="info-label"><?= $methodType === 'card' ? 'Card Number' : 'Details' ?></div>
+                                <div class="info-value"><?= encode($paymentExtra) ?></div>
+                            </div>
                         <?php endif; ?>
-                        <?= encode($order_details->city . ', ' . $order_details->state . ' ' . $order_details->postcode) ?><br>
-                        <?= encode($order_details->country) ?>
-                    </p>
+                        <div class="info-box">
+                            <div class="info-label">Transaction ID</div>
+                            <div class="info-value"><?= encode($session->payment_intent) ?></div>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Order Items -->
+                <div class="section">
                     <h3>Order Items</h3>
                     <?php foreach ($order_items as $item): ?>
-                        <?php
-                        $folder = [
-                            'CA0001' => 'glasses',
-                            'CA0002' => 'sunglasses',
-                            'CA0003' => 'contactlens',
-                            'CA0004' => 'kids'
-                        ][$item->category_id] ?? 'others';
-                        $imgArray = explode(',', $item->product_image);
-                        $firstImage = trim($imgArray[0]);
-                        $imgPath = "/images/product/$folder/$firstImage";
-                        ?>
                         <div class="order-item">
-                            <img src="<?= $imgPath ?>" alt="<?= encode($item->product_name) ?>">
-                            <div style="flex: 1;">
-                                <strong style="color: #2c3e50;"><?= encode($item->product_name) ?></strong><br>
-                                <small style="color: #7f8c8d;">Quantity: <?= $item->product_qty ?> × RM <?= number_format($item->price, 2) ?></small>
+                            <div>
+                                <strong><?= encode($item->product_name) ?></strong><br>
+                                Qty: <?= $item->product_qty ?>
                             </div>
-                            <div style="font-weight: bold; color: #2c3e50;">
+                            <div>
                                 RM <?= number_format($item->subtotal, 2) ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
-
-                    <div style="text-align: right; margin-top: 20px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
-                        <div style="font-size: 1.2rem; font-weight: bold; color: #2c3e50;">
-                            Total: RM <?= number_format($order_details->total_amount, 2) ?>
-                        </div>
-                    </div>
                 </div>
 
-                <div style="margin-top: 40px;">
-                    <a href="order_history.php" class="btn">View My Orders</a>
-                    <a href="shoppage.php" class="btn btn-primary">Continue Shopping</a>
-                </div>
+                <a href="order_history.php" class="btn">View Orders</a>
+                <a href="shoppage.php" class="btn btn-primary">Continue Shopping</a>
 
-                <p style="margin-top: 30px; color: #666; font-size: 0.9rem;">
-                    Need help? <a href="/page/contact.php" style="color: #2c3e50; text-decoration: underline;">Contact our support team</a>
-                </p>
             </div>
         </body>
 
         </html>
+
     <?php
 
     } else {

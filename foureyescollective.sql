@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 12, 2025 at 04:07 PM
+-- Generation Time: Dec 16, 2025 at 03:55 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -119,7 +119,11 @@ INSERT INTO `cart_item` (`cart_item_id`, `user_id`, `product_id`, `product_qty`,
 ('CI0023', 'ME0001', 'PR0004', 2, 'checkout', '2025-11-05 01:20:00', NULL, '2025-11-05 02:00:00', 'OI0017'),
 ('CI0024', 'ME0002', 'PR0002', 4, 'checkout', '2025-11-06 02:10:00', NULL, '2025-11-06 03:00:00', 'OI0011'),
 ('CI0025', 'ME0003', 'PR0003', 1, 'checkout', '2025-11-07 03:30:00', NULL, '2025-11-07 04:00:00', 'OI0019'),
-('CI0026', 'ME0005', 'PR0001', 3, 'checkout', '2025-11-09 05:20:00', NULL, '2025-11-09 06:00:00', 'OI0020');
+('CI0026', 'ME0005', 'PR0001', 3, 'checkout', '2025-11-09 05:20:00', NULL, '2025-11-09 06:00:00', 'OI0020'),
+('CI0027', 'ME0012', 'PR0001', 1, 'in_cart', '2025-12-06 00:56:29', NULL, NULL, NULL),
+('CI0028', 'ME0010', 'PR0001', 3, 'abandoned', '2025-12-06 01:46:54', '2025-12-06 01:46:54', NULL, NULL),
+('CI0029', 'ME0010', 'PR0006', 1, 'abandoned', '2025-12-06 01:46:51', '2025-12-06 01:46:51', NULL, NULL),
+('CI0030', 'ME0010', 'PR0011', 1, 'checkout', '2025-12-06 01:47:24', NULL, '2025-12-06 01:47:24', NULL);
 
 -- --------------------------------------------------------
 
@@ -129,18 +133,19 @@ INSERT INTO `cart_item` (`cart_item_id`, `user_id`, `product_id`, `product_qty`,
 
 CREATE TABLE `category` (
   `category_id` varchar(6) NOT NULL,
-  `category_name` varchar(50) NOT NULL
+  `category_name` varchar(50) NOT NULL,
+  `folder` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `category`
 --
 
-INSERT INTO `category` (`category_id`, `category_name`) VALUES
-('CA0001', 'Glasses'),
-('CA0002', 'Sunglasses'),
-('CA0003', 'Contact Lens'),
-('CA0004', 'Kids');
+INSERT INTO `category` (`category_id`, `category_name`, `folder`) VALUES
+('CA0001', 'Glasses', 'glasses'),
+('CA0002', 'Sunglasses', 'sunglasses'),
+('CA0003', 'Contact Lens', 'contactlens'),
+('CA0004', 'Kids', 'kids');
 
 -- --------------------------------------------------------
 
@@ -210,22 +215,25 @@ INSERT INTO `order` (`order_id`, `user_id`, `address_id`, `order_date`, `total_a
 ('OR0002', 'ME0002', 'ADRS0002', '2025-11-02 03:00:00', 420, 'delivered', NULL, '2025-11-03 12:00:00'),
 ('OR0003', 'ME0003', 'ADRS0003', '2025-11-03 04:00:00', 210, 'cancelled', 'Ordered by mistake', NULL),
 ('OR0004', 'ME0004', 'ADRS0004', '2025-11-04 05:00:00', 1050, 'cancelled', NULL, NULL),
-('OR0005', 'ME0005', 'ADRS0005', '2025-11-05 06:00:00', 840, 'delivered', NULL, '2025-11-06 11:00:00'),
-('OR0006', 'ME0006', 'ADRS0006', '2025-11-06 07:00:00', 315, 'delivered', NULL, '2025-11-07 15:00:00'),
-('OR0007', 'ME0007', 'ADRS0007', '2025-11-07 08:00:00', 525, 'shipped', NULL, NULL),
-('OR0008', 'ME0008', 'ADRS0008', '2025-11-08 09:00:00', 735, 'completed', NULL, '2025-11-10 11:00:00'),
+('OR0005', 'ME0005', 'ADRS0005', '2025-11-05 06:00:00', 420, 'delivered', NULL, '2025-11-06 11:00:00'),
+('OR0006', 'ME0006', 'ADRS0006', '2025-11-06 07:00:00', 420, 'delivered', NULL, '2025-11-07 15:00:00'),
+('OR0007', 'ME0007', 'ADRS0007', '2025-11-07 08:00:00', 420, 'shipped', NULL, NULL),
+('OR0008', 'ME0008', 'ADRS0008', '2025-11-08 09:00:00', 700, 'completed', NULL, '2025-11-10 11:00:00'),
 ('OR0009', 'ME0009', 'ADRS0009', '2025-11-09 10:00:00', 420, 'cancelled', NULL, NULL),
-('OR0010', 'ME0010', 'ADRS0010', '2025-11-10 11:00:00', 630, 'completed', NULL, '2025-11-11 13:00:00'),
+('OR0010', 'ME0010', 'ADRS0010', '2025-11-10 11:00:00', 420, 'completed', NULL, '2025-11-11 13:00:00'),
 ('OR0011', 'ME0011', 'ADRS0011', '2025-11-11 01:00:00', 210, 'delivered', NULL, '2025-11-12 08:00:00'),
-('OR0012', 'ME0012', 'ADRS0012', '2025-11-12 02:30:00', 840, 'shipped', NULL, NULL),
-('OR0013', 'ME0013', 'ADRS0013', '2025-11-13 03:15:00', 1050, 'completed', NULL, '2025-11-14 10:00:00'),
-('OR0014', 'ME0014', 'ADRS0014', '2025-11-14 04:45:00', 315, 'cancelled', NULL, NULL),
-('OR0015', 'ME0015', 'ADRS0015', '2025-11-15 05:20:00', 525, 'delivered', NULL, '2025-11-17 12:00:00'),
-('OR0016', 'ME0001', 'ADRS0001', '2025-11-05 02:00:00', 735, 'completed', NULL, '2025-11-06 12:00:00'),
+('OR0012', 'ME0012', 'ADRS0012', '2025-11-12 02:30:00', 700, 'shipped', NULL, NULL),
+('OR0013', 'ME0013', 'ADRS0013', '2025-11-13 03:15:00', 525, 'completed', NULL, '2025-11-14 10:00:00'),
+('OR0014', 'ME0014', 'ADRS0014', '2025-11-14 04:45:00', 420, 'cancelled', NULL, NULL),
+('OR0015', 'ME0015', 'ADRS0015', '2025-11-15 05:20:00', 420, 'delivered', NULL, '2025-11-17 12:00:00'),
+('OR0016', 'ME0001', 'ADRS0001', '2025-11-05 02:00:00', 700, 'completed', NULL, '2025-11-06 12:00:00'),
 ('OR0017', 'ME0002', 'ADRS0002', '2025-11-06 03:00:00', 420, 'shipped', NULL, NULL),
-('OR0018', 'ME0003', 'ADRS0003', '2025-11-07 04:00:00', 210, 'completed', NULL, '2025-11-08 07:00:00'),
-('OR0019', 'ME0004', 'ADRS0004', '2025-11-08 05:00:00', 630, 'delivered', NULL, '2025-11-20 10:00:00'),
-('OR0020', 'ME0005', 'ADRS0005', '2025-11-09 06:00:00', 1050, 'cancelled', NULL, NULL);
+('OR0018', 'ME0003', 'ADRS0003', '2025-11-07 04:00:00', 420, 'completed', NULL, '2025-11-08 07:00:00'),
+('OR0019', 'ME0004', 'ADRS0004', '2025-11-08 05:00:00', 420, 'delivered', NULL, '2025-11-20 10:00:00'),
+('OR0020', 'ME0005', 'ADRS0005', '2025-11-09 06:00:00', 630, 'cancelled', NULL, NULL),
+('OR0021', 'ME0001', 'ADRS0001', '2025-11-21 09:00:00', 420, 'pending', NULL, NULL),
+('OR0022', 'ME0002', 'ADRS0002', '2025-11-22 10:30:00', 315, 'pending', NULL, NULL),
+('OR0023', 'ME0003', 'ADRS0003', '2025-11-23 14:15:00', 420, 'pending', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -304,7 +312,10 @@ INSERT INTO `order_history` (`history_id`, `order_id`, `status`, `changed_at`, `
 ('HIS0055', 'OR0019', 'shipped', '2025-11-19 12:00:00', 'AD0005', 'Your parcel has been picked up.'),
 ('HIS0056', 'OR0019', 'delivered', '2025-11-20 10:00:00', 'AD0005', 'Your order has been delivered.'),
 ('HIS0057', 'OR0020', 'pending', '2025-11-20 06:00:00', 'ME0020', 'Your order has been placed.'),
-('HIS0058', 'OR0020', 'cancelled', '2025-11-20 08:00:00', 'ME0020', 'Your order has been cancelled.');
+('HIS0058', 'OR0020', 'cancelled', '2025-11-20 08:00:00', 'ME0020', 'Your order has been cancelled.'),
+('HIS0059', 'OR0021', 'pending', '2025-11-21 09:00:00', 'ME0001', 'Your order has been placed.'),
+('HIS0060', 'OR0022', 'pending', '2025-11-22 10:30:00', 'ME0002', 'Your order has been placed.'),
+('HIS0061', 'OR0023', 'pending', '2025-11-23 14:15:00', 'ME0003', 'Your order has been placed.');
 
 -- --------------------------------------------------------
 
@@ -351,7 +362,10 @@ INSERT INTO `order_item` (`order_item_id`, `order_id`, `product_id`, `product_qt
 ('OI0018', 'OR0017', 'PR0002', 4, 105, 420, 5, 'Recommended! Very durable.', '2025-11-07 04:00:00', '[\"pr0002_review4.jpg\"]', NULL),
 ('OI0019', 'OR0018', 'PR0003', 1, 420, 420, 4, 'Happy with the purchase.', '2025-11-08 07:30:00', NULL, NULL),
 ('OI0020', 'OR0019', 'PR0003', 1, 420, 420, 4, 'Happy with the purchase.', '2025-11-10 04:30:00', NULL, NULL),
-('OI0021', 'OR0020', 'PR0001', 3, 210, 630, 5, 'Exactly as advertised!', '2025-11-09 10:30:00', '[\"pr0001_review4.jpg\"]', NULL);
+('OI0021', 'OR0020', 'PR0001', 3, 210, 630, 5, 'Exactly as advertised!', '2025-11-09 10:30:00', '[\"pr0001_review4.jpg\"]', NULL),
+('OI0022', 'OR0021', 'PR0001', 2, 210, 420, NULL, NULL, NULL, NULL, NULL),
+('OI0023', 'OR0022', 'PR0002', 3, 105, 315, NULL, NULL, NULL, NULL, NULL),
+('OI0024', 'OR0023', 'PR0003', 1, 420, 420, NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -367,6 +381,8 @@ CREATE TABLE `payment` (
   `stripe_session_id` varchar(255) DEFAULT NULL,
   `stripe_payment_intent` varchar(255) DEFAULT NULL,
   `stripe_payment_method` varchar(255) DEFAULT NULL,
+  `payment_method_type` varchar(255) NOT NULL,
+  `last4` varchar(4) NOT NULL,
   `status` varchar(50) NOT NULL,
   `failed_reason` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -375,21 +391,31 @@ CREATE TABLE `payment` (
 -- Dumping data for table `payment`
 --
 
-INSERT INTO `payment` (`payment_id`, `order_id`, `amount`, `transaction_date`, `stripe_session_id`, `stripe_payment_intent`, `stripe_payment_method`, `status`, `failed_reason`) VALUES
-('PAY0001', 'OR0001', 630, '2025-11-01 02:02:00', '', '', '', 'succeeded', NULL),
-('PAY0002', 'OR0002', 420, '2025-11-02 03:02:00', '', '', '', 'succeeded', NULL),
-('PAY0003', 'OR0004', 1050, '2025-11-04 05:02:00', '', '', '', 'succeeded', NULL),
-('PAY0004', 'OR0006', 315, '2025-11-06 07:05:00', '', '', '', 'succeeded', NULL),
-('PAY0005', 'OR0007', 525, '2025-11-07 08:02:00', '', '', '', 'succeeded', NULL),
-('PAY0006', 'OR0008', 735, '2025-11-08 09:03:00', '', '', '', 'succeeded', NULL),
-('PAY0007', 'OR0010', 630, '2025-11-10 11:02:00', '', '', '', 'succeeded', NULL),
-('PAY0008', 'OR0012', 840, '2025-11-12 02:32:00', '', '', '', 'succeeded', NULL),
-('PAY0009', 'OR0013', 1050, '2025-11-13 03:17:00', '', '', '', 'succeeded', NULL),
-('PAY0010', 'OR0014', 315, '2025-11-14 04:47:00', '', '', '', 'succeeded', NULL),
-('PAY0011', 'OR0016', 735, '2025-11-05 02:02:00', '', '', '', 'succeeded', NULL),
-('PAY0012', 'OR0017', 420, '2025-11-06 03:02:00', '', '', '', 'succeeded', NULL),
-('PAY0013', 'OR0018', 210, '2025-11-07 04:02:00', '', '', '', 'succeeded', NULL),
-('PAY0014', 'OR0020', 1050, '2025-11-09 06:02:00', '', '', '', 'succeeded', NULL);
+INSERT INTO `payment` (`payment_id`, `order_id`, `amount`, `transaction_date`, `stripe_session_id`, `stripe_payment_intent`, `stripe_payment_method`, `payment_method_type`, `last4`, `status`, `failed_reason`) VALUES
+('PAY0001', 'OR0001', 630, '2025-11-01 02:02:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0002', 'OR0002', 420, '2025-11-02 03:02:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0003', 'OR0004', 1050, '2025-11-04 05:02:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0004', 'OR0006', 420, '2025-11-06 07:05:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0005', 'OR0007', 420, '2025-11-07 08:02:00', '', '', '', '', '','succeeded', NULL),
+('PAY0006', 'OR0008', 735, '2025-11-08 09:03:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0007', 'OR0010', 420, '2025-11-10 11:02:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0008', 'OR0012', 700, '2025-11-12 02:32:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0009', 'OR0013', 525, '2025-11-13 03:17:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0010', 'OR0014', 420, '2025-11-14 04:47:00', '', '', '', '', '', 'succeeded', NULL),
+
+('PAY0011', 'OR0003', 210, '2025-11-03 04:00:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0012', 'OR0005', 420, '2025-11-05 06:00:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0013', 'OR0009', 420, '2025-11-09 10:00:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0014', 'OR0011', 210, '2025-11-11 01:00:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0015', 'OR0015', 420, '2025-11-15 05:20:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0016', 'OR0016', 700, '2025-11-05 02:00:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0017', 'OR0017', 420, '2025-11-06 03:00:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0018', 'OR0018', 420, '2025-11-07 04:00:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0019', 'OR0019', 420, '2025-11-08 05:00:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0020', 'OR0020', 630, '2025-11-09 06:00:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0021', 'OR0021', 420, '2025-11-21 09:01:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0022', 'OR0022', 315, '2025-11-22 10:31:00', '', '', '', '', '', 'succeeded', NULL),
+('PAY0023', 'OR0023', 420, '2025-11-23 14:16:00', '', '', '', '', '', 'succeeded', NULL);
 
 -- --------------------------------------------------------
 
@@ -449,14 +475,14 @@ CREATE TABLE `receipt` (
   `issued_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `delivery_method` varchar(50) NOT NULL,
   `email_sent` tinyint(1) NOT NULL,
-  `pdf_genearted` tinyint(1) NOT NULL
+  `pdf_generated` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `receipt`
 --
 
-INSERT INTO `receipt` (`receipt_id`, `order_id`, `issued_to`, `issued_at`, `delivery_method`, `email_sent`, `pdf_genearted`) VALUES
+INSERT INTO `receipt` (`receipt_id`, `order_id`, `issued_to`, `issued_at`, `delivery_method`, `email_sent`, `pdf_generated`) VALUES
 ('ER0001', 'OR0001', 'ME0001', '2025-11-02 01:05:00', 'email', 1, 1),
 ('ER0002', 'OR0002', 'ME0002', '2025-11-03 02:05:00', 'pdf', 0, 1),
 ('ER0003', 'OR0004', 'ME0004', '2025-11-05 02:10:00', 'email', 1, 1),
@@ -485,7 +511,8 @@ INSERT INTO `receipt` (`receipt_id`, `order_id`, `issued_to`, `issued_at`, `deli
 CREATE TABLE `token` (
   `token_id` varchar(100) NOT NULL,
   `expire` datetime NOT NULL,
-  `user_id` varchar(6) NOT NULL
+  `user_id` varchar(6) NOT NULL,
+  `type` varchar(50) DEFAULT 'password_reset'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -505,39 +532,41 @@ CREATE TABLE `users` (
   `date_of_birth` date NOT NULL,
   `photo` varchar(255) NOT NULL,
   `registration_date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `status` varchar(10) NOT NULL DEFAULT 'Inactive'
+  `status` varchar(10) NOT NULL DEFAULT 'Inactive',
+  `failed_attempts` int(11) DEFAULT 0,
+  `lock_until` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`user_id`, `role`, `email`, `password`, `name`, `gender`, `phone`, `date_of_birth`, `photo`, `registration_date`, `status`) VALUES
-('AD0001', 'Admin', 'admin1@example.com', '145e65c74ed9de4ed01adc3b01b09667f12517b5', 'Admin Yeap', 'F', '198765432', '1985-05-05', 'admin1.jpg', '2025-12-06 02:57:00', 'Active'),
-('AD0002', 'Admin', 'admin2@example.com', '7b2fc68474634c30afacecaa609d0c2d101c1c76', 'Admin Lim', 'M', '198765432', '1980-12-12', 'admin2.jpg', '2025-12-06 02:57:00', 'Active'),
-('AD0003', 'Admin', 'admin3@example.com', 'dfd964e2897285b15954a244b06f3e0dd6394cda', 'Admin Quak', 'F', '198765432', '1979-07-07', 'admin3.jpg', '2025-12-06 02:57:00', 'Active'),
-('AD0004', 'Admin', 'admin4@example.com', '989c21af902e9628345bc12eb0dc121e588d2bd3', 'Admin Ng', 'M', '198765432', '1982-09-09', 'admin4.jpg', '2025-12-06 02:57:00', 'Active'),
-('AD0005', 'Admin', 'admin5@example.com', 'b45b40c6cddb8f6c74f12e45742a1eab42bfab08', 'Admin Low', 'F', '198765435', '1986-03-03', 'admin5.jpg', '2025-12-06 02:57:00', 'Active'),
-('ME0001', 'Member', 'john.doe@example.com', '511058841d5481a496d38bc9929f409ec4a2331e', 'John Doe', 'M', '123456780', '1990-05-12', 'john1.jpg', '2025-12-06 02:57:00', 'Active'),
-('ME0002', 'Member', 'mary.lee@example.com', 'a1a0cc2c2d4491e06a9f5f84cae83890cacd278d', 'Mary Lee', 'F', '123456780', '1992-08-23', 'mary2.jpg', '2025-12-06 02:57:00', 'Active'),
-('ME0003', 'Member', 'bob.tan@example.com', '22387fbd6d03b936864fe3da8ba5226b0dd9435c', 'Bob Tan', 'M', '123456780', '1988-01-05', 'bob3.jpg', '2025-12-06 02:57:00', 'Inactive'),
-('ME0004', 'Member', 'alice.wong@example.com', 'c854b4a07e81f3ad744f95b7ce2d42aaefd2b45a', 'Alice Wong', 'F', '123456780', '1995-02-14', 'alice4.jpg', '2025-12-06 02:57:00', 'Active'),
-('ME0005', 'Member', 'david.chan@example.com', 'ffbfa29f878ea8325468c94a7cb449d042d69aa5', 'David Chan', 'M', '123456780', '1991-07-30', 'david5.jpg', '2025-12-06 02:57:00', 'Active'),
-('ME0006', 'Member', 'susan.koh@example.com', '73abc851e309c65dd4b21b44ab346b7b223cd4ad', 'Susan Koh', 'F', '123456780', '1993-09-12', 'susan6.jpg', '2025-12-06 02:57:00', 'Inactive'),
-('ME0007', 'Member', 'kevin.lim@example.com', '34d3099486c59bca3ce4ed1c4e9a5b07c5579fc6', 'Kevin Lim', 'M', '123456780', '1989-12-01', 'kevin7.jpg', '2025-12-06 02:57:00', 'Active'),
-('ME0008', 'Member', 'kelly.ng@example.com', 'e17a55684169a48f10a44036fef70ee01fe48de1', 'Kelly Ng', 'F', '123456780', '1994-03-22', 'kelly8.jpg', '2025-12-06 02:57:00', 'Active'),
-('ME0009', 'Member', 'eric.tan@example.com', '337b624810436feee21279edd075097b89cf3cfb', 'Eric Tan', 'M', '123456789', '1990-06-18', 'eric9.jpg', '2025-12-06 02:57:00', 'Inactive'),
-('ME0010', 'Member', 'amy.lim@example.com', '174bd7d853dad98c5be59e1b6d78b9c16d70a927', 'Amy Lim', 'F', '123456781', '1992-11-05', 'amy10.jpg', '2025-12-06 02:57:00', 'Active'),
-('ME0011', 'Member', 'ronald.lee@example.com', '7e38fee792b2e41257161fa771f29747cd8af0c3', 'Ronald Lee', 'M', '123456781', '1987-04-09', 'ronald11.jpg', '2025-12-06 02:57:00', 'Active'),
-('ME0012', 'Member', 'julia.tan@example.com', '3148e80228df5505ba0e0d281d44e64dd50e8631', 'Julia Wong', 'F', '111111222', '1993-08-12', 'julia12.jpg', '2025-12-06 02:57:55', 'Active'),
-('ME0013', 'Member', 'brian.choo@example.com', 'bd6025efbb89e21faf51418e41240de1c72be78f', 'Brian Choo', 'M', '123456783', '1991-10-20', 'brian13.jpg', '2025-12-06 02:57:00', 'Inactive'),
-('ME0014', 'Member', 'rachel.koh@example.com', '1a82dc34f298fb617aba847c53b28dfebea78321', 'Rachel Koh', 'F', '123456781', '1994-01-25', 'rachel14.jpg', '2025-12-06 02:57:00', 'Active'),
-('ME0015', 'Member', 'steven.lim@example.com', '6f027d959098a3a347d8aa528f2419a7cd498682', '', 'M', '123456781', '1989-07-11', 'steven15.jpg', '2025-12-06 02:58:21', 'Active'),
-('ME0016', 'Member', 'member16@gmail.com', '8cb2237d0679ca88db6464eac60da96345513964', 'Wong Kom', 'f', '192278833', '2015-12-16', 'aaw.png', '2025-12-06 02:57:19', 'Active'),
-('ME0017', 'Member', '1000@gmail.com', 'a642a77abd7d4f51bf9226ceaf891fcbb5b299b8', '1000', 'F', '199999912', '1999-06-18', '6932eafc5366c.jpg', '2025-12-06 02:58:33', 'Inactive'),
-('ME0018', 'Member', '44444@gmail.com', '04f081741466827161bede82a374af0ec9a39e31', '44444444', 'M', '192233333', '1996-10-17', '6933812f9e2d9.jpg', '2025-12-06 02:58:41', 'Inactive'),
-('ME0019', 'Member', '9999@gmail.com', 'd528fca3b163c05703e88b5285440bec28ecf185', '9999', 'F', '111111111', '2001-07-17', '69338c8b37cfe.jpg', '2025-12-06 02:58:55', 'Active'),
-('ME0020', 'Member', '5555@gmail.com', '19dd466e43cdbd3833abc0609eba6d8786f9b342', '55555555', 'F', '55555555', '1999-12-17', '69339e0d34e5d.jpg', '2025-12-05 16:00:00', 'Inactive');
+INSERT INTO `users` (`user_id`, `role`, `email`, `password`, `name`, `gender`, `phone`, `date_of_birth`, `photo`, `registration_date`, `status`, `failed_attempts`, `lock_until`) VALUES
+('AD0001', 'Admin', 'admin1@gmail.com', '145e65c74ed9de4ed01adc3b01b09667f12517b5', 'Admin Yeap', 'F', '198765432', '1985-05-05', 'admin1.jpg', '2025-12-16 02:39:26', 'Active', 0, NULL),
+('AD0002', 'Admin', 'admin2@gmail.com', '7b2fc68474634c30afacecaa609d0c2d101c1c76', 'Admin Lim', 'M', '198765432', '1980-12-12', 'admin2.jpg', '2025-12-16 02:39:26', 'Active', 0, NULL),
+('AD0003', 'Admin', 'admin3@gmail.com', 'dfd964e2897285b15954a244b06f3e0dd6394cda', 'Admin Quak', 'F', '198765432', '1979-07-07', 'admin3.jpg', '2025-12-16 02:39:26', 'Active', 0, NULL),
+('AD0004', 'Admin', 'admin4@gmail.com', '989c21af902e9628345bc12eb0dc121e588d2bd3', 'Admin Ng', 'M', '198765432', '1982-09-09', 'admin4.jpg', '2025-12-16 02:39:26', 'Active', 0, NULL),
+('AD0005', 'Admin', 'admin5@gmail.com', 'b45b40c6cddb8f6c74f12e45742a1eab42bfab08', 'Admin Low', 'F', '198765435', '1986-03-03', 'admin5.jpg', '2025-12-16 02:39:26', 'Active', 0, NULL),
+('ME0001', 'Member', 'john.doe@gmail.com', '511058841d5481a496d38bc9929f409ec4a2331e', 'John Doe', 'M', '123456780', '1990-05-12', 'john1.jpg', '2025-12-16 02:39:26', 'Active', 0, NULL),
+('ME0002', 'Member', 'mary.lee@gmail.com', 'a1a0cc2c2d4491e06a9f5f84cae83890cacd278d', 'Mary Lee', 'F', '123456780', '1992-08-23', 'mary2.jpg', '2025-12-16 02:39:26', 'Active', 0, NULL),
+('ME0003', 'Member', 'bob.tan@gmail.com', '22387fbd6d03b936864fe3da8ba5226b0dd9435c', 'Bob Tan', 'M', '123456780', '1988-01-05', 'bob3.jpg', '2025-12-16 02:39:26', 'Inactive', 0, NULL),
+('ME0004', 'Member', 'alice.wong@gmail.com', 'c854b4a07e81f3ad744f95b7ce2d42aaefd2b45a', 'Alice Wong', 'F', '123456780', '1995-02-14', 'alice4.jpg', '2025-12-16 02:39:26', 'Active', 0, NULL),
+('ME0005', 'Member', 'david.chan@gmail.com', 'ffbfa29f878ea8325468c94a7cb449d042d69aa5', 'David Chan', 'M', '123456780', '1991-07-30', 'david5.jpg', '2025-12-16 02:39:26', 'Active', 0, NULL),
+('ME0006', 'Member', 'susan.koh@gmail.com', '73abc851e309c65dd4b21b44ab346b7b223cd4ad', 'Susan Koh', 'F', '123456780', '1993-09-12', 'susan6.jpg', '2025-12-16 02:39:26', 'Inactive', 0, NULL),
+('ME0007', 'Member', 'kevin.lim@gmail.com', '34d3099486c59bca3ce4ed1c4e9a5b07c5579fc6', 'Kevin Lim', 'M', '123456780', '1989-12-01', 'kevin7.jpg', '2025-12-16 02:39:26', 'Active', 0, NULL),
+('ME0008', 'Member', 'kelly.ng@gmail.com', 'e17a55684169a48f10a44036fef70ee01fe48de1', 'Kelly Ng', 'F', '123456780', '1994-03-22', 'kelly8.jpg', '2025-12-16 02:39:26', 'Active', 0, NULL),
+('ME0009', 'Member', 'eric.tan@gmail.com', '337b624810436feee21279edd075097b89cf3cfb', 'Eric Tan', 'M', '123456789', '1990-06-18', 'eric9.jpg', '2025-12-16 02:39:26', 'Inactive', 0, NULL),
+('ME0010', 'Member', 'amy.lim@gmail.com', '174bd7d853dad98c5be59e1b6d78b9c16d70a927', 'Amy Lim', 'F', '123456781', '1992-11-05', 'amy10.jpg', '2025-12-16 02:44:31', 'Active', 0, NULL),
+('ME0011', 'Member', 'ronald.lee@gmail.com', '7e38fee792b2e41257161fa771f29747cd8af0c3', 'Ronald Lee', 'M', '123456781', '1987-04-09', 'ronald11.jpg', '2025-12-16 02:41:05', 'Active', 0, NULL),
+('ME0012', 'Member', 'julia.tan@gmail.com', '3148e80228df5505ba0e0d281d44e64dd50e8631', 'Julia Wong', 'F', '111111222', '1993-08-12', 'julia12.jpg', '2025-12-16 02:41:05', 'Active', 0, NULL),
+('ME0013', 'Member', 'brian.choo@gmail.com', 'bd6025efbb89e21faf51418e41240de1c72be78f', 'Brian Choo', 'M', '123456783', '1991-10-20', 'brian13.jpg', '2025-12-16 02:41:05', 'Inactive', 0, NULL),
+('ME0014', 'Member', 'rachel.koh@gmail.com', '1a82dc34f298fb617aba847c53b28dfebea78321', 'Rachel Koh', 'F', '123456781', '1994-01-25', 'rachel14.jpg', '2025-12-16 02:41:05', 'Active', 0, NULL),
+('ME0015', 'Member', 'steven.lim@gmail.com', '6f027d959098a3a347d8aa528f2419a7cd498682', 'Steven Lim', 'M', '123456781', '1989-07-11', 'steven15.jpg', '2025-12-16 02:43:41', 'Active', 0, NULL),
+('ME0016', 'Member', 'wongk16@gmail.com', '8cb2237d0679ca88db6464eac60da96345513964', 'Wong Kom', 'M', '192278833', '2015-12-16', 'aaw.png', '2025-12-16 02:43:41', 'Active', 0, NULL),
+('ME0017', 'Member', 'JieLe@gmail.com', 'a642a77abd7d4f51bf9226ceaf891fcbb5b299b8', 'Jie Le', 'F', '199999912', '1999-06-18', '6932eafc5366c.jpg', '2025-12-16 02:42:41', 'Inactive', 0, NULL),
+('ME0018', 'Member', 'AliciaJia@gmail.com', '04f081741466827161bede82a374af0ec9a39e31', 'Alicia Jia', 'F', '192233333', '1996-10-17', '6933812f9e2d9.jpg', '2025-12-16 02:43:41', 'Inactive', 0, NULL),
+('ME0019', 'Member', 'QianEn12@gmail.com', 'd528fca3b163c05703e88b5285440bec28ecf185', 'Qian En', 'F', '11909922', '2001-07-17', '69338c8b37cfe.jpg', '2025-12-16 02:42:41', 'Active', 0, NULL),
+('ME0020', 'Member', 'NicoleLee@gmail.com', '19dd466e43cdbd3833abc0609eba6d8786f9b342', 'Nicole Lee', 'F', '19877534', '1999-12-17', '69339e0d34e5d.jpg', '2025-12-16 02:42:41', 'Inactive', 0, NULL);
 
 -- --------------------------------------------------------
 

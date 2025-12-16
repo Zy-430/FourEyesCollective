@@ -146,7 +146,13 @@ if (is_post()) {
             if (!empty($selected_items)) {
                 // Mark selected items as checkout
                 foreach ($selected_items as $item_id) {
-                    $stm = $_db->prepare("UPDATE cart_item SET item_status = 'checkout', checkout_at = NOW() WHERE cart_item_id = ? AND user_id = ?");
+                    $stm = $_db->prepare("
+                        UPDATE cart_item 
+                        SET item_status = 'checkout', 
+                            checkout_at = NOW(),
+                            order_item_id = NULL  -- Ensure it's NULL
+                        WHERE cart_item_id = ? AND user_id = ? AND item_status = 'in_cart'
+                    ");
                     $stm->execute([$item_id, $user_id]);
                 }
                 if (is_ajax()) {

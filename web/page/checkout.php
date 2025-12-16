@@ -22,27 +22,61 @@ $stm = $_db->prepare("
     FROM cart_item ci 
     JOIN product p ON ci.product_id = p.product_id
     LEFT JOIN category c ON p.category_id = c.category_id
-    WHERE ci.user_id = ? AND ci.item_status = 'checkout' AND ci.order_item_id IS NULL
+    WHERE ci.user_id = ? 
+      AND ci.item_status = 'checkout' 
+      AND ci.order_item_id IS NULL 
 ");
 $stm->execute([$user_id]);
 $cart_items = $stm->fetchAll(PDO::FETCH_OBJ);
 
 if (!$cart_items) {
 
-    ?>
+?>
     <!DOCTYPE html>
     <html>
+
     <head>
         <title>No Checkout Items | Four Eyes Collective</title>
         <link rel="stylesheet" href="/css/checkout.css">
         <style>
-            body { font-family: 'Roboto', sans-serif; text-align: center; padding: 50px; background: #f8f9fa; }
-            .container { max-width: 500px; margin: 0 auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-            h2 { color: #2c3e50; margin-bottom: 20px; }
-            .btn { display: inline-block; padding: 12px 25px; background: #2c3e50; color: white; text-decoration: none; border-radius: 5px; margin: 10px; font-weight: bold; }
-            .btn-primary { background: #27ae60; }
+            body {
+                font-family: 'Roboto', sans-serif;
+                text-align: center;
+                padding: 50px;
+                background: #f8f9fa;
+            }
+
+            .container {
+                max-width: 500px;
+                margin: 0 auto;
+                background: white;
+                padding: 40px;
+                border-radius: 15px;
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            }
+
+            h2 {
+                color: #2c3e50;
+                margin-bottom: 20px;
+            }
+
+            .btn {
+                display: inline-block;
+                padding: 12px 25px;
+                background: #2c3e50;
+                color: white;
+                text-decoration: none;
+                border-radius: 5px;
+                margin: 10px;
+                font-weight: bold;
+            }
+
+            .btn-primary {
+                background: #27ae60;
+            }
         </style>
     </head>
+
     <body>
         <div class="container">
             <h2>🛒 No Items for Checkout</h2>
@@ -51,8 +85,9 @@ if (!$cart_items) {
             <a href="shoppage.php" class="btn btn-primary">Continue Shopping</a>
         </div>
     </body>
+
     </html>
-    <?php
+<?php
     exit;
 }
 
@@ -71,7 +106,7 @@ $addresses = $stm->fetchAll(PDO::FETCH_OBJ);
 if (is_post()) {
     $address_id = post('address_id');
     $action = post('action');
-    
+
     if (!$address_id) {
         echo json_encode(['success' => false, 'message' => 'Please select an address.']);
         exit;
@@ -108,25 +143,32 @@ if (is_post()) {
         ");
         $stm->execute([$order_id, $user_id, $address_id, $total_amount]);
 
-        // Insert order items
-        $order_item_ids = [];
+        // Insert order items and UPDATE cart_item with order_item_id
         foreach ($cart_items as $i) {
             $stm2 = $_db->query("SELECT MAX(CAST(SUBSTRING(order_item_id, 3) AS UNSIGNED)) AS maxid FROM order_item");
             $maxItem = $stm2->fetch()->maxid ?? 0;
             $order_item_id = "OI" . str_pad($maxItem + 1, 4, "0", STR_PAD_LEFT);
-            $order_item_ids[] = $order_item_id;
 
             $stm3 = $_db->prepare("
                 INSERT INTO order_item (order_item_id, order_id, product_id, product_qty, price, subtotal)
                 VALUES (?, ?, ?, ?, ?, ?)
             ");
             $stm3->execute([
-                $order_item_id, $order_id, $i->product_id, $i->product_qty,
-                $i->product_price, $i->product_price * $i->product_qty
+                $order_item_id,
+                $order_id,
+                $i->product_id,
+                $i->product_qty,
+                $i->product_price,
+                $i->product_price * $i->product_qty
             ]);
 
+            // UPDATE cart_item with the order_item_id
+            $_db->prepare("
+                UPDATE cart_item 
+                SET order_item_id = ?
+                WHERE cart_item_id = ? AND user_id = ? AND item_status = 'checkout'
+            ")->execute([$order_item_id, $i->cart_item_id, $user_id]);
 
-            
             // Update product stock
             $_db->prepare("
                 UPDATE product 
@@ -155,7 +197,11 @@ if (is_post()) {
 
         // Create Stripe session
         $session = \Stripe\Checkout\Session::create([
-            'payment_method_types' => ['card'],
+            'payment_method_types' => [
+                'card',
+                'fpx',
+                'grabpay'
+            ],
             'line_items' => $lineItems,
             'mode' => 'payment',
             'success_url' => "$baseURL/page/order_success.php?session_id={CHECKOUT_SESSION_ID}&order_id=$order_id",
@@ -178,7 +224,6 @@ if (is_post()) {
 
         echo json_encode(['success' => true, 'redirect' => $session->url]);
         exit;
-
     } catch (Exception $ex) {
         $_db->rollBack();
         echo json_encode(['success' => false, 'message' => $ex->getMessage()]);
@@ -189,6 +234,7 @@ if (is_post()) {
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -199,14 +245,15 @@ if (is_post()) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="/js/cart_operations.js"></script>
 </head>
-<body>    
+
+<body>
     <div class="checkout-container">
         <!-- Page Header -->
         <div class="page-header">
             <h1>Secure Checkout</h1>
             <p>Complete your purchase with confidence</p>
         </div>
-        
+
         <form id="checkoutForm" method="post">
             <!-- Main Content -->
             <div class="checkout-content">
@@ -226,8 +273,8 @@ if (is_post()) {
                             <div class="address-options">
                                 <?php foreach ($addresses as $addr): ?>
                                     <label class="address-option <?= $addr->default_flag ? 'selected' : '' ?>">
-                                        <input type="radio" name="address_id" value="<?= $addr->address_id ?>" required 
-                                               <?= $addr->default_flag ? 'checked' : '' ?>>
+                                        <input type="radio" name="address_id" value="<?= $addr->address_id ?>" required
+                                            <?= $addr->default_flag ? 'checked' : '' ?>>
                                         <div>
                                             <div style="font-weight: bold; color: #2c3e50; margin-bottom: 10px; display: flex; align-items: center;">
                                                 <?= encode($addr->recipient_name) ?>
@@ -255,7 +302,7 @@ if (is_post()) {
                             </div>
                         <?php endif; ?>
                     </div>
-                    
+
                     <!-- Payment Information -->
                     <div class="checkout-section">
                         <h2 class="section-title">Payment Information</h2>
@@ -275,24 +322,24 @@ if (is_post()) {
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Right Column: Order Summary -->
                 <div class="order-summary">
                     <div class="checkout-section">
                         <h2 class="section-title">Order Summary</h2>
-                        
+
                         <div class="order-items" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
                             <?php foreach ($checkout_items as $item): ?>
                                 <?php
-                                    $folder = [
-                                        'CA0001' => 'glasses',
-                                        'CA0002' => 'sunglasses',
-                                        'CA0003' => 'contactlens',
-                                        'CA0004' => 'kids'
-                                    ][$item->category_id] ?? 'others';
-                                    $imgArray = explode(',', $item->product_image);
-                                    $firstImage = trim($imgArray[0]);
-                                    $imgPath = "/images/product/$folder/$firstImage";
+                                $folder = [
+                                    'CA0001' => 'glasses',
+                                    'CA0002' => 'sunglasses',
+                                    'CA0003' => 'contactlens',
+                                    'CA0004' => 'kids'
+                                ][$item->category_id] ?? 'others';
+                                $imgArray = explode(',', $item->product_image);
+                                $firstImage = trim($imgArray[0]);
+                                $imgPath = "/images/product/$folder/$firstImage";
                                 ?>
                                 <div class="order-item">
                                     <img src="<?= $imgPath ?>" alt="<?= encode($item->product_name) ?>" class="order-item-image">
@@ -306,7 +353,7 @@ if (is_post()) {
                                 </div>
                             <?php endforeach; ?>
                         </div>
-                        
+
                         <div style="margin-bottom: 20px;">
                             <div class="total-row">
                                 <span>Subtotal</span>
@@ -321,12 +368,12 @@ if (is_post()) {
                                 <span>Included</span>
                             </div>
                         </div>
-                        
+
                         <div class="total-row total-amount">
                             <span>Total</span>
                             <span>RM <?= number_format($total_amount, 2) ?></span>
                         </div>
-                        
+
                         <!-- Payment Button -->
                         <button type="button" class="btn btn-success" id="submitBtn" onclick="processPayment()">
                             <span id="btnText">Pay RM <?= number_format($total_amount, 2) ?></span>
@@ -360,11 +407,11 @@ if (is_post()) {
             const btnLoading = document.getElementById('btnLoading');
             const paymentError = document.getElementById('paymentError');
             const paymentSuccess = document.getElementById('paymentSuccess');
-            
+
             // Reset messages
             paymentError.style.display = 'none';
             paymentSuccess.style.display = 'none';
-            
+
             // Validate address
             const addressSelected = document.querySelector('input[name="address_id"]:checked');
             if (!addressSelected) {
@@ -372,28 +419,28 @@ if (is_post()) {
                 document.getElementById('addressError').style.display = 'block';
                 return;
             }
-            
+
             // Show loading
             submitBtn.disabled = true;
             btnText.style.display = 'none';
             btnLoading.style.display = 'inline-block';
-            
+
             try {
                 const formData = new FormData();
                 formData.append('address_id', addressSelected.value);
-                
+
                 const response = await fetch('checkout.php', {
                     method: 'POST',
                     body: formData
                 });
-                
+
                 const result = await response.json();
-                
+
                 if (result.success) {
                     // Success - redirect to Stripe
                     paymentSuccess.textContent = 'Redirecting to secure payment...';
                     paymentSuccess.style.display = 'block';
-                    
+
                     setTimeout(() => {
                         window.location.href = result.redirect;
                     }, 1000);
@@ -401,33 +448,36 @@ if (is_post()) {
                     // Payment failed - show error
                     paymentError.textContent = result.message || 'Payment failed. Please try again.';
                     paymentError.style.display = 'block';
-                    
+
                     // Enable button for retry
                     submitBtn.disabled = false;
                     btnText.style.display = 'inline';
                     btnLoading.style.display = 'none';
                 }
-                
+
             } catch (error) {
                 // Network or server error
                 paymentError.textContent = 'Network error. Please check your connection and try again.';
                 paymentError.style.display = 'block';
-                
+
                 submitBtn.disabled = false;
                 btnText.style.display = 'inline';
                 btnLoading.style.display = 'none';
-                
+
                 console.error('Payment error:', error);
             }
         }
-        
+
         // Auto-scroll to error if any
         window.onload = function() {
             const error = document.querySelector('.error-message[style*="display: block"]');
             if (error) {
-                error.scrollIntoView({ behavior: 'smooth' });
+                error.scrollIntoView({
+                    behavior: 'smooth'
+                });
             }
         };
     </script>
 </body>
+
 </html>

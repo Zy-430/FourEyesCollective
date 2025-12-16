@@ -1,7 +1,6 @@
 <?php
 require '../_base.php';
 require '../lib/db.php';
-require 'restore_cart.php';
 
 auth();
 
@@ -44,12 +43,21 @@ try {
     // Restore product stock
     foreach ($items as $item) {
         $_db->prepare("
+            UPDATE cart_item 
+            SET order_item_id = NULL, 
+                item_status = 'in_cart',
+                checkout_at = NULL
+            WHERE order_item_id = ? AND user_id = ?
+        ")->execute([$item->order_item_id, $_user->user_id]);
+
+        // Restore product stock
+        $_db->prepare("
             UPDATE product 
             SET product_stock = product_stock + ?
             WHERE product_id = ?
         ")->execute([$item->product_qty, $item->product_id]);
     }
-    
+        
     // Update payment status if exists
     $_db->prepare("
         UPDATE payment SET status = 'cancelled' 
@@ -116,29 +124,7 @@ function display_cancellation_page($title, $order_id, $items, $type = 'payment')
             .order-summary { text-align: left; background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
             .order-summary h4 { margin-top: 0; color: #2c3e50; }
         </style>
-        <script>
-            function reorderItems() {
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', 'reorder_items.php', true);
-                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-                xhr.onload = function() {
-                    if (xhr.status === 200) {
-                        try {
-                            const response = JSON.parse(xhr.responseText);
-                            if (response.success) {
-                                alert('Items have been added to your cart!');
-                                window.location.href = 'cart.php';
-                            } else {
-                                alert('Error: ' + response.message);
-                            }
-                        } catch (e) {
-                            window.location.href = 'cart.php';
-                        }
-                    }
-                };
-                xhr.send('order_id=<?= $order_id ?>&action=reorder');
-            }
-        </script>
+        
     </head>
     <body>
         <div class="container">
@@ -166,7 +152,6 @@ function display_cancellation_page($title, $order_id, $items, $type = 'payment')
             </div>
             
             <div style="margin-top: 40px;">
-                <button class="btn btn-primary" onclick="reorderItems()">Order Again</button>
                 <a href="shoppage.php" class="btn btn-warning">Shop Other Products</a>
                 <a href="cart.php" class="btn btn-secondary">View Cart</a>
             </div>
