@@ -90,28 +90,43 @@ function is_email($value)
 }
 
 // Return base url (host + port)
-function base($path = '') {
+function base($path = '')
+{
     return "http://$_SERVER[SERVER_NAME]:$_SERVER[SERVER_PORT]/$path";
 }
 
 // Is exists?
-function is_exists($value, $table, $field) {
+function is_exists($value, $table, $field)
+{
     global $_db;
     $stm = $_db->prepare("SELECT COUNT(*) FROM $table WHERE $field = ?");
     $stm->execute([$value]);
     return $stm->fetchColumn() > 0;
 }
 
+// Is strong password
+function is_strong_password($password)
+{
+
+    return
+        strlen($password) >= 8 && // Minimum 8 characters
+        preg_match('/[A-Z]/', $password) && // Contain uppercase
+        preg_match('/[a-z]/', $password) && // Contain lowercase
+        preg_match('/[0-9]/', $password) && // Contain digit
+        preg_match('/[_\W]/', $password); // Contain symbol
+}
+
 // ============================================================================
 // HTML Helpers
 // ============================================================================
-function table_headers($fields, $sort, $dir, $href = '') {
+function table_headers($fields, $sort, $dir, $href = '')
+{
     foreach ($fields as $k => $v) {
         $d = 'asc'; // Default direction
         $c = '';    // Default class
-        
+
         // Alternative direction , set css class
-        if($k == $sort) {
+        if ($k == $sort) {
             $d = $dir == 'asc' ? 'desc' : 'asc';
             $c = $dir;
         }
@@ -267,7 +282,8 @@ for ($i = $current_year; $i >= $current_year - 100; $i--) {
 $_user = $_SESSION['user'] ?? null;
 
 // Login user
-function login($user, $url = '/') {
+function login($user, $url = '/')
+{
     $_SESSION['user'] = $user;
     redirect($url);
 }
@@ -300,7 +316,8 @@ function auth(...$roles)
 // Email Function
 // ============================================================================
 
-function get_mail() {
+function get_mail()
+{
     require_once 'lib/PHPMailer.php';
     require_once 'lib/SMTP.php';
 
@@ -316,6 +333,11 @@ function get_mail() {
 
     return $m;
 }
+
+
+// ============================================================================
+// Generate ID
+// ============================================================================
 
 function generateHistoryID($db)
 {
@@ -340,4 +362,29 @@ function statusColor($status)
         'cancelled' => '#e74c3c',
         default => '#7f8c8d',
     };
+}
+
+
+function generateMemberID($db)
+{
+    $last = $db->query("SELECT user_id FROM users WHERE role='Member'ORDER BY user_id DESC LIMIT 1")->fetchColumn();
+
+    // If no member exists, start with ME0001
+    if (!$last) return "ME0001";
+
+    // Else get the last member id  and extract numeric part, increment, and pad with zeros
+    $num = intval(substr($last, 2)) + 1;
+    return "ME" . str_pad($num, 4, "0", STR_PAD_LEFT);
+}
+
+function generateAdminID($db)
+{
+    $last = $db->query("SELECT user_id FROM users WHERE role='Admin'ORDER BY user_id DESC LIMIT 1")->fetchColumn();
+
+    // If no admin exists, start with ME0001
+    if (!$last) return "AD0001";
+
+    // Else get the last admin id  and extract numeric part, increment, and pad with zeros
+    $num = intval(substr($last, 2)) + 1;
+    return "AD" . str_pad($num, 4, "0", STR_PAD_LEFT);
 }

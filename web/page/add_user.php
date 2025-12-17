@@ -7,31 +7,6 @@ $_title = 'Add User';
 auth('Admin');
 $role = req('role', 'Member');
 
-function generateAdminID($db)
-{
-    $last = $db->query("SELECT user_id FROM users WHERE role='Admin'ORDER BY user_id DESC LIMIT 1")->fetchColumn();
-
-    // If no admin exists, start with ME0001
-    if (!$last) return "AD0001";
-
-    // Else get the last admin id  and extract numeric part, increment, and pad with zeros
-    $num = intval(substr($last, 2)) + 1;
-    return "AD" . str_pad($num, 4, "0", STR_PAD_LEFT);
-}
-
-
-function generateMemberID($db)
-{
-    $last = $db->query("SELECT user_id FROM users WHERE role='Member'ORDER BY user_id DESC LIMIT 1")->fetchColumn();
-
-    // If no member exists, start with ME0001
-    if (!$last) return "ME0001";
-
-    // Else get the last member id  and extract numeric part, increment, and pad with zeros
-    $num = intval(substr($last, 2)) + 1;
-    return "ME" . str_pad($num, 4, "0", STR_PAD_LEFT);
-}
-
 if ($role === 'Admin') {
     $user_id = generateAdminID($_db);
 } else {

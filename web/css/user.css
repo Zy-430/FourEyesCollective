@@ -2,8 +2,9 @@
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -18,32 +19,32 @@ body.login-page {
     align-items: center;
     justify-content: center;
     background: white;
-    padding: 15px;
+    padding: 10px;
     margin: 0;
 }
 
 body.login-page .login-container {
-    width: 100%;
-    max-width: 800px;
+    width: 90%;
+    max-width: 650px;
     background: white;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-    margin: 20px;
-    animation: fadeIn 0.6s ease-out;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    margin: 10px;
+    animation: fadeIn 0.4s ease-out;
 }
 
 body.login-page .login-header {
     background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
     color: white;
     text-align: center;
-    padding: 20px 30px;
-    border-radius: 12px 12px 0 0;
+    padding: 13px 20px;
+    border-radius: 8px 8px 0 0;
 }
 
 body.login-page .header-content {
     display: flex;
     align-items: center;
-    gap: 30px;
+    gap: 20px;
     text-align: left;
     margin: 0 auto;
     justify-content: center;
@@ -54,38 +55,40 @@ body.login-page .logo-container {
 }
 
 body.login-page .header-logo {
-    width: 140px;
-    height: 100px;
+    width: 100px;
+    height: 70px;
     object-fit: contain;
-    border-radius: 8px;
-    padding: 5px;
+    border-radius: 6px;
+    padding: 4px;
     transition: transform 0.3s ease;
+    animation: gentlePulse 4s ease-in-out infinite;
+
 }
 
 body.login-page .header-logo:hover {
-    transform: scale(1.05);
+    transform: scale(1.03);
 }
 
 body.login-page .header-text {
     flex: 1;
 }
 
-body.login-page .login-header h1 {
+body.login-page .header-text h1 {
     font-family: 'Playfair Display', serif;
-    font-size: 2.2em;
-    margin-bottom: 8px;
+    font-size: 1.5em;
+    margin-bottom: 5px;
     color: white;
     font-weight: 600;
 }
 
-body.login-page .login-header p {
-    font-size: 1.1em;
+body.login-page .header-text p {
+    font-size: 0.9em;
     opacity: 0.9;
     margin: 0;
 }
 
 body.login-page .login-form {
-    padding: 40px;
+    padding: 25px;
 }
 
 /* ==================== REGISTRATION PAGE STYLES ==================== */
@@ -95,36 +98,35 @@ body.registration-page {
     align-items: center;
     justify-content: center;
     background: white;
-    padding: 20px 15px;
+    padding: 15px 10px;
     margin: 0;
     overflow-y: auto;
 }
 
 body.registration-page .registration-container {
-    width: 100%;
-    max-width: 900px;
+    width: 90%;
+    max-width: 750px;
     background: white;
-    border-radius: 12px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-    margin: 20px;
-    animation: fadeIn 0.6s ease-out;
-    
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    margin: 10px;
+    animation: fadeIn 0.4s ease-out;
 }
 
 body.registration-page .registration-header {
     background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
     color: white;
     text-align: center;
-    padding: 20px 30px;
+    padding: 15px 20px;
 }
 
 /* Header with logo */
 body.registration-page .header-content {
     display: flex;
     align-items: center;
-    gap: 30px;
+    gap: 20px;
     text-align: left;
-    max-width: 1200px;
+    max-width: 100%;
     margin: 0 auto;
 }
 
@@ -133,16 +135,16 @@ body.registration-page .logo-container {
 }
 
 body.registration-page .header-logo {
-    width: 140px;
-    height: 100px;
+    width: 100px;
+    height: 70px;
     object-fit: contain;
-    border-radius: 8px;
-    padding: 5px;
+    border-radius: 6px;
+    padding: 4px;
     transition: transform 0.3s ease;
 }
 
 body.registration-page .header-logo:hover {
-    transform: scale(1.05);
+    transform: scale(1.03);
 }
 
 body.registration-page .header-text {
@@ -151,43 +153,42 @@ body.registration-page .header-text {
 
 body.registration-page .registration-header h1 {
     font-family: 'Playfair Display', serif;
-    font-size: 2.2em;
-    margin-bottom: 8px;
+    font-size: 1.5em;
+    margin-bottom: 5px;
     color: white;
     font-weight: 600;
 }
 
 body.registration-page .registration-header p {
-    font-size: 1.1em;
+    font-size: 0.9em;
     opacity: 0.9;
     margin: 0;
 }
 
 body.registration-page .registration-form {
-    padding: 40px;
+    padding: 25px;
 }
-
 
 /* ==================== SHARED FORM STYLES ==================== */
 .form-group {
-    margin-bottom: 25px;
+    margin-bottom: 10px;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     font-weight: 500;
     color: #2c3e50;
-    font-size: 0.95em;
+    font-size: 0.85em;
 }
 
 .form-control {
     width: 100%;
-    padding: 14px 16px;
+    padding: 10px 12px;
     border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 15px;
-    transition: all 0.3s ease;
+    border-radius: 4px;
+    font-size: 13px;
+    transition: all 0.2s ease;
     background: #f8f9fa;
 }
 
@@ -195,25 +196,25 @@ body.registration-page .registration-form {
     outline: none;
     border-color: #2c3e50;
     background: white;
-    box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+    box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.1);
 }
 
 .form-control-phone {
     width: 90%;
-    padding: 12px 15px;
+    padding: 10px 12px;
     border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 15px;
-    transition: all 0.3s ease;
+    border-radius: 4px;
+    font-size: 13px;
+    transition: all 0.2s ease;
     background: #f8f9fa;
 }
 
 /* Alerts */
 .alert {
-    padding: 12px 16px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-    font-size: 14px;
+    padding: 10px 12px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    font-size: 12px;
 }
 
 .alert-error {
@@ -229,11 +230,11 @@ body.registration-page .registration-form {
 }
 
 .alert-message {
-    padding: 15px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    font-size: 14px;
-    line-height: 1.5;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-size: 12px;
+    line-height: 1.4;
 }
 
 .alert-success {
@@ -248,23 +249,22 @@ body.registration-page .registration-form {
     border: 1px solid #bee5eb;
 }
 
-
 /* Button Row */
 .button-row {
     display: flex;
-    gap: 15px;
-    margin-top: 0px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin-top: 5px;
+    margin-bottom: 15px;
 }
 
 .btn {
-    padding: 14px 30px;
+    padding: 10px 20px;
     border: none;
-    border-radius: 6px;
-    font-size: 16px;
+    border-radius: 4px;
+    font-size: 13px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     flex: 1;
 }
 
@@ -275,8 +275,8 @@ body.registration-page .registration-form {
 
 .btn-black:hover {
     background: #34495e;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(44, 62, 80, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(44, 62, 80, 0.15);
 }
 
 .btn-white {
@@ -287,9 +287,8 @@ body.registration-page .registration-form {
 
 .btn-white:hover {
     background: #d5dbdb;
-    transform: translateY(-2px);
+    transform: translateY(-1px);
 }
-
 
 .btn-block {
     flex: 1;
@@ -300,9 +299,9 @@ body.registration-page .registration-form {
 .links-container {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-top: 30px;
-    padding-top: 20px;
+    gap: 15px;
+    margin-top: 20px;
+    padding-top: 15px;
     border-top: 1px solid #eee;
 }
 
@@ -314,8 +313,8 @@ body.registration-page .registration-form {
     color: #2c3e50;
     font-weight: 600;
     text-decoration: none;
-    font-size: 14px;
-    transition: color 0.3s ease;
+    font-size: 12px;
+    transition: color 0.2s ease;
 }
 
 .forgot-link a:hover {
@@ -331,8 +330,8 @@ body.registration-page .registration-form {
     color: #7f8c8d;
     font-weight: 500;
     text-decoration: none;
-    font-size: 14px;
-    transition: color 0.3s ease;
+    font-size: 12px;
+    transition: color 0.2s ease;
 }
 
 .back-link a:hover {
@@ -344,15 +343,15 @@ body.registration-page .registration-form {
     grid-column: 1 / -1;
     text-align: center;
     color: #7f8c8d;
-    font-size: 15px;
-    padding-top: 10px;
+    font-size: 13px;
+    padding-top: 8px;
 }
 
 .signup-link a {
     color: #2c3e50;
     font-weight: 600;
     text-decoration: none;
-    transition: color 0.3s ease;
+    transition: color 0.2s ease;
 }
 
 .signup-link a:hover {
@@ -361,12 +360,12 @@ body.registration-page .registration-form {
 }
 
 /* Error Styling */
-[class*="err-"] {
+[class*="err"] {
     color: #e74c3c;
-    font-size: 10px;
-    margin-top: 5px;
+    font-size: 12px;
+    margin-top: 4px;
     display: block;
-    min-height: 20px;
+    min-height: 16px;
 }
 
 /* ==================== REGISTRATION-SPECIFIC STYLES ==================== */
@@ -374,8 +373,8 @@ body.registration-page .registration-form {
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 30px;
-    margin-bottom: 10px;
+    gap: 20px;
+    margin-bottom: 8px;
 }
 
 .form-group.full-width {
@@ -386,63 +385,64 @@ body.registration-page .registration-form {
 .radio-group {
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
-    margin-top: 8px;
+    gap: 15px;
+    margin-top: 6px;
 }
 
 .radio-option {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
 }
 
 .radio-option input[type="radio"] {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     margin: 0;
 }
 
 .radio-option label {
     margin-bottom: 0;
     font-weight: normal;
+    font-size: 13px;
     cursor: pointer;
 }
 
 /* Date of Birth */
 .dob-group {
-    margin-top: 8px;
+    margin-top: 6px;
 }
 
 .dob-selectors {
     display: flex;
-    gap: 15px;
+    gap: 12px;
 }
 
 .dob-select {
     flex: 1;
-    padding: 12px 15px;
+    padding: 10px 12px;
     border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 15px;
+    border-radius: 4px;
+    font-size: 13px;
     background: #f8f9fa;
     color: #333;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
 }
 
 .dob-select:focus {
     outline: none;
     border-color: #2c3e50;
     background: white;
-    box-shadow: 0 0 0 3px rgba(44, 62, 80, 0.1);
+    box-shadow: 0 0 0 2px rgba(44, 62, 80, 0.1);
 }
 
 /* Photo Upload */
 .photo-upload-container {
     display: flex;
     align-items: center;
-    gap: 30px;
-    margin-top: 8px;
+    gap: 20px;
+    margin-top: 6px;
 }
 
 .photo-upload-label {
@@ -450,19 +450,19 @@ body.registration-page .registration-form {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
+    gap: 10px;
 }
 
 .photo-preview {
-    width: 120px;
-    height: 120px;
+    width: 90px;
+    height: 90px;
     border: 2px dashed #ddd;
-    border-radius: 8px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     background: #f8f9fa;
 }
 
@@ -480,13 +480,13 @@ body.registration-page .registration-form {
 .upload-button {
     color: #2c3e50;
     font-weight: 500;
-    padding: 8px 20px;
+    padding: 6px 15px;
     background: #f8f9fa;
-    border-radius: 4px;
-    transition: all 0.3s ease;
+    border-radius: 3px;
+    transition: all 0.2s ease;
     border: 1px solid #ddd;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .upload-button:hover {
@@ -497,13 +497,13 @@ body.registration-page .registration-form {
 
 .upload-instructions {
     color: #7f8c8d;
-    font-size: 13px;
-    line-height: 1.6;
+    font-size: 11px;
+    line-height: 1.5;
     flex: 1;
 }
 
 .upload-instructions p {
-    margin: 4px 0;
+    margin: 3px 0;
 }
 
 /* Registration Links Container */
@@ -511,8 +511,8 @@ body.registration-page .links-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 30px;
-    padding-top: 20px;
+    margin-top: 20px;
+    padding-top: 15px;
     border-top: 1px solid #eee;
 }
 
@@ -520,14 +520,14 @@ body.registration-page .links-container {
 .signin-link {
     text-align: right;
     color: #7f8c8d;
-    font-size: 15px;
+    font-size: 13px;
 }
 
 .signin-link a {
     color: #2c3e50;
     font-weight: 600;
     text-decoration: none;
-    transition: color 0.3s ease;
+    transition: color 0.2s ease;
 }
 
 .signin-link a:hover {
@@ -535,21 +535,19 @@ body.registration-page .links-container {
     text-decoration: underline;
 }
 
-
-
 /* ==================== RESET PASSWORD-SPECIFIC STYLES ==================== */
 body.reset-password-page .password-requirements {
     color: #666;
-    font-size: 13px;
-    margin-top: 8px;
-    line-height: 1.5;
+    font-size: 11px;
+    margin-top: 6px;
+    line-height: 1.4;
 }
 
 body.reset-password-page .password-strength {
-    height: 4px;
+    height: 3px;
     background: #e5e7eb;
     border-radius: 2px;
-    margin-top: 8px;
+    margin-top: 6px;
     overflow: hidden;
 }
 
@@ -557,19 +555,20 @@ body.reset-password-page .password-strength-bar {
     height: 100%;
     width: 0%;
     background: #10b981;
-    transition: width 0.3s ease;
+    transition: width 0.2s ease;
 }
 
 body.reset-password-page .login-redirect {
     text-align: center;
-    margin-top: 30px;
-    padding: 20px;
+    margin-top: 20px;
+    padding: 15px;
 }
 
 body.reset-password-page .login-redirect a {
     color: #2c3e50;
     font-weight: 600;
     text-decoration: none;
+    font-size: 13px;
 }
 
 body.reset-password-page .login-redirect a:hover {
@@ -579,95 +578,208 @@ body.reset-password-page .login-redirect a:hover {
 body.reset-password-page .action-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 15px;
-    margin-top: 30px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin-top: 20px;
+    margin-bottom: 15px;
 }
 
 body.reset-password-page .instruction-text {
     color: #666;
-    font-size: 14px;
-    line-height: 1.6;
-    margin-bottom: 25px;
+    font-size: 12px;
+    line-height: 1.5;
+    margin-bottom: 20px;
     text-align: center;
+}
+
+/* ==================== Activation Page ==================== */
+.verification-container {
+    max-width: 500px;
+    width: 90%;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    text-align: center;
+}
+
+.message {
+    padding: 20px 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    font-size: 16px;
+    line-height: 1.6;
+    font-style: italic;
+}
+
+.success {
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.error {
+    background-color: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+.verification-icon {
+    width: 180px;
+    margin-bottom: 10px;
+    opacity: 0.8;
+    animation: floating 4s ease-in-out infinite;
 }
 
 /* ==================== RESPONSIVE DESIGN ==================== */
 @media (max-width: 768px) {
+
     /* Common responsive styles */
     .header-content {
         flex-direction: column;
-        gap: 20px;
+        gap: 15px;
         text-align: center;
     }
-    
+
     .header-logo {
-        width: 120px;
-        height: 85px;
+        width: 80px;
+        height: 60px;
     }
-    
+
     .login-container,
     .registration-container {
-        margin: 10px;
-        max-width: 90%;
+        margin: 8px;
+        max-width: 95%;
     }
-    
+
     body.login-page .login-form,
     body.registration-page .registration-form,
     body.forgot-password-page .login-form,
     body.reset-password-page .login-form {
-        padding: 30px 25px;
+        padding: 20px 15px;
     }
-    
+
     body.login-page .login-header,
     body.registration-page .registration-header,
     body.forgot-password-page .login-header,
     body.reset-password-page .login-header {
-        padding: 25px 20px;
+        padding: 15px;
     }
-    
-    body.login-page .login-header h1,
+
+    body.login-page .header-text h2,
     body.registration-page .registration-header h1,
     body.forgot-password-page .login-header h1,
     body.reset-password-page .login-header h1 {
-        font-size: 1.8em;
+        font-size: 1.3em;
     }
-    
+
     /* Registration specific responsive */
     .form-row {
         grid-template-columns: 1fr;
-        gap: 20px;
+        gap: 15px;
     }
-    
+
     body.registration-page .photo-upload-container {
         flex-direction: column;
         align-items: flex-start;
-        gap: 20px;
+        gap: 15px;
     }
-    
+
     body.registration-page .dob-selectors {
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
     }
-    
+
+    body.registration-page .photo-preview {
+        width: 80px;
+        height: 80px;
+    }
+
     /* Links container responsive */
     .links-container {
         grid-template-columns: 1fr;
-        gap: 15px;
+        gap: 12px;
     }
-    
-    .back-link, .forgot-link {
+
+    .back-link,
+    .forgot-link {
         text-align: center;
     }
-    
+
     /* Button row responsive */
     .button-row,
     body.forgot-password-page .form-actions {
         flex-direction: column;
     }
-    
+
     /* Reset password responsive */
     body.reset-password-page .action-buttons {
         grid-template-columns: 1fr;
+    }
+
+    .btn {
+        padding: 10px 15px;
+        font-size: 12px;
+    }
+}
+
+/* Temporary success & error messages */
+.temp-message {
+    position: fixed !important;
+    top: 70px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    background: #11c35bff !important;
+    color: white !important;
+    padding: 8px 20px !important;
+    border-radius: 3px !important;
+    z-index: 1000 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    animation: fadeInDrop 0.3s ease-out forwards !important;
+    font-size: 13px !important;
+    max-width: 80% !important;
+    text-align: center !important;
+    font-weight: 500 !important;
+}
+
+.temp-message.error {
+    background: #e74c3c !important;
+}
+
+/* Animation for temp message */
+@keyframes fadeInDrop {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+@keyframes floating {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes gentlePulse {
+
+    0%,
+    100% {
+        opacity: 0.8;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1.5;
+        transform: scale(1.05);
     }
 }

@@ -88,6 +88,31 @@ $priceRanges = [
 
 <h1 style="margin-bottom:20px;">Manage Products</h1>
 
+<!-- Add New Product Button -->
+<a href="add_product.php"
+style="padding:10px 20px; background:#2c3e50; color:white; 
+        border-radius:5px; text-decoration:none; margin-bottom:20px; display:inline-block;">
+    ➕ Add New Product
+</a>
+
+<?php if (get('msg') == 'added'): ?>
+    <div style="padding:10px; background:#d4f8d4; border:1px solid #8acb8a; margin-bottom:15px;">
+        ✅ Product added successfully!
+    </div>
+<?php endif; ?>
+
+<?php if (get('msg') == 'updated'): ?>
+    <div style="padding:10px; background:#d4f8d4; border:1px solid #8acb8a; margin-bottom:15px;">
+        🔄 Product updated successfully!
+    </div>
+<?php endif; ?>
+
+<?php if (get('msg') == 'deleted'): ?>
+    <div style="padding:10px; background:#d4f8d4; border:1px solid #8acb8a; margin-bottom:15px;">
+        ❌ Product deleted!
+    </div>
+<?php endif; ?>
+
 <div style="display:flex; gap:30px;">
 
     <!-- ================= LEFT FILTER SIDEBAR ================= -->
@@ -170,13 +195,6 @@ $priceRanges = [
                 <?php endforeach; ?>
             </div>
         </div>
-
-        <!-- Add New Product Button -->
-        <a href="add_product.php"
-        style="padding:10px 20px; background:#2c3e50; color:white; 
-                border-radius:5px; text-decoration:none; margin-bottom:20px; display:inline-block;">
-            ➕ Add New Product
-        </a>
 
         <!-- LOW STOCK ROW (ONLY IF EXISTS)  -->
         <?php if (count($lowStock) > 0): ?> 
