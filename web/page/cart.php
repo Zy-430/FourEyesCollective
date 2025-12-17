@@ -16,7 +16,7 @@ function is_ajax()
         strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
 }
 
-// Helper function to get cart count
+// get cart count
 function getCartCount($user_id, $db)
 {
     $stm = $db->prepare("SELECT SUM(product_qty) as total FROM cart_item 

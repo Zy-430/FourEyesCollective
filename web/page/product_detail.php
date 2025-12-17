@@ -128,6 +128,22 @@ include '../_head.php';
             xhr.onload = function() {
                 if (xhr.status === 200) {
                     showNotification('Product added to cart successfully!', 'success');
+                    
+                    // UPDATE CART BADGE IMMEDIATELY
+                    fetch('/page/cart_count.php')
+                        .then(response => response.json())
+                        .then(data => {
+                            const cartBadge = document.getElementById('cart-badge');
+                            if (cartBadge) {
+                                if (data.cart_count > 0) {
+                                    cartBadge.textContent = data.cart_count;
+                                    cartBadge.style.display = 'flex';
+                                } else {
+                                    cartBadge.style.display = 'none';
+                                }
+                            }
+                        })
+                        .catch(error => console.error('Error updating cart count:', error));
                 } else {
                     showNotification('Error adding product to cart', 'error');
                 }
@@ -145,14 +161,18 @@ include '../_head.php';
         const existingNotifications = document.querySelectorAll('.custom-notification');
         existingNotifications.forEach(notification => notification.remove());
 
+        // Calculate header height for positioning below header
+        const header = document.querySelector('header');
+        const headerHeight = header ? header.offsetHeight : 0;
+        
         // Create notification element
         const notification = document.createElement('div');
         notification.className = 'custom-notification';
         notification.style.position = 'fixed';
-        notification.style.top = '50%';
+        notification.style.top = `${headerHeight + 20}px`; // 20px below header
         notification.style.left = '50%';
-        notification.style.transform = 'translate(-50%, -50%)';
-        notification.style.padding = '20px 30px';
+        notification.style.transform = 'translateX(-50%)';
+        notification.style.padding = '15px 25px';
         notification.style.borderRadius = '8px';
         notification.style.color = 'white';
         notification.style.zIndex = '10000';
@@ -162,7 +182,9 @@ include '../_head.php';
         notification.style.minWidth = '300px';
         notification.style.maxWidth = '80%';
         notification.style.cursor = 'pointer';
-        notification.style.transition = 'opacity 0.3s ease';
+        notification.style.transition = 'all 0.3s ease';
+        notification.style.opacity = '0';
+        notification.style.animation = 'slideDown 0.3s ease forwards';
 
         if (type === 'success') {
             notification.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
@@ -175,7 +197,8 @@ include '../_head.php';
         // Add icon
         const icon = document.createElement('span');
         icon.style.marginRight = '10px';
-        icon.style.fontSize = '20px';
+        icon.style.fontSize = '18px';
+        icon.style.verticalAlign = 'middle';
 
         if (type === 'success') {
             icon.textContent = '✓';
@@ -185,24 +208,32 @@ include '../_head.php';
 
         const text = document.createElement('span');
         text.textContent = message;
+        text.style.verticalAlign = 'middle';
 
         notification.appendChild(icon);
         notification.appendChild(text);
         document.body.appendChild(notification);
 
+        // Trigger animation
+        setTimeout(() => {
+            notification.style.opacity = '1';
+        }, 10);
+
         // Add click to remove functionality
         notification.addEventListener('click', function() {
             this.style.opacity = '0';
+            this.style.transform = 'translateX(-50%) translateY(-10px)';
             setTimeout(() => {
                 if (this.parentNode) {
                     this.parentNode.removeChild(this);
                 }
-            }, 300); // Match transition duration
+            }, 300);
         });
 
         // Remove notification after 3 seconds
         const timeoutId = setTimeout(() => {
             notification.style.opacity = '0';
+            notification.style.transform = 'translateX(-50%) translateY(-10px)';
             setTimeout(() => {
                 if (notification.parentNode) {
                     notification.parentNode.removeChild(notification);
@@ -214,6 +245,44 @@ include '../_head.php';
         notification.addEventListener('click', function() {
             clearTimeout(timeoutId);
         });
+
+        // Add animation keyframes dynamically
+        if (!document.getElementById('notification-styles')) {
+            const style = document.createElement('style');
+            style.id = 'notification-styles';
+            style.textContent = `
+                @keyframes slideDown {
+                    from {
+                        opacity: 0;
+                        transform: translateX(-50%) translateY(-20px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(-50%) translateY(0);
+                    }
+                }
+                
+                @media (max-width: 768px) {
+                    .custom-notification {
+                        min-width: 250px !important;
+                        max-width: 90% !important;
+                        padding: 12px 20px !important;
+                        font-size: 14px !important;
+                        top: ${headerHeight + 10}px !important;
+                    }
+                }
+                
+                @media (max-width: 480px) {
+                    .custom-notification {
+                        min-width: 200px !important;
+                        padding: 10px 15px !important;
+                        font-size: 13px !important;
+                        top: ${headerHeight + 5}px !important;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+        }
     }
 </script>
 
