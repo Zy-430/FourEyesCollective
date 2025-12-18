@@ -1,6 +1,7 @@
 <?php
 require '../_base.php';
 require '../lib/db.php';
+require '../lib/category.php';
 require '../lib/SimplePager.php';
 
 $_title = 'Home | Shop';
@@ -74,24 +75,6 @@ $priceRangeData = $priceStm->fetch();
 $actualMinPrice = $priceRangeData->min_price ?? 0;
 $actualMaxPrice = $priceRangeData->max_price ?? 1000;
 
-// Category mapping
-function categoryFolder($catId)
-{
-    return [
-        'CA0001' => 'glasses',
-        'CA0002' => 'sunglasses',
-        'CA0003' => 'contactlens',
-        'CA0004' => 'kids'
-    ][$catId] ?? 'others';
-}
-
-$categoryNames = [
-    'CA0001' => 'Glasses',
-    'CA0002' => 'Sunglasses',
-    'CA0003' => 'Contact Lens',
-    'CA0004' => 'Kids'
-];
-
 // Predefined price ranges
 $priceRanges = [
     '0-100' => 'Under RM 100',
@@ -147,7 +130,7 @@ $filterQuery = http_build_query($currentParams);
                             onchange="this.form.submit()">
                         <span>All Products</span>
                     </label>
-                    <?php foreach ($categoryNames as $id => $name): ?>
+                    <?php foreach ($categories as $id => $name): ?>
                         <label style="display: flex; align-items: center; gap: 8px;">
                             <input type="radio"
                                 name="cat"
@@ -286,7 +269,7 @@ $filterQuery = http_build_query($currentParams);
 
                 <?php foreach ($products as $p): ?>
                     <?php
-                    $folder = categoryFolder($p->category_id);
+                    $folder = $categoryFolders[$p->category_id] ?? 'others';
                     $imgArray = explode(',', $p->product_image);
                     $firstImage = trim($imgArray[0]);
                     $imgPath = "/images/product/$folder/$firstImage";
@@ -301,15 +284,8 @@ $filterQuery = http_build_query($currentParams);
                             style="width:100%; height:180px; object-fit:cover; border-radius:6px; margin-bottom:10px;">
 
                         <!-- NAME -->
-                        <div style="height:50px; overflow:hidden; margin-bottom:10px;">
+                        <div style="height:51px; overflow:hidden; margin-bottom:10px;">
                             <h3 style="font-size:17px; margin:0;"><?= encode($p->product_name) ?></h3>
-                        </div>
-
-                        <!-- CATEGORY -->
-                        <div style="margin-bottom: 10px;">
-                            <span style="background: #eee; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                                <?= $categoryNames[$p->category_id] ?? 'Other' ?>
-                            </span>
                         </div>
 
                         <!-- PRICE -->
@@ -319,8 +295,16 @@ $filterQuery = http_build_query($currentParams);
                         </div>
 
                         <!-- STOCK -->
-                        <div style="margin-bottom: 10px; font-size: 14px; color: #666;">
-                            Stock: <?= number_format($p->product_stock) ?>
+                        <div style="margin-bottom: 10px; font-size: 14px;">
+                            <?php if ($p->product_stock <= 10): ?>
+                                <span style="color: #c0392b; font-weight:bold;">
+                                    Stock: <?= number_format($p->product_stock) ?> (Selling Fast!)
+                                </span>
+                            <?php else: ?>
+                                <span style="color: #666;">
+                                    Stock: <?= number_format($p->product_stock) ?>
+                                </span>
+                            <?php endif; ?>
                         </div>
 
                         <!-- BUTTONS -->
@@ -332,11 +316,12 @@ $filterQuery = http_build_query($currentParams);
 
                             <?php $is_logged_in = isset($_SESSION['user']); ?>
 
-                            <a href="javascript:void(0)" onclick="addToCart('<?= $p->product_id ?>')"
-                                class="add-to-cart"
-                                style="display:inline-block; padding:10px 20px; background:#2c3e50; color:white; border-radius:5px; text-decoration:none; cursor:pointer;">
-                                Add to Cart
-                            </a>
+                            <body data-logged-in="<?= $is_logged_in ? '1' : '0' ?>">
+                                <a href="javascript:void(0)" onclick="addToCart('<?= $p->product_id ?>')"
+                                    class="add-to-cart"
+                                    style="display:inline-block; padding:10px 20px; background:#2c3e50; color:white; border-radius:5px; text-decoration:none; cursor:pointer;">
+                                    Add to Cart
+                                </a>
                         </div>
 
                     </div>
@@ -393,179 +378,6 @@ $filterQuery = http_build_query($currentParams);
     </div>
 
 </div>
-<script>
-    function addToCart(productId) {
-        <?php if (!$is_logged_in): ?>
-            if (confirm('You need to login to add items to cart. Go to login page?')) {
-                const currentUrl = encodeURIComponent(window.location.href);
-                window.location.href = '/page/login.php?redirect=' + currentUrl;
-            }
-        <?php else: ?>
-            const xhr = new XMLHttpRequest();
-            const formData = new FormData();
-            formData.append('action', 'add');
-            formData.append('product_id', productId);
-
-            xhr.open('POST', 'cart.php');
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    showNotification('Product added to cart successfully!', 'success');
-                    
-                    // UPDATE CART BADGE IMMEDIATELY
-                    fetch('/page/cart_count.php')
-                        .then(response => response.json())
-                        .then(data => {
-                            const cartBadge = document.getElementById('cart-badge');
-                            if (cartBadge) {
-                                if (data.cart_count > 0) {
-                                    cartBadge.textContent = data.cart_count;
-                                    cartBadge.style.display = 'flex';
-                                } else {
-                                    cartBadge.style.display = 'none';
-                                }
-                            }
-                        })
-                        .catch(error => console.error('Error updating cart count:', error));
-                } else {
-                    showNotification('Error adding product to cart', 'error');
-                }
-            };
-            xhr.onerror = function() {
-                showNotification('Network error. Please try again.', 'error');
-            };
-            xhr.send(formData);
-        <?php endif; ?>
-    }
-
-    // Function to show notifications
-    function showNotification(message, type) {
-        // Remove any existing notifications first
-        const existingNotifications = document.querySelectorAll('.custom-notification');
-        existingNotifications.forEach(notification => notification.remove());
-
-        // Calculate header height for positioning below header
-        const header = document.querySelector('header');
-        const headerHeight = header ? header.offsetHeight : 0;
-        
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = 'custom-notification';
-        notification.style.position = 'fixed';
-        notification.style.top = `${headerHeight + 20}px`; // 20px below header
-        notification.style.left = '50%';
-        notification.style.transform = 'translateX(-50%)';
-        notification.style.padding = '15px 25px';
-        notification.style.borderRadius = '8px';
-        notification.style.color = 'white';
-        notification.style.zIndex = '10000';
-        notification.style.fontWeight = 'bold';
-        notification.style.textAlign = 'center';
-        notification.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
-        notification.style.minWidth = '300px';
-        notification.style.maxWidth = '80%';
-        notification.style.cursor = 'pointer';
-        notification.style.transition = 'all 0.3s ease';
-        notification.style.opacity = '0';
-        notification.style.animation = 'slideDown 0.3s ease forwards';
-
-        if (type === 'success') {
-            notification.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
-            notification.style.borderLeft = '5px solid #229954';
-        } else {
-            notification.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
-            notification.style.borderLeft = '5px solid #922b21';
-        }
-
-        // Add icon
-        const icon = document.createElement('span');
-        icon.style.marginRight = '10px';
-        icon.style.fontSize = '18px';
-        icon.style.verticalAlign = 'middle';
-
-        if (type === 'success') {
-            icon.textContent = '✓';
-        } else {
-            icon.textContent = '✗';
-        }
-
-        const text = document.createElement('span');
-        text.textContent = message;
-        text.style.verticalAlign = 'middle';
-
-        notification.appendChild(icon);
-        notification.appendChild(text);
-        document.body.appendChild(notification);
-
-        // Trigger animation
-        setTimeout(() => {
-            notification.style.opacity = '1';
-        }, 10);
-
-        // Add click to remove functionality
-        notification.addEventListener('click', function() {
-            this.style.opacity = '0';
-            this.style.transform = 'translateX(-50%) translateY(-10px)';
-            setTimeout(() => {
-                if (this.parentNode) {
-                    this.parentNode.removeChild(this);
-                }
-            }, 300);
-        });
-
-        // Remove notification after 3 seconds
-        const timeoutId = setTimeout(() => {
-            notification.style.opacity = '0';
-            notification.style.transform = 'translateX(-50%) translateY(-10px)';
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 300);
-        }, 3000);
-
-        // Clear timeout if notification is clicked
-        notification.addEventListener('click', function() {
-            clearTimeout(timeoutId);
-        });
-
-        // Add animation keyframes dynamically
-        if (!document.getElementById('notification-styles')) {
-            const style = document.createElement('style');
-            style.id = 'notification-styles';
-            style.textContent = `
-                @keyframes slideDown {
-                    from {
-                        opacity: 0;
-                        transform: translateX(-50%) translateY(-20px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateX(-50%) translateY(0);
-                    }
-                }
-                
-                @media (max-width: 768px) {
-                    .custom-notification {
-                        min-width: 250px !important;
-                        max-width: 90% !important;
-                        padding: 12px 20px !important;
-                        font-size: 14px !important;
-                        top: ${headerHeight + 10}px !important;
-                    }
-                }
-                
-                @media (max-width: 480px) {
-                    .custom-notification {
-                        min-width: 200px !important;
-                        padding: 10px 15px !important;
-                        font-size: 13px !important;
-                        top: ${headerHeight + 5}px !important;
-                    }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-    }
-</script>
-
+<script src="/js/addToCart.js"></script>
+<script src="/js/notifications.js"></script>
 <?php include '../_foot.php'; ?>

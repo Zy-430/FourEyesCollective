@@ -1,13 +1,45 @@
 <?php
 require '../_base.php';
 require '../lib/db.php';
+require '../lib/category.php';
 
 auth();
 
 $order_id = $_GET['order_id'] ?? null;
 
 if (!$order_id) {
-    include_cancellation_template('Invalid Order', 'Invalid order ID provided.');
+?>
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Invalid Order | Four Eyes Collective</title>
+        <link rel="stylesheet" href="/css/checkout_flow.css">
+        <link rel="stylesheet" href="/css/app.css">
+    </head>
+
+    <body>
+        <div class="checkout-status-container status-error">
+            <div class="page-header">
+                <h1>❌ Invalid Order</h1>
+                <p>Invalid order ID provided.</p>
+            </div>
+            <div class="checkout-section" style="text-align: center;">
+                <div class="error-message">
+                    <p>Invalid order ID provided.</p>
+                </div>
+                <div class="action-buttons">
+                    <a href="cart.php" class="btn btn-secondary">Return to Cart</a>
+                    <a href="shoppage.php" class="btn btn-primary">Continue Shopping</a>
+                </div>
+            </div>
+        </div>
+    </body>
+
+    </html>
+<?php
     exit;
 }
 
@@ -23,7 +55,7 @@ try {
         throw new Exception("Order not found, already processed, or unauthorized access");
     }
 
-    // Set order as cancelled with payment failed reason
+    // Set order as cancelled
     $_db->prepare("
         UPDATE `order` SET 
             status = 'cancelled',
@@ -31,25 +63,23 @@ try {
         WHERE order_id = ? AND user_id = ?
     ")->execute([$order_id, $_user->user_id]);
 
-    // Get order items
+    // Get order items with category information
     $stm = $_db->prepare("
-    SELECT product_id, product_qty
-    FROM order_item
-    WHERE order_id = ?
-");
+        SELECT oi.product_id, oi.product_qty, p.product_name, p.product_image, c.category_id
+        FROM order_item oi
+        JOIN product p ON oi.product_id = p.product_id
+        LEFT JOIN category c ON p.category_id = c.category_id
+        WHERE oi.order_id = ?
+    ");
     $stm->execute([$order_id]);
     $items = $stm->fetchAll(PDO::FETCH_OBJ);
 
-    // Get last cart_item_id (append after last row)
-    $stm = $_db->query("
-        SELECT MAX(CAST(SUBSTRING(cart_item_id, 3) AS UNSIGNED)) AS max_id
-        FROM cart_item
-    ");
+    // Get last cart_item_id
+    $stm = $_db->query("SELECT MAX(CAST(SUBSTRING(cart_item_id, 3) AS UNSIGNED)) AS max_id FROM cart_item");
     $max_id = $stm->fetch()->max_id ?? 0;
 
     // Insert NEW cart items
     foreach ($items as $item) {
-
         $new_cart_item_id = 'CI' . str_pad(++$max_id, 4, '0', STR_PAD_LEFT);
 
         $_db->prepare("
@@ -73,12 +103,8 @@ try {
             UPDATE product
             SET product_stock = product_stock + ?
             WHERE product_id = ?
-        ")->execute([
-            $item->product_qty,
-            $item->product_id
-        ]);
+        ")->execute([$item->product_qty, $item->product_id]);
     }
-
 
     // Update payment status if exists
     $_db->prepare("
@@ -95,30 +121,6 @@ try {
 
     $_db->commit();
 
-    // Store order details for potential reorder
-    $_SESSION['cancelled_order'] = [
-        'order_id' => $order_id,
-        'items' => $items,
-        'timestamp' => time()
-    ];
-
-    // Display cancellation success page with reorder options
-    display_cancellation_page(
-        'Payment Failed',
-        $order_id,
-        $items,
-        'payment'
-    );
-} catch (Exception $ex) {
-    $_db->rollBack();
-    include_cancellation_template('Error Processing Cancellation', $ex->getMessage());
-}
-
-/**
- * Display cancellation page with options
- */
-function display_cancellation_page($title, $order_id, $items, $type = 'payment')
-{
     $item_count = count($items);
     $total_quantity = 0;
     foreach ($items as $item) {
@@ -126,145 +128,92 @@ function display_cancellation_page($title, $order_id, $items, $type = 'payment')
     }
 ?>
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
 
     <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Payment Failed | Four Eyes Collective</title>
-        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
-        <style>
-            body {
-                font-family: 'Roboto', sans-serif;
-                text-align: center;
-                padding: 50px;
-                background: #f8f9fa;
-            }
-
-            .container {
-                max-width: 600px;
-                margin: 0 auto;
-                background: white;
-                padding: 40px;
-                border-radius: 15px;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            }
-
-            .info {
-                background: #fff3cd;
-                color: #856404;
-                padding: 25px;
-                border-radius: 8px;
-                margin: 30px 0;
-                border-left: 5px solid #ffc107;
-            }
-
-            .error {
-                background: #f8d7da;
-                color: #721c24;
-                padding: 25px;
-                border-radius: 8px;
-                margin: 30px 0;
-                border-left: 5px solid #e74c3c;
-            }
-
-            .success {
-                background: #d4edda;
-                color: #155724;
-                padding: 25px;
-                border-radius: 8px;
-                margin: 30px 0;
-                border-left: 5px solid #28a745;
-            }
-
-            .btn {
-                display: inline-block;
-                padding: 12px 25px;
-                background: #2c3e50;
-                color: white;
-                text-decoration: none;
-                border-radius: 5px;
-                margin: 15px 10px;
-                font-weight: bold;
-                cursor: pointer;
-            }
-
-            .btn-primary {
-                background: #27ae60;
-            }
-
-            .btn-secondary {
-                background: #95a5a6;
-            }
-
-            .btn-warning {
-                background: #ffc107;
-                color: #000;
-            }
-
-            .cancel-icon {
-                font-size: 4rem;
-                color: #ffc107;
-                margin: 20px 0;
-            }
-
-            ul {
-                text-align: left;
-                max-width: 400px;
-                margin: 20px auto;
-            }
-
-            li {
-                margin-bottom: 10px;
-            }
-
-            .order-summary {
-                text-align: left;
-                background: #f8f9fa;
-                padding: 20px;
-                border-radius: 8px;
-                margin: 20px 0;
-            }
-
-            .order-summary h4 {
-                margin-top: 0;
-                color: #2c3e50;
-            }
-        </style>
-
+        <link rel="stylesheet" href="/css/checkout_flow.css">
+        <link rel="stylesheet" href="/css/app.css">
     </head>
 
     <body>
-        <div class="container">
-            <div class="cancel-icon">⚠️</div>
-            <h1 style="color: #2c3e50; font-family: 'Playfair Display', serif;">Payment Failed</h1>
-
-            <div class="error">
-                <h3 style="margin-top: 0;">Payment Unsuccessful</h3>
-                <p>Your payment for order <strong><?= encode($order_id) ?></strong> failed to process.</p>
-                <p>No charges have been made to your account.</p>
+        <div class="checkout-status-container status-warning">
+            <div class="page-header">
+                <h1>Payment Failed</h1>
+                <p>Your payment could not be processed</p>
             </div>
 
-            <div class="info">
-                <h4 style="margin-top: 0;">Order Details:</h4>
-                <p><strong><?= $item_count ?> product(s)</strong> with total of <strong><?= $total_quantity ?> item(s)</strong></p>
-            </div>
+            <div class="checkout-section">
+                <div class="status-icon">⚠️</div>
 
-            <div class="order-summary">
-                <h4>What would you like to do?</h4>
-                <ul>
-                    <li><strong>Order Again:</strong> Add all items from this order to your cart</li>
-                    <li><strong>Shop Products:</strong> Browse our collection and add different items</li>
-                    <li><strong>View Cart:</strong> Review and modify your current cart</li>
-                </ul>
-            </div>
+                <div class="warning-message">
+                    <h3>Payment Unsuccessful</h3>
+                    <p>Your payment for order <strong><?= encode($order_id) ?></strong> failed to process.</p>
+                    <p>No charges have been made to your account.</p>
+                    <p><strong><?= $item_count ?> item(s)</strong> have been restored to your shopping cart.</p>
+                </div>
 
-            <div style="margin-top: 40px;">
-                <a href="shoppage.php" class="btn btn-warning">Shop Other Products</a>
-                <a href="cart.php" class="btn btn-secondary">View Cart</a>
-            </div>
+                <!-- Order Details -->
+                <div class="order-details-grid">
+                    <div class="detail-box">
+                        <div class="detail-label">Order ID</div>
+                        <div class="detail-value"><?= encode($order_id) ?></div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">Items Restored</div>
+                        <div class="detail-value"><?= $item_count ?> product(s)</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">Total Quantity</div>
+                        <div class="detail-value"><?= $total_quantity ?> item(s)</div>
+                    </div>
+                    <div class="detail-box">
+                        <div class="detail-label">Order Status</div>
+                        <div class="detail-value" style="color:#ffc107;">Cancelled</div>
+                    </div>
+                </div>
 
-            <p style="margin-top: 30px; color: #666; font-size: 0.9rem;">
-                Need help? <a href="/page/contact.php" style="color: #2c3e50; text-decoration: underline;">Contact our support team</a>
-            </p>
+                <!-- Order Items Preview -->
+                <div class="checkout-section">
+                    <h3>Items Restored to Cart</h3>
+                    <div class="order-items" style="max-height: 200px; overflow-y: auto; margin-bottom: 20px;">
+                        <?php foreach ($items as $item): ?>
+                            <?php
+                            $folder = $categoryFolders[$item->category_id] ?? 'others';
+                            $imgArray = explode(',', $item->product_image);
+                            $firstImage = trim($imgArray[0]);
+                            $imgPath = "/images/product/$folder/$firstImage";
+                            ?>
+                            <div class="order-item">
+                                <img src="<?= $imgPath ?>" alt="<?= encode($item->product_name) ?>" class="order-item-image">
+                                <div class="item-details">
+                                    <div class="item-name"><?= encode($item->product_name) ?></div>
+                                    <div style="color: #666; font-size: 0.9rem;">Qty: <?= $item->product_qty ?></div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <div class="info-message">
+                    <h4>What would you like to do?</h4>
+                    <ul>
+                        <li><strong>Order Again:</strong> All items from this order have been added to your cart</li>
+                        <li><strong>Shop Products:</strong> Browse our collection and add different items</li>
+                        <li><strong>View Cart:</strong> Review and modify your current cart</li>
+                    </ul>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="shoppage.php" class="btn btn-warning">Shop Other Products</a>
+                    <a href="cart.php" class="btn btn-secondary">View Cart</a>
+                </div>
+                <!-- <div style="">
+                     <a href="/page/contact.php" class="btn">Contact Support</a>
+                </div> -->
+            </div>
         </div>
 
         <script>
@@ -278,63 +227,36 @@ function display_cancellation_page($title, $order_id, $items, $type = 'payment')
 
     </html>
 <?php
-}
-
-
-function include_cancellation_template($title, $message)
-{
+} catch (Exception $ex) {
+    $_db->rollBack();
 ?>
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
 
     <head>
-        <title><?= $title ?> | Four Eyes Collective</title>
-        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
-        <style>
-            body {
-                font-family: 'Roboto', sans-serif;
-                text-align: center;
-                padding: 50px;
-                background: #f8f9fa;
-            }
-
-            .container {
-                max-width: 500px;
-                margin: 0 auto;
-                background: white;
-                padding: 40px;
-                border-radius: 15px;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            }
-
-            .error {
-                background: #f8d7da;
-                color: #721c24;
-                padding: 20px;
-                border-radius: 8px;
-                margin: 20px 0;
-                border-left: 5px solid #e74c3c;
-            }
-
-            .btn {
-                display: inline-block;
-                padding: 12px 25px;
-                background: #2c3e50;
-                color: white;
-                text-decoration: none;
-                border-radius: 5px;
-                margin: 10px;
-                font-weight: bold;
-            }
-        </style>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Error Processing Cancellation | Four Eyes Collective</title>
+        <link rel="stylesheet" href="/css/checkout_flow.css">
+        <link rel="stylesheet" href="/css/app.css">
     </head>
 
     <body>
-        <div class="container">
-            <h1 style="color: #2c3e50; font-family: 'Playfair Display', serif;">❌ <?= $title ?></h1>
-            <div class="error"><?= encode($message) ?></div>
-            <a href="cart.php" class="btn">Return to Cart</a>
-            <a href="shoppage.php" class="btn">Continue Shopping</a>
+        <div class="checkout-status-container status-error">
+            <div class="page-header">
+                <h1>⚠️ System Error</h1>
+                <p>An error occurred while processing your cancellation</p>
+            </div>
+            <div class="checkout-section" style="text-align: center;">
+                <div class="error-message">
+                    <p>An error occurred while processing your cancellation:</p>
+                    <p><strong><?= encode($ex->getMessage()) ?></strong></p>
+                </div>
+                <div class="action-buttons">
+                    <a href="cart.php" class="btn btn-secondary">Return to Cart</a>
+                    <a href="/page/contact.php" class="btn">Contact Support</a>
+                </div>
+            </div>
         </div>
     </body>
 

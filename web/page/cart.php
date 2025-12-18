@@ -1,6 +1,8 @@
 <?php
 require '../_base.php';
 require '../lib/db.php';
+require '../lib/category.php';
+
 
 if (!$_user) {
     temp('error', 'Please login to view your cart');
@@ -239,12 +241,9 @@ include '../_head.php';
                         <?php foreach ($cart_items as $item): ?>
                             <?php
                             // Get image path
-                            $folder = [
-                                'CA0001' => 'glasses',
-                                'CA0002' => 'sunglasses',
-                                'CA0003' => 'contactlens',
-                                'CA0004' => 'kids'
-                            ][$item->category_id] ?? 'others';
+
+
+                            $folder = $categoryFolders[$item->category_id] ?? 'others';
                             $imgArray = explode(',', $item->product_image);
                             $firstImage = trim($imgArray[0]);
                             $imgPath = "/images/product/$folder/$firstImage";

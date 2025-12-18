@@ -2,20 +2,14 @@
 require '../_base.php';
 require '../lib/db.php';
 require_once '../stripe-php-19.0.0/init.php';
+require '../lib/category.php';
 
-// Set Stripe secret key
 \Stripe\Stripe::setApiKey('sk_test_51SZZzU2LpkFiPUtITtnxkZtzongU6II64ZL8YSynXO951EcqTfIfRbWAl586Hh8LOXYexaqDtwwaO6rxwdOQvygm006Vp82pdb');
 
-// Must login
 auth();
 $user_id = $_user->user_id;
 
-// Initialize variables
-$checkout_items = [];
-$total_amount = 0;
-$cart_items = [];
-
-// Load cart items currently in checkout status
+// Load checkout items
 $stm = $_db->prepare("
     SELECT ci.*, p.product_name, p.product_price, p.product_stock, p.product_image, 
            c.category_id, c.category_name
@@ -30,59 +24,31 @@ $stm->execute([$user_id]);
 $cart_items = $stm->fetchAll(PDO::FETCH_OBJ);
 
 if (!$cart_items) {
-
 ?>
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
 
     <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>No Checkout Items | Four Eyes Collective</title>
-        <link rel="stylesheet" href="/css/checkout.css">
-        <style>
-            body {
-                font-family: 'Roboto', sans-serif;
-                text-align: center;
-                padding: 50px;
-                background: #f8f9fa;
-            }
-
-            .container {
-                max-width: 500px;
-                margin: 0 auto;
-                background: white;
-                padding: 40px;
-                border-radius: 15px;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            }
-
-            h2 {
-                color: #2c3e50;
-                margin-bottom: 20px;
-            }
-
-            .btn {
-                display: inline-block;
-                padding: 12px 25px;
-                background: #2c3e50;
-                color: white;
-                text-decoration: none;
-                border-radius: 5px;
-                margin: 10px;
-                font-weight: bold;
-            }
-
-            .btn-primary {
-                background: #27ae60;
-            }
-        </style>
+        <link rel="stylesheet" href="/css/checkout_flow.css">
+        <link rel="stylesheet" href="/css/app.css">
     </head>
 
     <body>
-        <div class="container">
-            <h2>🛒 No Items for Checkout</h2>
-            <p>You have no items selected for checkout. Please select items from your cart first.</p>
-            <a href="cart.php" class="btn">Return to Cart</a>
-            <a href="shoppage.php" class="btn btn-primary">Continue Shopping</a>
+        <div class="checkout-status-container status-error">
+            <div class="page-header">
+                <h1>🛒 No Items for Checkout</h1>
+                <p>You have no items selected for checkout.</p>
+            </div>
+            <div class="checkout-section" style="text-align: center;">
+                <p>Please select items from your cart first.</p>
+                <div class="action-buttons">
+                    <a href="cart.php" class="btn btn-secondary">Return to Cart</a>
+                    <a href="shoppage.php" class="btn btn-primary">Continue Shopping</a>
+                </div>
+            </div>
         </div>
     </body>
 
@@ -91,21 +57,21 @@ if (!$cart_items) {
     exit;
 }
 
-// Calculate total amount
+// Calculate total
+$total_amount = 0;
 foreach ($cart_items as $item) {
     $total_amount += $item->product_price * $item->product_qty;
-    $checkout_items[] = $item;
 }
 
-// Load ALL addresses
+// Load addresses
 $stm = $_db->prepare("SELECT * FROM address WHERE user_id = ? ORDER BY default_flag DESC");
 $stm->execute([$user_id]);
 $addresses = $stm->fetchAll(PDO::FETCH_OBJ);
 
-// Handle form submission
+// Handle form submission - RESTORED THE ORIGINAL LOGIC
 if (is_post()) {
     $address_id = post('address_id');
-    $action = post('action');
+    $action = post('action'); // RESTORED THIS LINE
 
     if (!$address_id) {
         echo json_encode(['success' => false, 'message' => 'Please select an address.']);
@@ -136,7 +102,7 @@ if (is_post()) {
         $max = $stm->fetch()->maxid ?? 0;
         $order_id = "OR" . str_pad($max + 1, 4, "0", STR_PAD_LEFT);
 
-        // Insert order with initial status 'pending_payment'
+        // Insert order with initial status 'pending_payment' - RESTORED ORIGINAL STATUS
         $stm = $_db->prepare("
             INSERT INTO `order` (order_id, user_id, address_id, order_date, total_amount, status, cancelled_reason)
             VALUES (?, ?, ?, NOW(), ?, 'pending_payment', NULL)
@@ -177,7 +143,7 @@ if (is_post()) {
             ")->execute([$i->product_qty, $i->product_id]);
         }
 
-        // Stripe Line Items
+        // Stripe Line Items - RESTORED ORIGINAL STRUCTURE
         $lineItems = [];
         foreach ($cart_items as $i) {
             $lineItems[] = [
@@ -195,7 +161,7 @@ if (is_post()) {
 
         $baseURL = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}";
 
-        // Create Stripe session
+        // Create Stripe session - RESTORED ORIGINAL CONFIGURATION
         $session = \Stripe\Checkout\Session::create([
             'payment_method_types' => [
                 'card',
@@ -210,7 +176,7 @@ if (is_post()) {
             'metadata' => ['order_id' => $order_id, 'user_id' => $user_id]
         ]);
 
-        // Insert payment row
+        // Insert payment row - RESTORED ORIGINAL
         $stm = $_db->query("SELECT MAX(CAST(SUBSTRING(payment_id, 4) AS UNSIGNED)) AS maxid FROM payment");
         $maxPay = $stm->fetch()->maxid ?? 0;
         $payment_id = "PAY" . str_pad($maxPay + 1, 4, "0", STR_PAD_LEFT);
@@ -231,7 +197,6 @@ if (is_post()) {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -239,11 +204,10 @@ if (is_post()) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout | Four Eyes Collective</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/checkout.css">
+    <link rel="stylesheet" href="/css/checkout_flow.css">
     <link rel="stylesheet" href="/css/app.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="/js/cart_operations.js"></script>
+    <script src="/js/notifications.js"></script>
 </head>
 
 <body>
@@ -294,7 +258,6 @@ if (is_post()) {
                                     </label>
                                 <?php endforeach; ?>
                             </div>
-                            <div id="addressError" class="error-message"></div>
                             <div style="margin-top: 20px;">
                                 <a href="address_add.php?return=checkout.php" class="add-address-link">
                                     + Add New Address
@@ -317,26 +280,19 @@ if (is_post()) {
                                     Your payment information is encrypted and secure. We never store your card details.
                                 </div>
                             </div>
-                            <div id="paymentError" class="error-message"></div>
-                            <div id="paymentSuccess" class="success-message"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Right Column: Order Summary -->
                 <div class="order-summary">
-                    <div class="checkout-section">
+                    <div class="checkout-section" style="position: sticky; top: 100px;">
                         <h2 class="section-title">Order Summary</h2>
 
                         <div class="order-items" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
-                            <?php foreach ($checkout_items as $item): ?>
+                            <?php foreach ($cart_items as $item): ?>
                                 <?php
-                                $folder = [
-                                    'CA0001' => 'glasses',
-                                    'CA0002' => 'sunglasses',
-                                    'CA0003' => 'contactlens',
-                                    'CA0004' => 'kids'
-                                ][$item->category_id] ?? 'others';
+                                $folder = $categoryFolders[$item->category_id] ?? 'others';
                                 $imgArray = explode(',', $item->product_image);
                                 $firstImage = trim($imgArray[0]);
                                 $imgPath = "/images/product/$folder/$firstImage";
@@ -379,10 +335,16 @@ if (is_post()) {
                             <span id="btnText">Pay RM <?= number_format($total_amount, 2) ?></span>
                             <span id="btnLoading" style="display: none;" class="loading"></span>
                         </button>
+
+                        <div id="paymentError" class="error-message" style="display: none; margin-top: 15px;"></div>
+                        <div id="paymentSuccess" class="success-message" style="display: none; margin-top: 15px;"></div>
+
+                        <p style="text-align: center; margin-top: 15px; color: #7f8c8d; font-size: 0.9rem;">
+                            By completing your purchase, you agree to our <a href="#" style="color: #2c3e50;">Terms & Conditions</a>
+                        </p>
                     </div>
                 </div>
             </div>
-            <input type="hidden" name="action" id="actionInput" value="">
         </form>
     </div>
 
@@ -400,7 +362,7 @@ if (is_post()) {
             });
         });
 
-        // Process payment
+        // Process payment - USING ORIGINAL LOGIC
         async function processPayment() {
             const submitBtn = document.getElementById('submitBtn');
             const btnText = document.getElementById('btnText');
@@ -415,10 +377,12 @@ if (is_post()) {
             // Validate address
             const addressSelected = document.querySelector('input[name="address_id"]:checked');
             if (!addressSelected) {
-                document.getElementById('addressError').textContent = 'Please select a shipping address';
-                document.getElementById('addressError').style.display = 'block';
+                showNotification('Please select a shipping address', 'error');
                 return;
             }
+
+            // Show processing notification
+            showNotification('Payment processing...', 'info');
 
             // Show loading
             submitBtn.disabled = true;
@@ -428,6 +392,7 @@ if (is_post()) {
             try {
                 const formData = new FormData();
                 formData.append('address_id', addressSelected.value);
+                formData.append('action', 'checkout'); 
 
                 const response = await fetch('checkout.php', {
                     method: 'POST',
@@ -438,7 +403,6 @@ if (is_post()) {
 
                 if (result.success) {
                     // Success - redirect to Stripe
-                    paymentSuccess.textContent = 'Redirecting to secure payment...';
                     paymentSuccess.style.display = 'block';
 
                     setTimeout(() => {
