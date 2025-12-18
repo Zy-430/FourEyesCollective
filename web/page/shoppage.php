@@ -435,4 +435,5 @@ $filterQuery = http_build_query($currentParams);
     }
 </script>
 <script src="/js/notifications.js"></script>
+<script src="/js/wishlist.js"></script>
 <?php include '../_foot.php'; ?>

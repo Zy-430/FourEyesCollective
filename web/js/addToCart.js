@@ -22,19 +22,9 @@ function addToCart(productId) {
             showNotification('Product added to cart successfully!', 'success');
 
             // Update cart badge immediately
-            fetch('/page/cart_count.php')
-                .then(res => res.json())
-                .then(data => {
-                    const badge = document.getElementById('cart-badge');
-                    if (!badge) return;
-
-                    if (data.cart_count > 0) {
-                        badge.textContent = data.cart_count;
-                        badge.style.display = 'flex';
-                    } else {
-                        badge.style.display = 'none';
-                    }
-                });
+            if (typeof refreshCartBadge === 'function') {
+                refreshCartBadge();
+            }
         } else {
             showNotification('Error adding product to cart', 'error');
         }
