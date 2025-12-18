@@ -279,14 +279,21 @@ try {
                             <?php endforeach; ?>
                         </div>
 
+                        <?php
+                            $calculated_subtotal = 0;
+                            foreach ($order_items as $it) {
+                                $calculated_subtotal += $it->subtotal;
+                            }
+                            $shipping = $order->total_amount - $calculated_subtotal;
+                        ?>
                         <div style="margin-bottom: 20px;">
                             <div class="total-row">
                                 <span>Subtotal</span>
-                                <span>RM <?= number_format($order->total_amount, 2) ?></span>
+                                <span>RM <?= number_format($calculated_subtotal, 2) ?></span>
                             </div>
                             <div class="total-row">
                                 <span>Shipping</span>
-                                <span>FREE</span>
+                                <span><?= $shipping > 0 ? 'RM ' . number_format($shipping, 2) : 'FREE' ?></span>
                             </div>
                             <div class="total-row">
                                 <span>Tax</span>

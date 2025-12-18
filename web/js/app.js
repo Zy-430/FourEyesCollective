@@ -28,6 +28,11 @@ $(() => {
         location = url || location;
     });
 
+    // Refresh cart badge on page load (if available)
+    if (typeof refreshCartBadge === 'function') {
+        refreshCartBadge();
+    }
+
 });
 
 function showNotification(message, type = 'success') {
@@ -61,6 +66,31 @@ function showNotification(message, type = 'success') {
         notification.style.animation = 'slideOut 0.3s ease';
         setTimeout(() => notification.remove(), 300);
     }, 3000);
+}
+
+// ---------------------------------------------------------------------------
+// Cart badge helpers
+// ---------------------------------------------------------------------------
+function updateCartCount(count) {
+    const badge = document.getElementById('cart-badge');
+    const cartLink = document.getElementById('cart-link');
+
+    if (badge && cartLink) {
+        if (count > 0) {
+            badge.textContent = count;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+function refreshCartBadge() {
+    fetch('/page/cart_count.php')
+        .then(res => res.json())
+        .then(data => {
+            updateCartCount(data.cart_count || 0);
+        }).catch(() => {});
 }
 
 // Add CSS animations

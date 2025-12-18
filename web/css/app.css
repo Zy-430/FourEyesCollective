@@ -859,8 +859,11 @@ footer {
     animation: fadeIn 0.25s ease;
 }
 
-/* Add to app.css */
 #cart-link {
+    position: relative !important;
+}
+
+#wishlist-link {
     position: relative !important;
 }
 

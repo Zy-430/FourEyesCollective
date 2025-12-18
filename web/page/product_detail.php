@@ -70,14 +70,12 @@ include '../_head.php';
 
         <?php $is_logged_in = isset($_SESSION['user']); ?>
 
-        <body data-logged-in="<?= $is_logged_in ? '1' : '0' ?>">
-
-            <a href="javascript:void(0)" onclick="addToCart('<?= $p->product_id ?>')"
-                class="add-to-cart"
-                style="padding:12px 25px; background:#2c3e50; color:white; border-radius:5px; 
+        <a href="javascript:void(0)" onclick="addToCart('<?= $p->product_id ?>')"
+            class="add-to-cart"
+            style="padding:12px 25px; background:#2c3e50; color:white; border-radius:5px; 
                text-decoration:none; display:inline-block; font-size:16px; margin-top:15px;">
-                Add to Cart
-            </a>
+            Add to Cart
+        </a>
     </div>
 
 </div>
@@ -105,7 +103,48 @@ include '../_head.php';
 
     // Auto slideshow (every 3 seconds)
     setInterval(nextImage, 3000);
+
+    function addToCart(productId) {
+        <?php if (!$is_logged_in): ?>
+            if (confirm('You need to login to add items to cart. Go to login page?')) {
+                const currentUrl = encodeURIComponent(window.location.href);
+                window.location.href = '/page/login.php?redirect=' + currentUrl;
+            }
+        <?php else: ?>
+            const xhr = new XMLHttpRequest();
+            const formData = new FormData();
+            formData.append('action', 'add');
+            formData.append('product_id', productId);
+
+            xhr.open('POST', 'cart.php');
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    showNotification('Product added to cart successfully!', 'success');
+
+                    // Update cart badge immediately
+                    fetch('/page/cart_count.php')
+                        .then(res => res.json())
+                        .then(data => {
+                            const badge = document.getElementById('cart-badge');
+                            if (!badge) return;
+
+                            if (data.cart_count > 0) {
+                                badge.textContent = data.cart_count;
+                                badge.style.display = 'flex';
+                            } else {
+                                badge.style.display = 'none';
+                            }
+                        }).catch(()=>{});
+                } else {
+                    showNotification('Error adding product to cart', 'error');
+                }
+            };
+            xhr.onerror = function() {
+                showNotification('Network error. Please try again.', 'error');
+            };
+            xhr.send(formData);
+        <?php endif; ?>
+    }
 </script>
-<script src="/js/addToCart.js"></script>
 <script src="/js/notifications.js"></script>
 <?php include '../_foot.php'; ?>

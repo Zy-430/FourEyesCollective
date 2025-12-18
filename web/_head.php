@@ -7,11 +7,14 @@
     <title><?= $_title ?? 'Four Eyes Collective' ?></title>
     <link rel="shortcut icon" href="/images/WIS_logo_white.png">
     <link rel="stylesheet" href="/css/app.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="/js/app.js"></script>
+    <script src="/js/lib/helpers.js"></script>
+    <script src="/js/addToCart.js"></script>
 </head>
 
-<body>
+<body data-logged-in="<?= $_user ? '1' : '0' ?>">
     <header>
         <nav>
             <div id="left-sidebar">
@@ -28,6 +31,7 @@
             </div>
 
             <div id="right-sidebar">
+
                 <div class="user-dropdown">
 
                     <?php if ($_user): ?>
@@ -72,6 +76,10 @@
                         <span id="cart-badge" style="display: <?= $cart_count > 0 ? 'flex' : 'none'; ?>;">
                             <?= $cart_count > 0 ? $cart_count : '' ?>
                         </span>
+                    </a>
+
+                    <a href="/page/wishlist.php" class="wishlist-link">
+                        <img src="/images/heart.png" alt="Wishlist">
                     </a>
 
 

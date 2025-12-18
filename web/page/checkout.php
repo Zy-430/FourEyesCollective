@@ -64,6 +64,10 @@ foreach ($cart_items as $item) {
     $total_amount += $item->product_price * $item->product_qty;
 }
 
+// Delivery fee: RM20 if cart amount >= 500
+$delivery_fee = ($total_amount >= 500) ? 20 : 0;
+$total_with_delivery = $total_amount + $delivery_fee;
+
 // Load addresses
 $stm = $_db->prepare("SELECT * FROM address WHERE user_id = ? ORDER BY default_flag DESC");
 $stm->execute([$user_id]);
@@ -108,7 +112,7 @@ if (is_post()) {
             INSERT INTO `order` (order_id, user_id, address_id, order_date, total_amount, status, cancelled_reason)
             VALUES (?, ?, ?, NOW(), ?, 'pending_payment', NULL)
         ");
-        $stm->execute([$order_id, $user_id, $address_id, $total_amount]);
+        $stm->execute([$order_id, $user_id, $address_id, $total_with_delivery]);
 
         // Insert order items and UPDATE cart_item with order_item_id
         foreach ($cart_items as $i) {
@@ -160,6 +164,20 @@ if (is_post()) {
             ];
         }
 
+        // Add delivery fee as a line item if applicable
+        if (!empty($delivery_fee) && $delivery_fee > 0) {
+            $lineItems[] = [
+                'price_data' => [
+                    'currency' => 'myr',
+                    'product_data' => [
+                        'name' => 'Delivery Fee',
+                    ],
+                    'unit_amount' => intval($delivery_fee * 100),
+                ],
+                'quantity' => 1,
+            ];
+        }
+
         $baseURL = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}";
 
         // Create Stripe session - RESTORED ORIGINAL CONFIGURATION
@@ -185,7 +203,7 @@ if (is_post()) {
         $_db->prepare("
             INSERT INTO payment (payment_id, order_id, amount, status, stripe_session_id, transaction_date)
             VALUES (?, ?, ?, 'pending', ?, NOW())
-        ")->execute([$payment_id, $order_id, $total_amount, $session->id]);
+        ")->execute([$payment_id, $order_id, $total_with_delivery, $session->id]);
 
         $_db->commit();
 

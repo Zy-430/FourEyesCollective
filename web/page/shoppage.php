@@ -309,19 +309,32 @@ $filterQuery = http_build_query($currentParams);
 
                         <!-- BUTTONS -->
                         <div style="margin-top:auto;">
-                            <a href="product_detail.php?id=<?= $p->product_id ?>"
-                                style="display:inline-block; margin-bottom:8px; padding:8px 15px; background:#888; color:white; border-radius:5px; text-decoration:none;">
-                                View Details
-                            </a>
-
-                            <?php $is_logged_in = isset($_SESSION['user']); ?>
-
-                            <body data-logged-in="<?= $is_logged_in ? '1' : '0' ?>">
-                                <a href="javascript:void(0)" onclick="addToCart('<?= $p->product_id ?>')"
-                                    class="add-to-cart"
-                                    style="display:inline-block; padding:10px 20px; background:#2c3e50; color:white; border-radius:5px; text-decoration:none; cursor:pointer;">
-                                    Add to Cart
+                            <!-- Top row: View Details (left) and Wishlist (right) -->
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <a href="product_detail.php?id=<?= $p->product_id ?>"
+                                    style="padding:8px 15px; background:#888; color:white; border-radius:5px; text-decoration:none; flex:1; margin-right:10px; text-align:center;">
+                                    View Details
                                 </a>
+
+                                <button onclick="toggleWishlist('<?= $p->product_id ?>', this)"
+                                    class="wishlist-btn"
+                                    data-product-id="<?= $p->product_id ?>"
+                                    style="background:none; border:none; cursor:pointer; font-size:20px; color:#333; padding:5px; border-radius:5px; transition: all 0.3s ease;"
+                                    onmouseover="this.style.backgroundColor='#f8f9fa'"
+                                    onmouseout="this.style.backgroundColor='transparent'"
+                                    title="Add to Wishlist">
+                                    <i class="far fa-heart"></i>
+                                </button>
+                            </div>
+
+                            <!-- Bottom row: Add to Cart (full width) -->
+                            <a href="javascript:void(0)" onclick="addToCart('<?= $p->product_id ?>')"
+                                class="add-to-cart"
+                                style="display:block; padding:10px 20px; background:#2c3e50; color:white; border-radius:5px; text-decoration:none; cursor:pointer; text-align:center; transition: all 0.3s ease;"
+                                onmouseover="this.style.backgroundColor='#34495e'; this.style.transform='translateY(-2px)'"
+                                onmouseout="this.style.backgroundColor='#2c3e50'; this.style.transform='translateY(0)'">
+                                Add to Cart
+                            </a>
                         </div>
 
                     </div>
@@ -378,6 +391,48 @@ $filterQuery = http_build_query($currentParams);
     </div>
 
 </div>
-<script src="/js/addToCart.js"></script>
+<script>
+    function addToCart(productId) {
+        <?php if (!$is_logged_in): ?>
+            if (confirm('You need to login to add items to cart. Go to login page?')) {
+                const currentUrl = encodeURIComponent(window.location.href);
+                window.location.href = '/page/login.php?redirect=' + currentUrl;
+            }
+        <?php else: ?>
+            const xhr = new XMLHttpRequest();
+            const formData = new FormData();
+            formData.append('action', 'add');
+            formData.append('product_id', productId);
+
+            xhr.open('POST', 'cart.php');
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    showNotification('Product added to cart successfully!', 'success');
+
+                    // Update cart badge immediately
+                    fetch('/page/cart_count.php')
+                        .then(res => res.json())
+                        .then(data => {
+                            const badge = document.getElementById('cart-badge');
+                            if (!badge) return;
+
+                            if (data.cart_count > 0) {
+                                badge.textContent = data.cart_count;
+                                badge.style.display = 'flex';
+                            } else {
+                                badge.style.display = 'none';
+                            }
+                        }).catch(() => {});
+                } else {
+                    showNotification('Error adding product to cart', 'error');
+                }
+            };
+            xhr.onerror = function() {
+                showNotification('Network error. Please try again.', 'error');
+            };
+            xhr.send(formData);
+        <?php endif; ?>
+    }
+</script>
 <script src="/js/notifications.js"></script>
 <?php include '../_foot.php'; ?>
