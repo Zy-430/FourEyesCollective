@@ -19,6 +19,7 @@ if (!$session_id || !$order_id) {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="/images/WIS_logo_white.png">
         <title>Invalid Payment | Four Eyes Collective</title>
         <link rel="stylesheet" href="/css/checkout_flow.css">
         <link rel="stylesheet" href="/css/app.css">
@@ -60,6 +61,7 @@ if (!$order) {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="/images/WIS_logo_white.png">
         <title>Unauthorized | Four Eyes Collective</title>
         <link rel="stylesheet" href="/css/checkout_flow.css">
         <link rel="stylesheet" href="/css/app.css">
@@ -187,6 +189,7 @@ try {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link rel="shortcut icon" href="/images/WIS_logo_white.png">
             <title>Payment Successful | Four Eyes Collective</title>
             <link rel="stylesheet" href="/css/checkout_flow.css">
             <link rel="stylesheet" href="/css/app.css">
@@ -205,7 +208,6 @@ try {
                     <div class="success-message">
                         <p>Thank you <strong><?= encode($_user->name) ?></strong></p>
                         <p>Your order <strong><?= encode($order->order_id) ?></strong> has been confirmed.</p>
-                        <p>A confirmation email has been sent to <strong><?= encode($_user->email) ?></strong></p>
                     </div>
 
                     <!-- Order Summary -->
@@ -321,8 +323,8 @@ try {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="/images/WIS_logo_white.png">
         <title>Payment Failed | Four Eyes Collective</title>
-        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="/css/checkout_flow.css">
         <link rel="stylesheet" href="/css/app.css">
     </head>

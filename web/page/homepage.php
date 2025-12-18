@@ -1,6 +1,7 @@
 <?php
 require '../_base.php';
 require '../lib/db.php';
+require '../lib/category.php';
 require '../lib/product_stats.php';
 
 $_title = 'Four Eyes Collective - Premium Eyewear';
@@ -8,10 +9,6 @@ include '../_head.php';
 
 // Get top 5 best selling products
 $topProducts = getTopSellingProducts(5);
-
-// Get all categories
-$categoryStm = $_db->query("SELECT * FROM category");
-$categories = $categoryStm->fetchAll();
 
 // Check if user is logged in
 $is_logged_in = isset($_SESSION['user']);
@@ -131,7 +128,7 @@ $is_logged_in = isset($_SESSION['user']);
             ">
                 <?php foreach ($topProducts as $index => $product): ?>
                     <?php
-                    $folder = categoryFolder($product->category_id);
+                    $folder = $categoryFolders[$product->category_id] ?? 'others';
                     $imgArray = explode(',', $product->product_image);
                     $firstImage = trim($imgArray[0]);
                     $imgPath = "/images/product/$folder/$firstImage";
@@ -255,225 +252,6 @@ $is_logged_in = isset($_SESSION['user']);
             <?php endfor; ?>
         </div>
     </div>
-</section>
-
-<!-- Dynamic Category Grid -->
-<section style="background: #2c3e50; padding: 80px 0; margin: 60px 0; position: relative;">
-    <div style="max-width: 1400px; margin: 0 auto; padding: 0 60px;">
-        <div style="
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 50px;
-        ">
-            <h2 style="
-                color: white; 
-                font-family: 'Playfair Display', serif; 
-                font-size: 2.8em;
-                margin: 0;
-            ">Shop by Category</h2>
-
-            <div style="display: flex; gap: 10px;">
-                <button class="category-carousel-prev" style="
-                    width: 50px;
-                    height: 50px;
-                    border-radius: 50%;
-                    background: rgba(255,255,255,0.1);
-                    color: white;
-                    border: 2px solid rgba(255,255,255,0.3);
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: all 0.3s ease;
-                    font-size: 20px;
-                    backdrop-filter: blur(10px);
-                " onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.borderColor='rgba(255,255,255,0.5)'; this.style.transform='scale(1.1)'"
-                    onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='rgba(255,255,255,0.3)'; this.style.transform='scale(1)'">
-                    ❮
-                </button>
-                <button class="category-carousel-next" style="
-                    width: 50px;
-                    height: 50px;
-                    border-radius: 50%;
-                    background: rgba(255,255,255,0.1);
-                    color: white;
-                    border: 2px solid rgba(255,255,255,0.3);
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: all 0.3s ease;
-                    font-size: 20px;
-                    backdrop-filter: blur(10px);
-                " onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.borderColor='rgba(255,255,255,0.5)'; this.style.transform='scale(1.1)'"
-                    onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.borderColor='rgba(255,255,255,0.3)'; this.style.transform='scale(1)'">
-                    ❯
-                </button>
-            </div>
-        </div>
-
-        <!-- Category Carousel Container -->
-        <div class="category-carousel-container" style="
-            position: relative;
-            overflow: hidden;
-            padding: 20px 0;
-        ">
-            <div class="category-carousel-track" style="
-                display: flex;
-                gap: 20px;
-                transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-                padding: 10px;
-            ">
-                <?php foreach ($categories as $index => $category): ?>
-                    <?php
-                    $categoryImg = [
-                        'CA0001' => '/images/category/glasses.jpg',
-                        'CA0002' => '/images/category/sunglasses.jpg',
-                        'CA0003' => '/images/category/contactlens.jpg',
-                        'CA0004' => '/images/category/kids.jpg'
-                    ];
-                    $img = $categoryImg[$category->category_id] ?? '/images/category/default.jpg';
-
-                    // Assign colors for categories
-                    $colorPalette = [
-                        '#3498db',
-                        '#2ecc71',
-                        '#9b59b6',
-                        '#e74c3c',
-                        '#1abc9c',
-                        '#f39c12',
-                        '#34495e',
-                        '#7f8c8d'
-                    ];
-                    $colorIndex = $index % count($colorPalette);
-                    $bgColor = $colorPalette[$colorIndex];
-                    ?>
-
-                    <div class="category-carousel-slide" style="
-                        flex: 0 0 calc(20% - 16px); /* 5 per view = 20% each minus gap */
-                        min-width: 200px;
-                        border-radius: 16px;
-                        overflow: hidden;
-                        position: relative;
-                        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-                        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-                        cursor: pointer;
-                        height: 280px;
-                    " onmouseover="
-                        this.style.transform='translateY(-10px) scale(1.02)';
-                        this.style.boxShadow='0 15px 35px rgba(0,0,0,0.3)';
-                    " onmouseout="
-                        this.style.transform='translateY(0) scale(1)';
-                        this.style.boxShadow='0 8px 25px rgba(0,0,0,0.2)';
-                    ">
-                        <a href="shoppage.php?cat=<?= $category->category_id ?>"
-                            style="text-decoration: none; display: block; height: 100%;">
-                            <!-- Category Background -->
-                            <div style="
-                                position: absolute;
-                                top: 0;
-                                left: 0;
-                                right: 0;
-                                bottom: 0;
-                                background: <?= $bgColor ?>;
-                                background-size: cover;
-                                background-position: center;
-                            ">
-                                <img src="<?= $img ?>"
-                                    alt="<?= $category->category_name ?>"
-                                    style="
-                                        width: 100%;
-                                        height: 100%;
-                                        object-fit: cover;
-                                        opacity: 0.7;
-                                        transition: transform 0.5s ease, opacity 0.3s ease;
-                                     "
-                                    onmouseover="this.style.transform='scale(1.1)'; this.style.opacity='0.8'"
-                                    onmouseout="this.style.transform='scale(1)'; this.style.opacity='0.7'">
-                            </div>
-
-                            <!-- Gradient Overlay -->
-                            <div style="
-                                position: absolute;
-                                top: 0;
-                                left: 0;
-                                right: 0;
-                                bottom: 0;
-                                background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.7) 100%);
-                            "></div>
-
-                            <!-- Category Content -->
-                            <div style="
-                                position: absolute;
-                                bottom: 0;
-                                left: 0;
-                                right: 0;
-                                padding: 25px;
-                                z-index: 2;
-                            ">
-                                <h3 style="
-                                    color: white; 
-                                    margin: 0 0 12px 0; 
-                                    font-family: 'Playfair Display', serif;
-                                    font-size: 1.8em;
-                                    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-                                "><?= $category->category_name ?></h3>
-
-                                <div style="
-                                    display: inline-flex;
-                                    align-items: center;
-                                    color: white;
-                                    font-weight: 600;
-                                    background: rgba(255,255,255,0.2);
-                                    padding: 8px 18px;
-                                    border-radius: 25px;
-                                    backdrop-filter: blur(10px);
-                                    border: 1px solid rgba(255,255,255,0.3);
-                                    transition: all 0.3s ease;
-                                ">
-                                    Explore
-                                    <span style="margin-left: 10px; font-size: 18px; transition: transform 0.3s ease;">→</span>
-                                </div>
-                            </div>
-
-                            <!-- Hover Effect -->
-                            <div style="
-                                position: absolute;
-                                top: 0;
-                                left: 0;
-                                right: 0;
-                                bottom: 0;
-                                background: rgba(44, 62, 80, 0.7);
-                                display: flex;
-                                align-items: center;
-                                justify-content: center;
-                                opacity: 0;
-                                transition: opacity 0.4s ease;
-                            ">
-                                <div style="
-                                    text-align: center;
-                                    color: white;
-                                    padding: 20px;
-                                ">
-                                    <div style="font-size: 24px; margin-bottom: 10px;">👓</div>
-                                    <div style="
-                                        background: white;
-                                        color: <?= $bgColor ?>;
-                                        padding: 10px 25px;
-                                        border-radius: 25px;
-                                        font-weight: 700;
-                                        font-size: 16px;
-                                    ">
-                                        Shop Now
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
 </section>
 
 <!-- Premium Features -->

@@ -31,6 +31,7 @@ if (!$cart_items) {
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="shortcut icon" href="/images/WIS_logo_white.png">
         <title>No Checkout Items | Four Eyes Collective</title>
         <link rel="stylesheet" href="/css/checkout_flow.css">
         <link rel="stylesheet" href="/css/app.css">
@@ -203,6 +204,7 @@ if (is_post()) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/images/WIS_logo_white.png">
     <title>Checkout | Four Eyes Collective</title>
     <link rel="stylesheet" href="/css/checkout_flow.css">
     <link rel="stylesheet" href="/css/app.css">
@@ -392,7 +394,7 @@ if (is_post()) {
             try {
                 const formData = new FormData();
                 formData.append('address_id', addressSelected.value);
-                formData.append('action', 'checkout'); 
+                formData.append('action', 'checkout');
 
                 const response = await fetch('checkout.php', {
                     method: 'POST',
