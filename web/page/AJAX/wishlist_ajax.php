@@ -39,7 +39,11 @@ switch ($action) {
             } else {
                 // New entry - Generate next wishlist ID
                 // Get the maximum numeric part from existing WLXXXX IDs
-                $stm = $_db->query("SELECT MAX(CAST(SUBSTRING(wishlist_id, 3) AS UNSIGNED)) as max_id FROM wishlist WHERE wishlist_id LIKE 'WL%'");
+                $stm = $_db->query("
+                    SELECT MAX(CAST(SUBSTRING(wishlist_id, 3) AS UNSIGNED)) as max_id 
+                    FROM wishlist 
+                    WHERE wishlist_id LIKE 'WL%'
+                ");
                 $result = $stm->fetch();
                 $nextId = ($result->max_id ?? 0) + 1;
                 $wishlistId = 'WL' . str_pad($nextId, 4, '0', STR_PAD_LEFT);

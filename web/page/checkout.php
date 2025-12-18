@@ -64,8 +64,8 @@ foreach ($cart_items as $item) {
     $total_amount += $item->product_price * $item->product_qty;
 }
 
-// Delivery fee: RM20 if cart amount >= 500
-$delivery_fee = ($total_amount >= 500) ? 20 : 0;
+// Delivery fee: RM20 if cart amount < 500, free when subtotal >= 500
+$delivery_fee = ($total_amount >= 500) ? 0 : 20;
 $total_with_delivery = $total_amount + $delivery_fee;
 
 // Load addresses
@@ -337,7 +337,7 @@ if (is_post()) {
                             </div>
                             <div class="total-row">
                                 <span>Shipping</span>
-                                <span>FREE</span>
+                                <span><?= $delivery_fee > 0 ? 'RM ' . number_format($delivery_fee, 2) : 'FREE' ?></span>
                             </div>
                             <div class="total-row">
                                 <span>Tax</span>
@@ -347,12 +347,12 @@ if (is_post()) {
 
                         <div class="total-row total-amount">
                             <span>Total</span>
-                            <span>RM <?= number_format($total_amount, 2) ?></span>
+                            <span>RM <?= number_format($total_with_delivery, 2) ?></span>
                         </div>
 
                         <!-- Payment Button -->
                         <button type="button" class="btn btn-success" id="submitBtn" onclick="processPayment()">
-                            <span id="btnText">Pay RM <?= number_format($total_amount, 2) ?></span>
+                            <span id="btnText">Pay RM <?= number_format($total_with_delivery, 2) ?></span>
                             <span id="btnLoading" style="display: none;" class="loading"></span>
                         </button>
 
