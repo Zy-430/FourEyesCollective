@@ -98,15 +98,26 @@ $filterQuery = http_build_query($currentParams);
 
 <h1 style="margin-bottom: 20px;">Our Eyewear Collection</h1>
 
-<div style="display: flex; gap: 30px;">
+<!-- Mobile Filter Toggle Button -->
+<button id="filterToggleMobile" style="display: none; width: 100%; padding: 10px; margin-bottom: 20px; background: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+    <i class="fas fa-filter"></i> Show Filters
+</button>
+
+<div style="display: flex; gap: 30px; position: relative;">
 
     <!-- LEFT: FILTERS SIDEBAR -->
-    <div style="width: 250px; flex-shrink: 0;">
+    <div id="filterSidebar" style="width: 250px; flex-shrink: 0;">
         <form method="get" id="filterForm">
             <!-- Hidden fields to maintain pagination and sorting -->
             <input type="hidden" name="page" value="1">
             <input type="hidden" name="sort" value="<?= $sort ?>">
             <input type="hidden" name="dir" value="<?= $dir ?>">
+
+            <!-- Mobile Filter Header -->
+            <div id="mobileFilterHeader" style="display: none; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: #2c3e50;">Filters</h3>
+                <button type="button" id="closeFilters" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">×</button>
+            </div>
 
             <!-- SEARCH -->
             <div style="margin-bottom: 30px;">
@@ -127,7 +138,7 @@ $filterQuery = http_build_query($currentParams);
                             name="cat"
                             value=""
                             <?= !$selectedCat ? 'checked' : '' ?>
-                            onchange="this.form.submit()">
+                            class="auto-submit">
                         <span>All Products</span>
                     </label>
                     <?php foreach ($categories as $id => $name): ?>
@@ -136,7 +147,7 @@ $filterQuery = http_build_query($currentParams);
                                 name="cat"
                                 value="<?= $id ?>"
                                 <?= ($selectedCat === $id) ? 'checked' : '' ?>
-                                onchange="this.form.submit()">
+                                class="auto-submit">
                             <span><?= $name ?></span>
                         </label>
                     <?php endforeach; ?>
@@ -155,7 +166,7 @@ $filterQuery = http_build_query($currentParams);
                                 name="price_range"
                                 value=""
                                 <?= !$priceRange ? 'checked' : '' ?>
-                                onchange="this.form.submit()">
+                                class="auto-submit">
                             <span>All Prices</span>
                         </label>
                         <?php foreach ($priceRanges as $range => $label): ?>
@@ -164,7 +175,7 @@ $filterQuery = http_build_query($currentParams);
                                     name="price_range"
                                     value="<?= $range ?>"
                                     <?= ($priceRange === $range) ? 'checked' : '' ?>
-                                    onchange="this.form.submit()">
+                                    class="auto-submit">
                                 <span><?= $label ?></span>
                             </label>
                         <?php endforeach; ?>
@@ -176,66 +187,80 @@ $filterQuery = http_build_query($currentParams);
                     <div style="margin-bottom: 10px; font-size: 14px;">
                         Custom Range:
                     </div>
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                        <input type="number"
-                            name="min_price"
-                            value="<?= $minPrice ?>"
-                            min="0"
-                            max="<?= $actualMaxPrice ?>"
-                            step="10"
-                            style="width: 80px; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <span style="font-size: 14px;">RM</span>
+                            <input type="number"
+                                name="min_price"
+                                value="<?= $minPrice ?>"
+                                min="0"
+                                max="<?= $actualMaxPrice ?>"
+                                step="10"
+                                style="width: 80px; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
                         <span>to</span>
-                        <input type="number"
-                            name="max_price"
-                            value="<?= $maxPrice ?>"
-                            min="0"
-                            max="<?= $actualMaxPrice ?>"
-                            step="10"
-                            style="width: 80px; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+                        <div style="display: flex; align-items: center; gap: 5px;">
+                            <span style="font-size: 14px;">RM</span>
+                            <input type="number"
+                                name="max_price"
+                                value="<?= $maxPrice ?>"
+                                min="0"
+                                max="<?= $actualMaxPrice ?>"
+                                step="10"
+                                style="width: 80px; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
+                        </div>
                     </div>
-                    <button type="submit"
-                        style="padding: 8px 16px; background: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        Apply Price
+                    <button type="submit" name="apply_custom_price" value="1"
+                        style="padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        Apply Custom Price
                     </button>
                 </div>
             </div>
 
-            <!-- APPLY SEARCH BUTTON -->
-            <button type="submit"
-                style="width: 100%; padding: 10px; background: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
-                Apply Filters
-            </button>
+            <!-- ACTION BUTTONS -->
+            <div style="margin-top: 30px;">
+                <button type="submit"
+                    style="width: 100%; padding: 10px; background: #2c3e50; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+                    Apply Filters
+                </button>
 
-            <!-- CLEAR FILTERS BUTTON -->
-            <?php if ($search || $selectedCat || $priceRange || $minPrice > 0 || $maxPrice < 1000): ?>
-                <a href="shoppage.php?sort=<?= $sort ?>&dir=<?= $dir ?>"
-                    style="display: block; padding: 10px; background: #e74c3c; color: white; text-align: center; border-radius: 4px; text-decoration: none; margin-top: 10px;">
-                    Clear All Filters
-                </a>
-            <?php endif; ?>
+                <!-- CLEAR FILTERS BUTTON -->
+                <?php if ($search || $selectedCat || $priceRange || $minPrice > 0 || $maxPrice < 1000): ?>
+                    <a href="shoppage.php?sort=<?= $sort ?>&dir=<?= $dir ?>"
+                        style="display: block; padding: 10px; background: #e74c3c; color: white; text-align: center; border-radius: 4px; text-decoration: none; margin-top: 10px; font-weight: bold;">
+                        Clear All Filters
+                    </a>
+                <?php endif; ?>
+            </div>
         </form>
     </div>
 
     <!-- RIGHT: PRODUCT GRID -->
     <div style="flex: 1;">
-        <!-- Sorting Header -->
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 4px;">
+        <!-- Sorting Header with Search Info -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 4px;">
             <div>
-                <p style="margin: 0;">
+                <p style="margin: 0; font-weight: 500;">
                     <?php if ($pager->item_count === 0): ?>
                         No products found
                     <?php else: ?>
-                        Showing <?= $pager->count ?> of <?= $pager->item_count ?> product(s)
+                        <span>Showing <?= $pager->count ?> of <?= $pager->item_count ?> product(s)</span>
                         <?php if ($search): ?>
-                            for "<?= htmlspecialchars($search) ?>"
+                            <span style="margin-left: 10px; background: #3498db; color: white; padding: 4px 10px; border-radius: 12px; font-size: 14px;">
+                                for "<?= htmlspecialchars($search) ?>"
+                                <button type="button" style="background: none; border: none; color: white; cursor: pointer; margin-left: 5px;"
+                                    onclick="location.href='?<?= http_build_query(array_merge($currentParams, ['search' => '', 'page' => 1])) ?>'">
+                                    ×
+                                </button>
+                            </span>
                         <?php endif; ?>
                     <?php endif; ?>
                 </p>
             </div>
 
             <div style="display: flex; align-items: center; gap: 15px;">
-                <span>Sort by:</span>
-                <div style="display: flex; gap: 10px;">
+                <span style="font-weight: 500;">Sort by:</span>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <?php
                     // Define sorting options
                     $sortOptions = [
@@ -251,7 +276,7 @@ $filterQuery = http_build_query($currentParams);
                         $currentDir = $isActive ? $dir : '';
                     ?>
                         <a href="?<?= http_build_query(array_merge($currentParams, ['sort' => $field, 'dir' => $nextDir, 'page' => 1])) ?>"
-                            style="padding: 5px 10px; background: <?= $isActive ? '#2c3e50' : '#888' ?>; color: white; border-radius: 4px; text-decoration: none; display: flex; align-items: center; gap: 5px;">
+                            style="padding: 6px 12px; background: <?= $isActive ? '#2c3e50' : '#7f8c8d' ?>; color: white; border-radius: 4px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; font-size: 14px;">
                             <?= $label ?>
                             <?php if ($isActive): ?>
                                 <?php if ($currentDir == 'asc'): ?>↑<?php else: ?>↓<?php endif; ?>
@@ -301,7 +326,7 @@ $filterQuery = http_build_query($currentParams);
                                     Stock: <?= number_format($p->product_stock) ?> (Selling Fast!)
                                 </span>
                             <?php else: ?>
-                                <span style="color: #666;">
+                                <span style="color: #27ae60;">
                                     Stock: <?= number_format($p->product_stock) ?>
                                 </span>
                             <?php endif; ?>
@@ -312,27 +337,21 @@ $filterQuery = http_build_query($currentParams);
                             <!-- Top row: View Details (left) and Wishlist (right) -->
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                                 <a href="product_detail.php?id=<?= $p->product_id ?>"
-                                    style="padding:8px 15px; background:#888; color:white; border-radius:5px; text-decoration:none; flex:1; margin-right:10px; text-align:center;">
+                                    style="padding:8px 15px; background:#7f8c8d; color:white; border-radius:5px; text-decoration:none; flex:1; margin-right:10px; text-align:center;">
                                     View Details
                                 </a>
 
-                                <button onclick="toggleWishlist('<?= $p->product_id ?>', this)"
-                                    class="wishlist-btn"
+                                <button class="wishlist-btn"
                                     data-product-id="<?= $p->product_id ?>"
-                                    style="background:none; border:none; cursor:pointer; font-size:20px; color:#333; padding:5px; border-radius:5px; transition: all 0.3s ease;"
-                                    onmouseover="this.style.backgroundColor='#f8f9fa'"
-                                    onmouseout="this.style.backgroundColor='transparent'"
+                                    style="background:none; border:1px solid #ddd; cursor:pointer; font-size:20px; color:#333; padding:5px 10px; border-radius:5px; transition: all 0.3s ease;"
                                     title="Add to Wishlist">
                                     <i class="far fa-heart"></i>
                                 </button>
                             </div>
 
                             <!-- Bottom row: Add to Cart (full width) -->
-                            <a href="javascript:void(0)" onclick="addToCart('<?= $p->product_id ?>')"
-                                class="add-to-cart"
-                                style="display:block; padding:10px 20px; background:#2c3e50; color:white; border-radius:5px; text-decoration:none; cursor:pointer; text-align:center; transition: all 0.3s ease;"
-                                onmouseover="this.style.backgroundColor='#34495e'; this.style.transform='translateY(-2px)'"
-                                onmouseout="this.style.backgroundColor='#2c3e50'; this.style.transform='translateY(0)'">
+                            <a href="#" class="add-to-cart" data-product-id="<?= $p->product_id ?>"
+                                style="display:block; padding:10px 20px; background:#2c3e50; color:white; border-radius:5px; text-decoration:none; cursor:pointer; text-align:center; transition: all 0.3s ease;">
                                 Add to Cart
                             </a>
                         </div>
@@ -372,7 +391,7 @@ $filterQuery = http_build_query($currentParams);
                         </span>
                     <?php else: ?>
                         <a href="?<?= http_build_query(array_merge($currentParams, ['page' => $i])) ?>"
-                            style="padding: 5px 10px; background: #888; color: white; border-radius: 4px; text-decoration: none;">
+                            style="padding: 5px 10px; background: #7f8c8d; color: white; border-radius: 4px; text-decoration: none;">
                             <?= $i ?>
                         </a>
                     <?php endif; ?>
@@ -391,49 +410,124 @@ $filterQuery = http_build_query($currentParams);
     </div>
 
 </div>
+
+<!-- Mobile Overlay -->
+<div id="mobileOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999;"></div>
+
 <script>
-    function addToCart(productId) {
-        <?php if (!$is_logged_in): ?>
-            if (confirm('You need to login to add items to cart. Go to login page?')) {
-                const currentUrl = encodeURIComponent(window.location.href);
-                window.location.href = '/page/login.php?redirect=' + currentUrl;
-            }
-        <?php else: ?>
-            const xhr = new XMLHttpRequest();
-            const formData = new FormData();
-            formData.append('action', 'add');
-            formData.append('product_id', productId);
-
-            xhr.open('POST', 'cart.php');
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    showNotification('Product added to cart successfully!', 'success');
-
-                    // Update cart badge immediately
-                    fetch('/page/cart_count.php')
-                        .then(res => res.json())
-                        .then(data => {
-                            const badge = document.getElementById('cart-badge');
-                            if (!badge) return;
-
-                            if (data.cart_count > 0) {
-                                badge.textContent = data.cart_count;
-                                badge.style.display = 'flex';
-                            } else {
-                                badge.style.display = 'none';
-                            }
-                        }).catch(() => {});
-                } else {
-                    showNotification('Error adding product to cart', 'error');
-                }
-            };
-            xhr.onerror = function() {
-                showNotification('Network error. Please try again.', 'error');
-            };
-            xhr.send(formData);
-        <?php endif; ?>
+$(document).ready(function() {
+    const filterToggleMobile = $('#filterToggleMobile');
+    const filterSidebar = $('#filterSidebar');
+    const mobileFilterHeader = $('#mobileFilterHeader');
+    const closeFilters = $('#closeFilters');
+    const mobileOverlay = $('#mobileOverlay');
+    
+    // Check screen size on load and resize
+    function checkScreenSize() {
+        if (window.innerWidth <= 768) {
+            // Mobile view
+            filterToggleMobile.show();
+            filterSidebar.css({
+                'position': 'fixed',
+                'top': '0',
+                'left': '-280px',
+                'width': '250px',
+                'height': '100vh',
+                'background': 'white',
+                'z-index': '1000',
+                'padding': '20px',
+                'overflow-y': 'auto',
+                'box-shadow': '2px 0 10px rgba(0,0,0,0.1)',
+                'transition': 'left 0.3s ease'
+            });
+            mobileFilterHeader.show();
+            
+            // Update product grid for mobile
+            $('.products-grid').css({
+                'grid-template-columns': 'repeat(auto-fill, minmax(160px, 1fr))',
+                'gap': '15px'
+            });
+            $('.product-card').css({
+                'height': '400px',
+                'padding': '15px'
+            });
+        } else {
+            // Desktop view
+            filterToggleMobile.hide();
+            filterSidebar.css({
+                'position': 'static',
+                'left': '0',
+                'width': '250px',
+                'height': 'auto',
+                'background': 'transparent',
+                'z-index': 'auto',
+                'padding': '0',
+                'box-shadow': 'none'
+            });
+            mobileFilterHeader.hide();
+            mobileOverlay.hide();
+            
+            // Reset product grid for desktop
+            $('.products-grid').css({
+                'grid-template-columns': 'repeat(auto-fill, minmax(250px, 1fr))',
+                'gap': '20px'
+            });
+            $('.product-card').css({
+                'height': '450px',
+                'padding': '20px'
+            });
+        }
+        
+        // Adjust grid for smaller screens
+        if (window.innerWidth <= 480) {
+            $('.products-grid').css({
+                'grid-template-columns': 'repeat(2, 1fr)',
+                'gap': '10px'
+            });
+            $('.product-card').css({
+                'height': '380px'
+            });
+        }
     }
+    
+    // Initial check
+    checkScreenSize();
+    
+    // Check on resize
+    $(window).resize(checkScreenSize);
+    
+    // Toggle filter sidebar on mobile
+    filterToggleMobile.click(function() {
+        filterSidebar.css('left', '0');
+        mobileOverlay.show();
+        $('body').css('overflow', 'hidden');
+    });
+    
+    // Close filter sidebar
+    function closeFilterSidebar() {
+        filterSidebar.css('left', '-280px');
+        mobileOverlay.hide();
+        $('body').css('overflow', 'auto');
+    }
+    
+    mobileOverlay.click(closeFilterSidebar);
+    closeFilters.click(closeFilterSidebar);
+    
+    // Auto-submit for radio buttons
+    $('.auto-submit').change(function() {
+        $(this).closest('form').submit();
+    });
+    
+    // Prevent form submission on Enter in search field
+    $('#filterForm input[name="search"]').keypress(function(e) {
+        if (e.which == 13) {
+            e.preventDefault();
+            $(this).closest('form').submit();
+        }
+    });
+});
 </script>
+
 <script src="/js/notifications.js"></script>
 <script src="/js/wishlist.js"></script>
 <?php include '../_foot.php'; ?>

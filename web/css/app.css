@@ -307,6 +307,20 @@ footer {
 }
 
 /* Featured Collection Styles */
+
+/* Utility hover classes added to replace inline onmouseover/onmouseout */
+.hover-scale { transition: transform 0.5s ease; }
+.hover-scale:hover { transform: scale(1.05); }
+
+.hover-btn { transition: all 0.3s ease; }
+.hover-btn:hover { background: #34495e !important; transform: translateY(-2px); }
+
+.feature-card:hover { transform: translateY(-10px); border-color: #3498db !important; }
+
+.btn-hover { transition: all 0.3s ease; }
+.btn-hover:hover { transform: translateY(-3px); opacity: 0.95; }
+
+
 .featured-collection {
     margin: 50px 0;
 }

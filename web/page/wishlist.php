@@ -54,9 +54,7 @@ if ($_user) {
                 
                 <!-- WISHLIST BUTTON (Remove from wishlist) -->
                 <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
-                    <button onclick="toggleWishlist('<?= $item->product_id ?>', this)" 
-                            class="wishlist-btn" 
-                            data-wishlist-id="<?= $item->wishlist_id ?>"
+                    <button class="wishlist-btn" data-product-id="<?= $item->product_id ?>" data-wishlist-id="<?= $item->wishlist_id ?>"
                             style="background:none; border:none; cursor:pointer; font-size:20px; color:#e74c3c;">
                         <i class="fas fa-heart"></i> <!-- Solid heart for items already in wishlist -->
                     </button>
@@ -96,8 +94,7 @@ if ($_user) {
                         View Details
                     </a>
                     
-                    <a href="javascript:void(0)" onclick="addToCart('<?= $item->product_id ?>')" 
-                       class="add-to-cart" 
+                    <a href="#" class="add-to-cart" data-product-id="<?= $item->product_id ?>" 
                        style="display:inline-block; padding:10px 20px; background:#2c3e50; color:white; border-radius:5px; text-decoration:none; cursor:pointer;">
                         Add to Cart
                     </a>

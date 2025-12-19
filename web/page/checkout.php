@@ -351,7 +351,7 @@ if (is_post()) {
                         </div>
 
                         <!-- Payment Button -->
-                        <button type="button" class="btn btn-success" id="submitBtn" onclick="processPayment()">
+                        <button type="button" class="btn btn-success" id="submitBtn">
                             <span id="btnText">Pay RM <?= number_format($total_with_delivery, 2) ?></span>
                             <span id="btnLoading" style="display: none;" class="loading"></span>
                         </button>
@@ -451,6 +451,14 @@ if (is_post()) {
                 console.error('Payment error:', error);
             }
         }
+
+        // Bind the payment button using jQuery to avoid inline handlers
+        $(function(){
+            $(document).on('click', '#submitBtn', function(e){
+                e.preventDefault();
+                processPayment();
+            });
+        });
 
         // Auto-scroll to error if any
         window.onload = function() {

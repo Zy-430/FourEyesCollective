@@ -36,3 +36,11 @@ function addToCart(productId) {
 
     xhr.send(formData);
 }
+
+// Delegate clicks on elements with .add-to-cart to the addToCart function
+$(document).on('click', '.add-to-cart', function(e){
+    e.preventDefault();
+    const productId = $(this).data('product-id') || $(this).attr('data-product-id');
+    if (!productId) return;
+    addToCart(productId);
+});

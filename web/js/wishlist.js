@@ -90,4 +90,11 @@ $(document).ready(function() {
             }, 'json');
         }
     }
+
+    // Attach click handler for wishlist buttons (delegated)
+    $(document).on('click', '.wishlist-btn', function(e){
+        e.preventDefault();
+        const productId = $(this).data('product-id');
+        toggleWishlist(productId, this);
+    });
 });

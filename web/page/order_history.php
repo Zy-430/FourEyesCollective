@@ -88,8 +88,7 @@ include '../_head.php';
             <p style="text-align:center; font-size:1.1em; color:#7f8c8d;">No orders found.</p>
         <?php else: ?>
             <?php foreach ($orders as $order): ?>
-                <div class="order-card" data-id="<?= $order['order_id'] ?>" data-status="<?= $order['status'] ?>"
-                    onclick="window.location='/page/order_details.php?order_id=<?= $order['order_id'] ?>'"
+                <div class="order-card" data-id="<?= $order['order_id'] ?>" data-status="<?= $order['status'] ?>" data-href="/page/order_details.php?order_id=<?= $order['order_id'] ?>"
                     style="border-radius:10px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.08); background:#fff; display:flex; flex-direction:column; margin-bottom:20px; transition: transform 0.2s, box-shadow 0.2s;">
 
                     <span class="order-status <?= $order['status'] ?>" style="padding:5px 12px; font-weight:600; text-transform:capitalize;"><?= ucfirst($order['status']) ?></span>
@@ -129,7 +128,7 @@ include '../_head.php';
                             <?php endif; ?>
 
                             <?php if ($order['status'] == 'completed'): ?>
-                                <button class="cta-button large" onclick="event.stopPropagation(); window.location='/page/order_rate.php?order_id=<?= $order['order_id'] ?>'"
+                                <button class="rate-btn cta-button large" data-url="/page/order_rate.php?order_id=<?= $order['order_id'] ?>"
                                     style="background:#f39c12;color:white;border:none;border-radius:18px;cursor:pointer;padding:15px 30px; transition:0.2s;">
                                     Rate
                                 </button>
@@ -157,7 +156,7 @@ include '../_head.php';
             <option value="Other">Other</option>
         </select>
         <div style="display:flex; justify-content:flex-end; gap:10px;">
-            <button onclick="closeCancelModal()" style="padding:8px 15px;background:#bdc3c7;border:none;border-radius:4px;">Close</button>
+            <button id="cancelCloseBtn" style="padding:8px 15px;background:#bdc3c7;border:none;border-radius:4px;">Close</button>
             <button id="confirmCancelBtn" style="padding:8px 15px;background:#e74c3c;color:white;border:none;border-radius:4px;">Confirm Cancel</button>
         </div>
     </div>
@@ -170,64 +169,64 @@ include '../_head.php';
         this.form.submit();
     });
 
-    // Cancel Modal
+    // Cancel Modal and order actions - use jQuery delegated handlers
     let cancelId = null;
-    const modal = document.getElementById('cancelModal');
-    const reasonInput = document.getElementById('cancelReason');
-    document.querySelectorAll('.cancel-btn').forEach(btn => {
-        btn.addEventListener('click', e => {
-            e.stopPropagation();
-            cancelId = btn.dataset.id;
-            reasonInput.value = '';
-            modal.style.display = 'flex';
-        });
+    const $modal = $('#cancelModal');
+    const $reasonInput = $('#cancelReason');
+
+    $(document).on('click', '.cancel-btn', function(e){
+        e.stopPropagation();
+        cancelId = $(this).data('id');
+        $reasonInput.val('');
+        $modal.css('display','flex');
     });
 
-    document.getElementById('confirmCancelBtn').addEventListener('click', () => {
-        const reason = reasonInput.value;
+    $('#confirmCancelBtn').on('click', function(){
+        const reason = $reasonInput.val();
         if (!reason) {
             alert('Please select a reason');
             return;
         }
 
-        fetch('/page/order_cancel.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: `order_id=${cancelId}&cancelled_reason=${encodeURIComponent(reason)}`
-        }).then(r => r.text()).then(res => {
-            alert('Order cancelled');
-            location.reload(); // Reload to update status
-        });
+        $.post('/page/order_cancel.php', { order_id: cancelId, cancelled_reason: reason })
+            .done(function(){
+                alert('Order cancelled');
+                location.reload();
+            });
     });
 
     function closeCancelModal() {
-        modal.style.display = 'none';
+        $modal.css('display','none');
     }
 
+    // Close modal button
+    $(document).on('click', '#cancelCloseBtn', function(e){ e.preventDefault(); closeCancelModal(); });
+
     // Mark as Received
-    document.querySelectorAll('.receive-btn').forEach(btn => {
-        btn.addEventListener('click', e => {
-            e.stopPropagation();
-            const id = btn.dataset.id;
-            fetch('/page/order_receive.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: `order_id=${id}`
-            }).then(r => r.text()).then(res => {
-                alert('Order marked as received');
-                location.reload(); // Reload to update status
-            });
+    $(document).on('click', '.receive-btn', function(e){
+        e.stopPropagation();
+        const id = $(this).data('id');
+        $.post('/page/order_receive.php', { order_id: id }).done(function(){
+            alert('Order marked as received');
+            location.reload();
         });
     });
 
-    // Hover effect
-    document.querySelectorAll('.order-card').forEach(card => {
-        card.addEventListener('mouseover', () => card.style.transform = 'translateY(-4px)');
-        card.addEventListener('mouseout', () => card.style.transform = 'translateY(0)');
+    // Card hover effects and card click navigation
+    $(document).on('mouseenter', '.order-card', function(){ $(this).css('transform', 'translateY(-4px)'); });
+    $(document).on('mouseleave', '.order-card', function(){ $(this).css('transform', 'translateY(0)'); });
+
+    // Navigate to order details on card click
+    $(document).on('click', '.order-card', function(e){
+        const href = $(this).data('href');
+        if (href) window.location = href;
+    });
+
+    // Rate button - navigate without triggering card click
+    $(document).on('click', '.rate-btn', function(e){
+        e.stopPropagation();
+        const url = $(this).data('url');
+        if (url) window.location = url;
     });
 </script>
 

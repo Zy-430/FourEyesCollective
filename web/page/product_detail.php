@@ -30,13 +30,13 @@ include '../_head.php';
                 style="width:100%; height:100%; object-fit:cover;">
 
             <!-- BUTTONS -->
-            <button onclick="prevImage()"
+            <button class="carousel-prev"
                 style="position:absolute; top:50%; left:10px; transform:translateY(-50%); 
                        background:black; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; opacity:0.7;">
                 ❮
             </button>
 
-            <button onclick="nextImage()"
+            <button class="carousel-next"
                 style="position:absolute; top:50%; right:10px; transform:translateY(-50%); 
                        background:black; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; opacity:0.7;">
                 ❯
@@ -47,7 +47,7 @@ include '../_head.php';
         <div style="display:flex; gap:10px; margin-top:10px;">
             <?php foreach ($images as $index => $img): ?>
                 <?php $img = trim($img); ?>
-                <img onclick="showImage(<?= $index ?>)"
+                <img class="thumb" data-index="<?= $index ?>"
                     src="/images/product/<?= $folder ?>/<?= encode($img) ?>"
                     style="width:70px; height:70px; object-fit:cover; border:2px solid #ccc; border-radius:6px; cursor:pointer;"
                     id="thumb<?= $index ?>">
@@ -70,8 +70,7 @@ include '../_head.php';
 
         <?php $is_logged_in = isset($_SESSION['user']); ?>
 
-        <a href="javascript:void(0)" onclick="addToCart('<?= $p->product_id ?>')"
-            class="add-to-cart"
+        <a href="#" class="add-to-cart" data-product-id="<?= $p->product_id ?>"
             style="padding:12px 25px; background:#2c3e50; color:white; border-radius:5px; 
                text-decoration:none; display:inline-block; font-size:16px; margin-top:15px;">
             Add to Cart
@@ -82,69 +81,36 @@ include '../_head.php';
 
 <!-- CAROUSEL SCRIPT -->
 <script>
-    let images = <?= json_encode(array_map('trim', $images)) ?>;
-    let folder = "<?= $folder ?>";
-    let index = 0;
+    (function($){
+        let images = <?= json_encode(array_map('trim', $images)) ?>;
+        let folder = "<?= $folder ?>";
+        let idx = 0;
 
-    function showImage(i) {
-        index = i;
-        document.getElementById("mainImage").src = "/images/product/" + folder + "/" + images[index];
-    }
+        function showImage(i){
+            idx = i;
+            $('#mainImage').attr('src', '/images/product/' + folder + '/' + images[idx]);
+        }
 
-    function nextImage() {
-        index = (index + 1) % images.length;
-        showImage(index);
-    }
+        function nextImage(){
+            idx = (idx + 1) % images.length;
+            showImage(idx);
+        }
 
-    function prevImage() {
-        index = (index - 1 + images.length) % images.length;
-        showImage(index);
-    }
+        function prevImage(){
+            idx = (idx - 1 + images.length) % images.length;
+            showImage(idx);
+        }
 
-    // Auto slideshow (every 3 seconds)
-    setInterval(nextImage, 3000);
+        // DOM bindings
+        $(function(){
+            $(document).on('click', '.carousel-prev', function(e){ e.preventDefault(); prevImage(); });
+            $(document).on('click', '.carousel-next', function(e){ e.preventDefault(); nextImage(); });
+            $(document).on('click', '.thumb', function(e){ e.preventDefault(); showImage(Number($(this).data('index'))); });
 
-    function addToCart(productId) {
-        <?php if (!$is_logged_in): ?>
-            if (confirm('You need to login to add items to cart. Go to login page?')) {
-                const currentUrl = encodeURIComponent(window.location.href);
-                window.location.href = '/page/login.php?redirect=' + currentUrl;
-            }
-        <?php else: ?>
-            const xhr = new XMLHttpRequest();
-            const formData = new FormData();
-            formData.append('action', 'add');
-            formData.append('product_id', productId);
-
-            xhr.open('POST', 'cart.php');
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    showNotification('Product added to cart successfully!', 'success');
-
-                    // Update cart badge immediately
-                    fetch('/page/cart_count.php')
-                        .then(res => res.json())
-                        .then(data => {
-                            const badge = document.getElementById('cart-badge');
-                            if (!badge) return;
-
-                            if (data.cart_count > 0) {
-                                badge.textContent = data.cart_count;
-                                badge.style.display = 'flex';
-                            } else {
-                                badge.style.display = 'none';
-                            }
-                        }).catch(()=>{});
-                } else {
-                    showNotification('Error adding product to cart', 'error');
-                }
-            };
-            xhr.onerror = function() {
-                showNotification('Network error. Please try again.', 'error');
-            };
-            xhr.send(formData);
-        <?php endif; ?>
-    }
+            // Auto slideshow every 3 seconds
+            setInterval(nextImage, 3000);
+        });
+    })(jQuery);
 </script>
 <script src="/js/notifications.js"></script>
 <?php include '../_foot.php'; ?>

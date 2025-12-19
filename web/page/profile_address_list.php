@@ -42,7 +42,7 @@ include '../_head.php';
 
             <div style="margin-top:10px;">
                 <a href="profile_address_edit.php?id=<?= $addr->address_id ?>" style="padding:5px 12px; background:#2c3e50; color:white; border-radius:4px; text-decoration:none; font-size:0.85em;">Edit</a>
-                <a href="profile_address_delete.php?id=<?= $addr->address_id ?>" style="padding:5px 12px; background:#e74c3c; color:white; border-radius:4px; text-decoration:none; font-size:0.85em;" onclick="return confirm('Delete this address?');">Delete</a>
+                <a href="profile_address_delete.php?id=<?= $addr->address_id ?>" class="confirm-link" data-confirm="Delete this address?" style="padding:5px 12px; background:#e74c3c; color:white; border-radius:4px; text-decoration:none; font-size:0.85em;">Delete</a>
                 <?php if (!$addr->default_flag): ?>
                     <a href="profile_address_set_default.php?id=<?= $addr->address_id ?>" style="padding:5px 12px; background:#27ae60; color:white; border-radius:4px; text-decoration:none; font-size:0.85em;">Set Default</a>
                 <?php endif; ?>

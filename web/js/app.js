@@ -109,6 +109,20 @@ function closePhotoModal() {
     document.getElementById('photoModal').style.display = "none";
 }
 
+// Generic confirm dialog for elements with data-confirm
+$(document).on('click', '[data-confirm]', function(e){
+    const msg = $(this).data('confirm') || 'Are you sure?';
+    if (!confirm(msg)) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+    }
+});
+
+// Auto-submit nearest form for inputs with .auto-submit
+$(document).on('change', '.auto-submit', function(){
+    $(this).closest('form').submit();
+});
+
 const flashMsgs = document.querySelectorAll('.flash-msg');
 
 flashMsgs.forEach(msg => {

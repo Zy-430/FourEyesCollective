@@ -152,7 +152,8 @@ if (is_post()) {
 
             <!-- DELETE BUTTON -->
             <a href="modify_product.php?id=<?= $p->product_id ?>&delete_img=<?= $img ?>"
-            onclick="return confirm('Remove this image?');"
+            class="confirm-link"
+            data-confirm="Remove this image?"
             style="
                     position:absolute;
                     top:-8px;

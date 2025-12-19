@@ -2,7 +2,6 @@
 require '../_base.php';
 require '../lib/db.php';
 require '../lib/category.php';
-require '../lib/html_helpers.php';
 
 if (!$_user) {
     temp('error', 'Please login to view your cart');
@@ -275,7 +274,7 @@ include '../_head.php';
                                         Category: <?= encode($item->category_name) ?>
                                     </p>
                                     <p class="price-each" data-price="<?= $item->product_price ?>">
-                                        <?= price($item->product_price) ?>
+                                        <?= 'RM ' . number_format((float)$item->product_price, 2) ?>
                                     </p>
 
                                     <!-- Quantity Controls -->
@@ -296,7 +295,7 @@ include '../_head.php';
 
                                 <div style="text-align: right; min-width: 120px;">
                                     <div class="item-total" style="font-weight: bold; font-size: 18px; color: #2c3e50;">
-                                        <?= price($item->product_price * $item->product_qty) ?>
+                                        <?= 'RM ' . number_format((float)($item->product_price * $item->product_qty), 2) ?>
                                     </div>
                                     <div style="color: #666; font-size: 14px;">
                                         RM <?= number_format($item->product_price, 2) ?> each
@@ -318,11 +317,11 @@ include '../_head.php';
                     <div style="margin-bottom: 20px;">
                         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                             <span>Subtotal (<span id="summaryCount"><?= $total_items_all ?></span> item<span id="summaryItemsPlural"><?= $total_items_all !== 1 ? 's' : '' ?></span>)</span>
-                            <span id="summarySubtotal" style="font-weight: bold;"><?= price($subtotal_all) ?></span>
+                            <span id="summarySubtotal" style="font-weight: bold;"><?= 'RM ' . number_format((float)$subtotal_all, 2) ?></span>
                         </div>
                         <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
                             <span>Shipping</span>
-                            <span id="shippingCost"><?= $delivery_fee_all > 0 ? price($delivery_fee_all) : 'FREE' ?></span>
+                            <span id="shippingCost"><?= $delivery_fee_all > 0 ? 'RM ' . number_format((float)$delivery_fee_all, 2) : 'FREE' ?></span>
                         </div>
                         <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
                             <span>Tax</span>
@@ -333,12 +332,12 @@ include '../_head.php';
                     <div style="border-top: 2px solid #e0e0e0; padding-top: 20px; margin-bottom: 25px;">
                         <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: bold;">
                             <span>Estimated Total</span>
-                            <span id="summaryEstimated"><?= price($estimated_total_all) ?></span>
+                            <span id="summaryEstimated"><?= 'RM ' . number_format((float)$estimated_total_all, 2) ?></span>
                         </div>
                     </div>
 
                     <button id="checkoutBtn" type="button" class="btn-checkout">
-                        <?= $subtotal_all > 0 ? 'Proceed to Checkout — ' . price($estimated_total_all) : 'Proceed to Checkout' ?>
+                        <?= $subtotal_all > 0 ? 'Proceed to Checkout — ' . ( 'RM ' . number_format((float)$estimated_total_all, 2) ) : 'Proceed to Checkout' ?>
                     </button>
 
                     <a href="shoppage.php" style="display: block; text-align: center; color: #2c3e50; text-decoration: none; padding: 10px; border: 1px solid #2c3e50; border-radius: 5px;">

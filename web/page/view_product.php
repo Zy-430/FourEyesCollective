@@ -99,8 +99,7 @@ $products = $_db->query("SELECT * FROM product")->fetchAll();
                 ✏ Modify
             </a>
 
-            <a href="delete_product.php?id=<?= $p->product_id ?>"
-               onclick="return confirm('Are you sure you want to delete this product?');"
+            <a href="delete_product.php?id=<?= $p->product_id ?>" class="confirm-link" data-confirm="Are you sure you want to delete this product?"
                style="flex:1; padding:8px; background:#c0392b; color:white; text-align:center; border-radius:5px; text-decoration:none;">
                 🗑 Delete
             </a>

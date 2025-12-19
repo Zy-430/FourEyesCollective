@@ -172,14 +172,13 @@ $is_logged_in = isset($_SESSION['user']);
                         ">
                             <img src="<?= $imgPath ?>"
                                 alt="<?= encode($product->product_name) ?>"
+                                class="hover-scale"
                                 style="
                                     width: 100%;
                                     height: 100%;
                                     object-fit: cover;
                                     transition: transform 0.5s ease;
-                                 "
-                                onmouseover="this.style.transform='scale(1.05)'"
-                                onmouseout="this.style.transform='scale(1)'">
+                                 ">
                         </div>
 
                         <!-- Product Info -->
@@ -210,7 +209,7 @@ $is_logged_in = isset($_SESSION['user']);
                         </div>
 
                         <!-- Button -->
-                        <a href="product_detail.php?id=<?= $product->product_id ?>"
+                        <a href="product_detail.php?id=<?= $product->product_id ?>" class="hover-btn"
                             style="
                                 display: block;
                                 text-align: center;
@@ -222,9 +221,7 @@ $is_logged_in = isset($_SESSION['user']);
                                 font-weight: 600;
                                 transition: all 0.3s ease;
                                 border: 2px solid #2c3e50;
-                           "
-                            onmouseover="this.style.background='#34495e'; this.style.transform='translateY(-2px)'"
-                            onmouseout="this.style.background='#2c3e50'; this.style.transform='translateY(0)'">
+                           ">
                             View Details
                         </a>
                     </div>
@@ -262,16 +259,14 @@ $is_logged_in = isset($_SESSION['user']);
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 40px;
         ">
-            <div style="
+            <div class="feature-card" style="
                 text-align: center;
                 padding: 40px 30px;
                 background: #f8f9fa;
                 border-radius: 12px;
                 transition: all 0.3s ease;
                 border: 2px solid transparent;
-            "
-                onmouseover="this.style.transform='translateY(-10px)'; this.style.borderColor='#3498db'"
-                onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent'">
+            ">
                 <div style="
                     font-size: 50px;
                     color: #3498db;
@@ -288,16 +283,14 @@ $is_logged_in = isset($_SESSION['user']);
                 </p>
             </div>
 
-            <div style="
+            <div class="feature-card" style="
                 text-align: center;
                 padding: 40px 30px;
                 background: #f8f9fa;
                 border-radius: 12px;
                 transition: all 0.3s ease;
                 border: 2px solid transparent;
-            "
-                onmouseover="this.style.transform='translateY(-10px)'; this.style.borderColor='#2ecc71'"
-                onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent'">
+            ">
                 <div style="
                     font-size: 50px;
                     color: #2ecc71;
@@ -314,16 +307,14 @@ $is_logged_in = isset($_SESSION['user']);
                 </p>
             </div>
 
-            <div style="
+            <div class="feature-card" style="
                 text-align: center;
                 padding: 40px 30px;
                 background: #f8f9fa;
                 border-radius: 12px;
                 transition: all 0.3s ease;
                 border: 2px solid transparent;
-            "
-                onmouseover="this.style.transform='translateY(-10px)'; this.style.borderColor='#e74c3c'"
-                onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='transparent'">
+            ">
                 <div style="
                     font-size: 50px;
                     color: #e74c3c;
@@ -375,8 +366,7 @@ $is_logged_in = isset($_SESSION['user']);
                 Register for a free exclusive membership
             </p>
             <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
-                <a href="/page/member_registration.php"
-                    style="
+                <a href="/page/member_registration.php" class="btn-hover" style="
                     background: #e74c3c;
                     color: white;
                     padding: 15px 40px;
@@ -386,9 +376,7 @@ $is_logged_in = isset($_SESSION['user']);
                     font-size: 1.1em;
                     transition: all 0.3s ease;
                     border: 2px solid #e74c3c;
-               "
-                    onmouseover="this.style.background='#c0392b'; this.style.transform='translateY(-3px)'"
-                    onmouseout="this.style.background='#e74c3c'; this.style.transform='translateY(0)'">
+               ">
                     Register Free
                 </a>
                 <a href="/page/login.php"
@@ -403,8 +391,7 @@ $is_logged_in = isset($_SESSION['user']);
                     transition: all 0.3s ease;
                     border: 2px solid white;
                "
-                    onmouseover="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='translateY(-3px)'"
-                    onmouseout="this.style.background='transparent'; this.style.transform='translateY(0)'">
+                    class="btn-hover">
                     Sign In
                 </a>
             </div>
