@@ -2,8 +2,33 @@
 require '../_base.php';
 require '../lib/db.php';
 
-auth();
+auth('Admin');
 $admin_id = $_user->user_id;
+
+// --- Auto-complete delivered orders older than 3 days ---
+$autoCompleteStmt = $_db->prepare("
+    SELECT order_id FROM `order`
+    WHERE status = 'delivered'
+      AND delivered_at <= DATE_SUB(NOW(), INTERVAL 3 DAY)
+");
+
+$autoCompleteStmt->execute();
+$deliveredOrders = $autoCompleteStmt->fetchAll(PDO::FETCH_COLUMN);
+
+foreach ($deliveredOrders as $order_id) {
+    // Update status to completed
+    $updateStmt = $_db->prepare("UPDATE `order` SET status = 'completed' WHERE order_id = ?");
+    $updateStmt->execute([$order_id]);
+
+    // Log into order_history
+    $history_id = generateHistoryID($_db);
+    $historyStmt = $_db->prepare("
+        INSERT INTO order_history(history_id, order_id, status, changed_by, message, changed_at)
+        VALUES (?, ?, 'completed', ?, 'Auto-completed after 3 days of delivery', NOW())
+    ");
+    $historyStmt->execute([$history_id, $order_id, $admin_id]);
+}
+
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $order_id = $_POST['order_id'];
@@ -25,9 +50,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($current_status == 'pending' && in_array($new_status, ['shipped', 'cancelled'])) $allowed = true;
             if ($current_status == 'shipped' && $new_status == 'delivered') $allowed = true;
 
+            // Return approval flow
+            if ($current_status == 'return_requested' && in_array($new_status, ['returned', 'return_rejected'])) $allowed = true;
+
             if (!$allowed) {
                 $error_msg = "Invalid status change from $current_status → $new_status.";
-                goto skip_history; // Skip updating history
+                goto skip_history;
             }
 
             // Update order status
@@ -61,26 +89,66 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Fetch filter
+// Pagination settings
+$page = max(1, (int)($_GET['page'] ?? 1));
+$limit = 10; // orders per page
+$offset = ($page - 1) * $limit;
+
+// Search
+$search = trim($_GET['search'] ?? '');
 $status_filter = $_GET['status'] ?? 'all';
 
-// Fetch orders
-$query = "SELECT * FROM `order`";
+$where = [];
 $params = [];
 
+// Status filter
 if ($status_filter !== 'all') {
-    $query .= " WHERE status = ?";
+    $where[] = "o.status = ?";
     $params[] = $status_filter;
 }
 
-$query .= " ORDER BY order_date DESC";
+// Search filter
+if ($search !== '') {
+    $where[] = "(
+        o.order_id LIKE ?
+        OR u.name LIKE ?
+        OR u.email LIKE ?
+        OR o.status LIKE ?
+    )";
 
-$stm = $_db->prepare($query);
+    $searchTerm = "%$search%";
+    array_push($params, $searchTerm, $searchTerm, $searchTerm, $searchTerm);
+}
+
+$whereSql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
+
+$countSql = "
+    SELECT COUNT(*) 
+    FROM `order` o
+    JOIN users u ON o.user_id = u.user_id
+    $whereSql
+";
+
+$stm = $_db->prepare($countSql);
+$stm->execute($params);
+$totalRecords = $stm->fetchColumn();
+$totalPages = ceil($totalRecords / $limit);
+
+$dataSql = "
+    SELECT o.*, u.name AS customer_name, u.email AS customer_email
+    FROM `order` o
+    JOIN users u ON o.user_id = u.user_id
+    $whereSql
+    ORDER BY o.order_date DESC
+    LIMIT $limit OFFSET $offset
+";
+
+$stm = $_db->prepare($dataSql);
 $stm->execute($params);
 $orders = $stm->fetchAll(PDO::FETCH_ASSOC);
 
 $_title = "Admin Orders | Four Eyes Collective";
-include '../_head.php';
+include '../_admin_head.php';
 ?>
 
 <section style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 80px 0; text-align: center;">
@@ -92,76 +160,197 @@ include '../_head.php';
     </div>
 </section>
 
-<div style="max-width: 1100px; margin: 40px auto;">
+<div style="max-width: 1400px; margin: 40px auto;">
 
     <?php if (!empty($success_msg)): ?>
-        <div style="padding:12px; background:#2ecc71; color:white; border-radius:5px; margin-bottom:20px;">
+        <div style="padding:12px; background:#2ecc71; color:white; border-radius:5px; margin-bottom:20px; text-align:center;">
             <?= $success_msg ?>
         </div>
     <?php endif; ?>
 
     <?php if (!empty($error_msg)): ?>
-        <div style="padding:12px; background:#e74c3c; color:white; border-radius:5px; margin-bottom:20px;">
+        <div style="padding:12px; background:#e74c3c; color:white; border-radius:5px; margin-bottom:20px; text-align:center;">
             <?= $error_msg ?>
         </div>
     <?php endif; ?>
 
-    <!-- Filter -->
-    <form method="GET" style="margin-bottom:20px; display:flex; gap:10px;">
+    <form method="GET" style="margin-bottom:20px; display:flex; gap:10px; align-items:center;">
+        <!-- Search input -->
+        <input type="text"
+            name="search"
+            value="<?= htmlspecialchars($search) ?>"
+            placeholder="Search by Order ID, Name, Email, Status"
+            style="padding:8px; width:300px; border-radius:5px; border:1px solid #ccc;">
+
+        <!-- Status filter -->
         <select name="status" style="padding:8px; border-radius:5px; border:1px solid #ccc;">
             <option value="all" <?= $status_filter == 'all' ? 'selected' : '' ?>>All</option>
             <option value="pending" <?= $status_filter == 'pending' ? 'selected' : '' ?>>Pending</option>
             <option value="shipped" <?= $status_filter == 'shipped' ? 'selected' : '' ?>>Shipped</option>
             <option value="delivered" <?= $status_filter == 'delivered' ? 'selected' : '' ?>>Delivered</option>
+            <option value="completed" <?= $status_filter == 'completed' ? 'selected' : '' ?>>Completed</option>
             <option value="cancelled" <?= $status_filter == 'cancelled' ? 'selected' : '' ?>>Cancelled</option>
+            <option value="returned" <?= $status_filter == 'returned' ? 'selected' : '' ?>>Returned</option>
+            <option value="return_requested" <?= $status_filter == 'return_requested' ? 'selected' : '' ?>>Pending Approval</option>
         </select>
-        <button type="submit" style="padding:8px 15px; background:#2c3e50; color:white; border:none; border-radius:5px;">
-            Filter
+
+        <!-- Submit button -->
+        <button type="submit"
+            style="padding:8px 15px; background:#2c3e50; color:white; border:none; border-radius:5px;">
+            Search / Filter
         </button>
     </form>
 
-    <!-- Order Cards -->
-    <?php foreach ($orders as $o): ?>
-        <div style="background:white; border-radius:8px; padding:20px; margin-bottom:25px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
 
-            <h3 style="margin-top:0;">Order ID: <?= $o['order_id'] ?></h3>
-            <p><strong>Date:</strong> <?= date('d M Y H:i', strtotime($o['order_date'])) ?></p>
-            <p><strong>Total:</strong> RM <?= number_format($o['total_amount'], 2) ?></p>
-            <p><strong>Current Status:</strong> <span style="color:#e67e22; font-weight:bold;"><?= ucfirst($o['status']) ?></span></p>
+    <!-- Orders Table -->
+    <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; box-shadow:0 4px 12px rgba(0,0,0,0.05); font-size:14px;">
+            <thead style="background:#34495e; color:white;">
+                <tr>
+                    <th style="padding:10px; text-align:left; font-weight:600;">Order ID</th>
+                    <th style="padding:10px; text-align:left; font-weight:600;">Customer</th>
+                    <th style="padding:10px; text-align:left; font-weight:600;">Email</th>
+                    <th style="padding:10px; text-align:left; font-weight:600;">Date</th>
+                    <th style="padding:10px; text-align:left; font-weight:600;">Total</th>
+                    <th style="padding:10px; text-align:left; font-weight:600;">Status</th>
+                    <th style="padding:10px; text-align:center; font-weight:600;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($orders as $o): ?>
+                    <tr style="border-bottom:1px solid #ddd;">
+                        <td style="padding:10px;"><?= $o['order_id'] ?></td>
+                        <td style="padding:10px;"><?= htmlspecialchars($o['customer_name']) ?></td>
+                        <td style="padding:10px;"><?= htmlspecialchars($o['customer_email']) ?></td>
+                        <td style="padding:10px;"><?= date('d M Y H:i', strtotime($o['order_date'])) ?></td>
+                        <td style="padding:10px;">RM <?= number_format($o['total_amount'], 2) ?></td>
+                        <td style="padding:10px; font-weight:bold; color:#e67e22;"><?= ucfirst($o['status']) ?></td>
+                        <td style="padding:10px; text-align:center; display:flex; gap:5px; justify-content:center;">
+                            <!-- View Details Button -->
+                            <form method="GET" action="order_details.php" style="display:inline;">
+                                <input type="hidden" name="order_id" value="<?= $o['order_id'] ?>">
+                                <button type="submit" style="background:none; border:none; cursor:pointer;">
+                                    <img src="/images/icons/view.png" alt="View" style="width:22px;">
+                                </button>
+                            </form>
 
-            <hr style="margin:20px 0;">
+                            <?php if ($o['status'] === 'return_requested'): ?>
+                                <!-- Return Approval Dropdown -->
+                                <form method="POST" class="return-approval-form" style="display:flex; flex-direction:column; gap:6px; width:150px;">
+                                    <input type="hidden" name="order_id" value="<?= $o['order_id'] ?>">
+                                    <select name="new_status" class="return-status-select" style="padding:6px; font-size:13px; border-radius:5px;">
+                                        <option value="">-- Select Action --</option>
+                                        <option value="returned">Approve Return</option>
+                                        <option value="return_rejected">Reject Return</option>
+                                    </select>
+                                    <input type="text" name="message" placeholder="Optional note" style="padding:6px; font-size:13px; border-radius:5px;">
+                                    <button type="submit" style="padding:6px; background:#3498db; color:white; border:none; border-radius:5px; cursor:pointer;">Submit</button>
+                                </form>
+                            <?php elseif (!in_array($o['status'], ['completed', 'cancelled', 'delivered', 'returned', 'return_rejected'])): ?>
+                                <!-- Regular Status Change -->
+                                <form method="POST" class="status-update-form" style="display:flex; flex-direction:column; gap:6px; width:150px;">
+                                    <input type="hidden" name="order_id" value="<?= $o['order_id'] ?>">
+                                    <select name="new_status" class="status-select" style="padding:6px; font-size:13px; border-radius:5px;">
+                                        <option value="<?= $o['status'] ?>" selected>No Change</option>
+                                        <?php if ($o['status'] == 'pending'): ?>
+                                            <option value="shipped">Shipped</option>
+                                            <option value="cancelled">Cancel</option>
+                                        <?php elseif ($o['status'] == 'shipped'): ?>
+                                            <option value="delivered">Delivered</option>
+                                        <?php endif; ?>
+                                    </select>
+                                    <input type="text" name="message" placeholder="History note" required style="padding:6px; font-size:13px; border-radius:5px;">
+                                    <button type="submit" class="status-submit-btn" style="padding:6px; background:#27ae60; color:white; border:none; border-radius:5px; cursor:pointer; display:none;">Submit</button>
+                                </form>
+                            <?php endif; ?>
 
-            <!-- Status Update Form -->
-            <form method="POST" style="display:flex; flex-direction:column; gap:12px;">
+                            <!-- Show Invoice only if status is completed -->
+                            <?php if ($o['status'] === 'completed'): ?>
+                                <form method="GET" action="order_invoice.php" style="display:inline;">
+                                    <input type="hidden" name="order_id" value="<?= $o['order_id'] ?>">
+                                    <button type="submit" style="background:none; border:none; cursor:pointer;">
+                                        <img src="/images/icons/invoice.png" alt="Invoice" style="width:22px;">
+                                    </button>
+                                </form>
+                            <?php endif; ?>
+                        </td>
 
-                <input type="hidden" name="order_id" value="<?= $o['order_id'] ?>">
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 
-                <label><strong>Change Status:</strong></label>
-                <select name="new_status" required style="padding:8px; border-radius:5px;">
-                    <option value="<?= $o['status'] ?>" selected>No Change (<?= ucfirst($o['status']) ?>)</option>
+    <?php if ($totalPages > 1): ?>
+        <div style="margin-top:30px; display:flex; gap:8px; justify-content:center;">
 
-                    <?php if ($o['status'] == 'pending'): ?>
-                        <option value="shipped">Shipped</option>
-                        <option value="cancelled">Cancel</option>
-                    <?php elseif ($o['status'] == 'shipped'): ?>
-                        <option value="delivered">Delivered</option>
-                    <?php else: ?>
-                        <option disabled>No further actions</option>
-                    <?php endif; ?>
-                </select>
-
-                <textarea name="message" placeholder="Enter message for history..."
-                    style="padding:10px; border-radius:5px; min-height:80px;"></textarea>
-
-                <button type="submit"
-                    style="padding:10px 15px; background:#27ae60; color:white; border:none; border-radius:5px; width:150px;">
-                    Update
-                </button>
-            </form>
+            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                <a href="?page=<?= $i ?>&search=<?= urlencode($search) ?>&status=<?= $status_filter ?>"
+                    style="
+                padding:6px 12px;
+                border-radius:4px;
+                text-decoration:none;
+                font-size:14px;
+                <?= $i == $page
+                    ? 'background:#2c3e50; color:white;'
+                    : 'background:#ecf0f1; color:#333;' ?>
+           ">
+                    <?= $i ?>
+                </a>
+            <?php endfor; ?>
 
         </div>
-    <?php endforeach; ?>
+    <?php endif; ?>
+
 
 </div>
 
-<?php include '../_foot.php'; ?>
+<script>
+    $(document).ready(function() {
+
+        // Handle regular status change forms
+        $('.status-update-form').on('change', '.status-select', function() {
+
+            var $form = $(this).closest('.status-update-form');
+            var $submitBtn = $form.find('.status-submit-btn');
+            var currentStatus = $form.find('option[selected]').val();
+            var selectedStatus = $(this).val();
+
+            if (selectedStatus !== currentStatus && selectedStatus !== '') {
+                $submitBtn.show();
+            } else {
+                $submitBtn.hide();
+            }
+        });
+
+        // Handle return approval form submission
+        $('.return-approval-form').on('submit', function(e) {
+
+            var newStatus = $(this).find('.return-status-select').val();
+
+            if (newStatus === '') {
+                e.preventDefault();
+                alert('Please select an action');
+                return false;
+            }
+
+            if (!confirm('Are you sure you want to update this order status?')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // Handle regular status update form submission
+        $('.status-update-form').on('submit', function(e) {
+
+            if (!confirm('Are you sure you want to update this order status?')) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+    });
+</script>
+
+
+<?php include '../_admin_head.php'; ?>

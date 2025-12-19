@@ -2,7 +2,7 @@
 require '../_base.php';
 require '../lib/db.php';
 
-auth();
+auth('Member');
 $user_id = $_user->user_id;
 
 // Sorting and tab filtering (both require server-side reload)
@@ -43,38 +43,33 @@ $_css = ['order.css'];
 include '../_head.php';
 ?>
 
-<section style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 80px 0; text-align: center;">
-    <div style="max-width: 800px; margin: 0 auto;">
-        <h1 style="font-family: 'Playfair Display', serif; font-size: 3em; margin-bottom: 10px; color: #fff; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">My Orders</h1>
-        <p style="font-size: 1.2em; opacity: 0.9; color: #f0f0f0; text-shadow: 1px 1px 2px rgba(0,0,0,0.4);">
-            Track your orders, view history, and see details of each purchase.
-        </p>
+<section class="hero-section">
+    <div class="hero-inner">
+        <h1 class="hero-title">My Orders</h1>
+        <p class="hero-subtitle">Track your orders, view history, and see details of each purchase.</p>
     </div>
 </section>
 
-<div style="max-width: 1000px; margin: 50px auto;">
-
-    <!-- Tabs - Now using server-side reload -->
-    <div class="order-tabs" style="display:flex; gap:15px; margin-bottom:20px;">
+<div class="orders-page">
+    <div class="order-tabs">
         <?php
-        $tabs = ['all' => 'All', 'to-ship' => 'To Ship', 'to-receive' => 'To Receive', 'completed' => 'Completed', 'cancelled' => 'Cancelled'];
+        $tabs = ['all' => 'All', 'to-ship' => 'To Ship', 'to-receive' => 'To Receive', 'completed' => 'Completed', 'cancelled' => 'Cancelled', 'returned' => 'Returned'];
         foreach ($tabs as $key => $label):
             $activeClass = $key === $tabActive ? 'active' : '';
             $href = "?tab=" . urlencode($key) . "&sort=" . urlencode($sort);
         ?>
-            <a href="<?= $href ?>" class="tab-button <?= $activeClass ?>" style="display:flex; flex-direction:column; align-items:center; text-decoration:none; color:<?= $activeClass ? '#fff' : '#000' ?>;">
+            <a href="<?= $href ?>" class="tab-button <?= $activeClass ?>">
                 <?php if ($key !== 'all'): ?>
-                    <img src="/images/icons/<?= $key ?><?= $activeClass ? '-active' : '' ?>.png" alt="<?= $label ?>" style="width:30px;height:30px;margin-bottom:5px;">
+                    <img src="/images/icons/<?= $key ?><?= $activeClass ? '-active' : '' ?>.png" alt="<?= $label ?>" class="tab-icon">
                 <?php endif; ?>
                 <span><?= $label ?></span>
             </a>
         <?php endforeach; ?>
     </div>
 
-    <!-- Sorting form - includes current tab -->
-    <form method="get" style="margin-bottom:20px;">
+    <form method="get" class="sort-form">
         <input type="hidden" name="tab" value="<?= htmlspecialchars($tabActive) ?>">
-        <select name="sort" class="custom-select" style="padding:8px 12px; border-radius:6px; border:1px solid #ccc;">
+        <select name="sort" class="custom-select sort-select">
             <option value="date_desc" <?= $sort === 'date_desc' ? 'selected' : '' ?>>Newest</option>
             <option value="date_asc" <?= $sort === 'date_asc' ? 'selected' : '' ?>>Oldest</option>
             <option value="total_desc" <?= $sort === 'total_desc' ? 'selected' : '' ?>>Total: High → Low</option>
@@ -82,24 +77,23 @@ include '../_head.php';
         </select>
     </form>
 
-    <!-- Orders container -->
-    <div id="orders-container">
+    <div id="orders-container" class="orders-container">
         <?php if (empty($orders)): ?>
-            <p style="text-align:center; font-size:1.1em; color:#7f8c8d;">No orders found.</p>
+            <p class="no-orders">No orders found.</p>
         <?php else: ?>
             <?php foreach ($orders as $order): ?>
-                <div class="order-card" data-id="<?= $order['order_id'] ?>" data-status="<?= $order['status'] ?>"
-                    onclick="window.location='/page/order_details.php?order_id=<?= $order['order_id'] ?>'"
-                    style="border-radius:10px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.08); background:#fff; display:flex; flex-direction:column; margin-bottom:20px; transition: transform 0.2s, box-shadow 0.2s;">
+                <div class="order-card"
+                    data-id="<?= $order['order_id'] ?>"
+                    data-status="<?= $order['status'] ?>">
 
-                    <span class="order-status <?= $order['status'] ?>" style="padding:5px 12px; font-weight:600; text-transform:capitalize;"><?= ucfirst($order['status']) ?></span>
+                    <span class="order-status <?= $order['status'] ?>"><?= ucfirst($order['status']) ?></span>
 
-                    <div style="background:#ecf0f1; padding:20px;">
-                        <p style="font-size:27px; font-weight:600; margin-bottom:5px;">Order ID: <?= $order['order_id'] ?></p>
+                    <div class="order-summary">
+                        <p class="order-id">Order ID: <?= $order['order_id'] ?></p>
                         <p class="order-date"><?= date('d M Y H:i', strtotime($order['order_date'])) ?></p>
                     </div>
 
-                    <div style="display:flex; gap:10px; padding:15px; overflow-x:auto;">
+                    <div class="order-images">
                         <?php
                         $stm_items = $_db->prepare("SELECT p.product_image, p.category_id FROM order_item oi JOIN product p ON oi.product_id = p.product_id WHERE oi.order_id=?");
                         $stm_items->execute([$order['order_id']]);
@@ -107,32 +101,29 @@ include '../_head.php';
                         foreach ($items as $item):
                             $images = explode(',', $item['product_image']);
                         ?>
-                            <img src="/images/product/<?= encode($categories[$item['category_id']] ?? 'other') ?>/<?= trim(encode($images[0])) ?>" style="width:60px;height:60px;object-fit:cover;border-radius:6px;">
+                            <img src="/images/product/<?= encode($categories[$item['category_id']] ?? 'other') ?>/<?= trim(encode($images[0])) ?>" class="order-thumb">
                         <?php endforeach; ?>
                     </div>
 
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:15px; border-top:1px solid #e0e0e0;">
-                        <span style="font-weight:600;">Total: RM <?= number_format($order['total_amount'], 2) ?></span>
-                        <div style="display:flex; gap:10px;">
+                    <div class="order-footer">
+                        <span class="order-total">Total: RM <?= number_format($order['total_amount'], 2) ?></span>
+                        <div class="order-actions">
                             <?php if ($order['status'] == 'delivered'): ?>
-                                <button type="button" class="receive-btn cta-button large" data-id="<?= $order['order_id'] ?>"
-                                    style="background:#27ae60;color:white;border:none;border-radius:18px;cursor:pointer;padding:15px 30px; transition:0.2s;">
-                                    Mark as Received
-                                </button>
+                                <button type="button" class="receive-btn cta-button large" data-id="<?= $order['order_id'] ?>">Mark as Received</button>
                             <?php endif; ?>
 
                             <?php if ($order['status'] == 'pending'): ?>
-                                <button type="button" class="cancel-btn cta-button large" data-id="<?= $order['order_id'] ?>"
-                                    style="background:#e74c3c;color:white;border:none;border-radius:18px;cursor:pointer;padding:15px 30px; transition:0.2s;">
-                                    Cancel
-                                </button>
+                                <button type="button" class="cancel-btn cta-button large" data-id="<?= $order['order_id'] ?>">Cancel</button>
                             <?php endif; ?>
 
                             <?php if ($order['status'] == 'completed'): ?>
-                                <button class="cta-button large" onclick="event.stopPropagation(); window.location='/page/order_rate.php?order_id=<?= $order['order_id'] ?>'"
-                                    style="background:#f39c12;color:white;border:none;border-radius:18px;cursor:pointer;padding:15px 30px; transition:0.2s;">
-                                    Rate
-                                </button>
+                                <button type="button" class="rate-link cta-button large" data-id="<?= $order['order_id'] ?>">Rate</button>
+                                <button type="button" class="return-btn cta-button large" data-id="<?= $order['order_id'] ?>">Return</button>
+                                <button type="button" class="order-again-btn cta-button large" data-id="<?= $order['order_id'] ?>">Order Again</button>
+                            <?php endif; ?>
+
+                            <?php if (in_array($order['status'], ['returned', 'cancelled'])): ?>
+                                <button type="button" class="order-again-btn cta-button large" data-id="<?= $order['order_id'] ?>">Order Again</button>
                             <?php endif; ?>
                         </div>
                     </div>
@@ -140,6 +131,7 @@ include '../_head.php';
             <?php endforeach; ?>
         <?php endif; ?>
     </div>
+
 </div>
 
 <!-- Cancel Modal -->
@@ -164,70 +156,133 @@ include '../_head.php';
 </div>
 
 <script>
-    // Sorting form auto-submit
-    const sortSelect = document.querySelector('select[name="sort"]');
-    sortSelect.addEventListener('change', function() {
-        this.form.submit();
-    });
+    $(document).ready(function() {
 
-    // Cancel Modal
-    let cancelId = null;
-    const modal = document.getElementById('cancelModal');
-    const reasonInput = document.getElementById('cancelReason');
-    document.querySelectorAll('.cancel-btn').forEach(btn => {
-        btn.addEventListener('click', e => {
-            e.stopPropagation();
-            cancelId = btn.dataset.id;
-            reasonInput.value = '';
-            modal.style.display = 'flex';
+        // Sorting form auto-submit
+        $('select[name="sort"]').on('change', function() {
+            $(this).closest('form').submit();
         });
-    });
 
-    document.getElementById('confirmCancelBtn').addEventListener('click', () => {
-        const reason = reasonInput.value;
-        if (!reason) {
-            alert('Please select a reason');
-            return;
-        }
+        // Cancel Modal
+        var cancelId = null;
+        var $modal = $('#cancelModal');
+        var $reasonInput = $('#cancelReason');
 
-        fetch('/page/order_cancel.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
-            body: `order_id=${cancelId}&cancelled_reason=${encodeURIComponent(reason)}`
-        }).then(r => r.text()).then(res => {
-            alert('Order cancelled');
-            location.reload(); // Reload to update status
-        });
-    });
-
-    function closeCancelModal() {
-        modal.style.display = 'none';
-    }
-
-    // Mark as Received
-    document.querySelectorAll('.receive-btn').forEach(btn => {
-        btn.addEventListener('click', e => {
+        $('.cancel-btn').on('click', function(e) {
             e.stopPropagation();
-            const id = btn.dataset.id;
-            fetch('/page/order_receive.php', {
+            cancelId = $(this).data('id');
+            $reasonInput.val('');
+            $modal.css('display', 'flex');
+        });
+
+        $('#confirmCancelBtn').on('click', function() {
+            var reason = $reasonInput.val();
+            if (!reason) {
+                if (typeof showNotification === 'function') showNotification('Please select a reason', 'error');
+                return;
+            }
+
+            $.ajax({
+                url: '/page/order_cancel.php',
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
+                data: {
+                    order_id: cancelId,
+                    cancelled_reason: reason
                 },
-                body: `order_id=${id}`
-            }).then(r => r.text()).then(res => {
-                alert('Order marked as received');
-                location.reload(); // Reload to update status
+                dataType: 'text'
+            }).done(function() {
+                if (typeof showNotification === 'function') showNotification('Order cancelled successfully', 'success');
+                setTimeout(function() {
+                    location.reload();
+                }, 1200);
+            }).fail(function() {
+                if (typeof showNotification === 'function') showNotification('Failed to cancel order', 'error');
             });
         });
-    });
 
-    // Hover effect
-    document.querySelectorAll('.order-card').forEach(card => {
-        card.addEventListener('mouseover', () => card.style.transform = 'translateY(-4px)');
-        card.addEventListener('mouseout', () => card.style.transform = 'translateY(0)');
+        // Close cancel modal
+        window.closeCancelModal = function() {
+            $modal.css('display', 'none');
+        };
+
+        // Mark as Received
+        $('.receive-btn').on('click', function(e) {
+            e.stopPropagation();
+            var id = $(this).data('id');
+
+            $.ajax({
+                url: '/page/order_receive.php',
+                method: 'POST',
+                data: {
+                    order_id: id
+                },
+                dataType: 'text'
+            }).done(function() {
+                if (typeof showNotification === 'function') showNotification('Order marked as received', 'success');
+                setTimeout(function() {
+                    location.reload();
+                }, 1200);
+            }).fail(function() {
+                if (typeof showNotification === 'function') showNotification('Failed to mark as received', 'error');
+            });
+        });
+
+        // Order Again
+        $('.order-again-btn').on('click', function(e) {
+            e.stopPropagation();
+            var orderId = $(this).data('id');
+
+            $.ajax({
+                url: '/page/order_again.php',
+                method: 'POST',
+                data: {
+                    order_id: orderId
+                },
+                dataType: 'json'
+            }).done(function(data) {
+                if (data.status === 'success') {
+                    if (typeof showNotification === 'function') showNotification('Items added to cart', 'success');
+                    setTimeout(function() {
+                        window.location.href = data.redirect;
+                    }, 1200);
+                } else {
+                    if (typeof showNotification === 'function') showNotification(data.message || 'Failed to add items', 'error');
+                }
+            }).fail(function() {
+                if (typeof showNotification === 'function') showNotification('Something went wrong', 'error');
+            });
+        });
+
+        // Return Button
+        $('.return-btn').on('click', function(e) {
+            e.stopPropagation();
+            var orderId = $(this).data('id');
+            window.location.href = '/page/order_details.php?order_id=' + orderId + '#return';
+        });
+
+        // Rate Button
+        $('.rate-link').on('click', function(e) {
+            e.stopPropagation();
+            var orderId = $(this).closest('.order-card').data('id');
+            window.location.href = '/page/order_rate.php?order_id=' + orderId;
+        });
+
+        // Click anywhere on order card
+        $('.order-card').on('click', function() {
+            var orderId = $(this).data('id');
+            window.location.href = '/page/order_details.php?order_id=' + orderId;
+        });
+
+        // Hover effect
+        $('.order-card').hover(
+            function() {
+                $(this).css('transform', 'translateY(-4px)');
+            },
+            function() {
+                $(this).css('transform', 'translateY(0)');
+            }
+        );
+
     });
 </script>
 

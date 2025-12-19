@@ -2,16 +2,28 @@
 require '../_base.php';
 require '../lib/db.php';
 
-auth();
+auth('Member');
 
 $user_id = $_user->user_id;
 
 // Malaysia states
 $states = [
-    "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan",
-    "Pahang", "Perak", "Perlis", "Pulau Pinang", "Sabah",
-    "Sarawak", "Selangor", "Terengganu", "Kuala Lumpur",
-    "Labuan", "Putrajaya"
+    "Johor",
+    "Kedah",
+    "Kelantan",
+    "Melaka",
+    "Negeri Sembilan",
+    "Pahang",
+    "Perak",
+    "Perlis",
+    "Pulau Pinang",
+    "Sabah",
+    "Sarawak",
+    "Selangor",
+    "Terengganu",
+    "Kuala Lumpur",
+    "Labuan",
+    "Putrajaya"
 ];
 
 // Get the address ID from GET
@@ -61,8 +73,15 @@ if (is_post()) {
     ");
 
     $update->execute([
-        $line1, $line2, $city, $state, $postcode, $country, $is_default,
-        $address_id, $user_id
+        $line1,
+        $line2,
+        $city,
+        $state,
+        $postcode,
+        $country,
+        $is_default,
+        $address_id,
+        $user_id
     ]);
 
     $_SESSION['success'] = "Address updated successfully.";
@@ -70,67 +89,66 @@ if (is_post()) {
 }
 
 $_title = "Edit Address | Four Eyes Collective";
+$_css = ['profile.css'];
 include '../_head.php';
 ?>
 
-<section style="padding:60px 0; background:#ecf0f1;">
-<div style="max-width:700px; margin:auto; background:white; padding:40px; border-radius:14px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+<section class="profile-section">
+    <div class="profile-card">
 
-    <h1 style="text-align:center; margin-bottom:30px;">Edit Address</h1>
+        <h1 class="centered-title">Edit Address</h1>
 
-    <form method="post">
+        <form method="post">
 
-        <div class="form-group">
-            <label>Address Line 1 *</label>
-            <input type="text" name="address_line1" class="form-control" required value="<?= htmlspecialchars($addr->address_line1) ?>">
-        </div>
+            <div class="form-group">
+                <label>Address Line 1 *</label>
+                <input type="text" name="address_line1" class="form-control" required value="<?= htmlspecialchars($addr->address_line1) ?>">
+            </div>
 
-        <div class="form-group">
-            <label>Address Line 2</label>
-            <input type="text" name="address_line2" class="form-control" value="<?= htmlspecialchars($addr->address_line2) ?>">
-        </div>
+            <div class="form-group">
+                <label>Address Line 2</label>
+                <input type="text" name="address_line2" class="form-control" value="<?= htmlspecialchars($addr->address_line2) ?>">
+            </div>
 
-        <div class="form-group">
-            <label>City *</label>
-            <input type="text" name="city" class="form-control" required value="<?= htmlspecialchars($addr->city) ?>">
-        </div>
+            <div class="form-group">
+                <label>City *</label>
+                <input type="text" name="city" class="form-control" required value="<?= htmlspecialchars($addr->city) ?>">
+            </div>
 
-        <div class="form-group">
-            <label>State *</label>
-            <select name="state" class="form-control" required>
-                <option value="">-- Select State --</option>
-                <?php foreach ($states as $s): ?>
-                    <option value="<?= $s ?>" <?= $addr->state == $s ? 'selected' : '' ?>><?= $s ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
+            <div class="form-group">
+                <label>State *</label>
+                <select name="state" class="form-control" required>
+                    <option value="">-- Select State --</option>
+                    <?php foreach ($states as $s): ?>
+                        <option value="<?= $s ?>" <?= $addr->state == $s ? 'selected' : '' ?>><?= $s ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
 
-        <div class="form-group">
-            <label>Postcode *</label>
-            <input type="text" name="postcode" class="form-control" required value="<?= htmlspecialchars($addr->postcode) ?>">
-        </div>
+            <div class="form-group">
+                <label>Postcode *</label>
+                <input type="text" name="postcode" class="form-control" required value="<?= htmlspecialchars($addr->postcode) ?>">
+            </div>
 
-        <div class="form-group">
-            <label>Country *</label>
-            <input type="text" name="country" class="form-control" value="Malaysia" readonly>
-        </div>
+            <div class="form-group">
+                <label>Country *</label>
+                <input type="text" name="country" class="form-control" value="Malaysia" readonly>
+            </div>
 
-        <div class="form-group">
-            <label>
-                <input type="checkbox" name="default_flag" value="1" <?= $addr->default_flag ? 'checked' : '' ?>>
-                Set as default address
-            </label>
-        </div>
+            <div class="form-group checkbox-group">
+                <label>
+                    <input type="checkbox" name="default_flag" value="1" <?= $addr->default_flag ? 'checked' : '' ?>>
+                    Set as default address
+                </label>
+            </div>
 
-        <div class="form-group">
-            <button class="cta-button" type="submit" style="width:100%; margin-top:20px;">
-                Update Address
-            </button>
-        </div>
+            <div class="form-group">
+                <button class="cta-button full-width" type="submit">Update Address</button>
+            </div>
 
-    </form>
+        </form>
 
-</div>
+    </div>
 </section>
 
 <?php include '../_foot.php'; ?>

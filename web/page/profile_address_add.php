@@ -2,7 +2,7 @@
 require '../_base.php';
 require '../lib/db.php';
 
-auth();
+auth('Member');
 
 $user_id = $_user->user_id;
 
@@ -68,14 +68,15 @@ if (is_post()){
 }
 
 $_title = "Add New Address | Four Eyes Collective";
+$_css = ['profile.css'];
 include '../_head.php';
 
 ?>
 
-<section style="padding:60px 0; background:#ecf0f1;">
-<div style="max-width:700px; margin:auto; background:white; padding:40px; border-radius:14px; box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+<section class="profile-section">
+<div class="profile-card">
 
-    <h1 style="text-align:center; margin-bottom:30px;">Add New Address</h1>
+    <h1 class="centered-title">Add New Address</h1>
 
     <form method="post">
 
@@ -111,13 +112,13 @@ include '../_head.php';
 
         <div class="form-group">
             <label>Country *</label>
-            <select class="form-control" disabled style="pointer-events:none; background:#f1f1f1;">
+            <select class="form-control disabled" disabled style="pointer-events:none;">
                 <option value="Malaysia" selected>Malaysia</option>
             </select>
             <input type="hidden" name="country" value="Malaysia">
         </div>
 
-        <div class="form-group">
+        <div class="form-group checkbox-group">
             <label>
                 <input type="checkbox" name="default_flag" value="1">
                 Set as default address
@@ -125,7 +126,7 @@ include '../_head.php';
         </div>
 
         <div class="form-group">
-            <button class="cta-button" type="submit" style="width:100%; margin-top:20px;">
+            <button class="cta-button full-width" type="submit">
                 Add Address
             </button>
         </div>

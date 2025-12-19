@@ -2,7 +2,7 @@
 require '../_base.php';
 require '../lib/db.php';
 
-auth();
+auth('Admin', 'Member');
 
 $user_id = $_user->user_id;
 
@@ -74,112 +74,70 @@ if (is_post()) {
 }
 
 $_title = "Edit Profile | Four Eyes Collective";
+$_css = ['profile.css'];
 include '../_head.php';
 ?>
 
-<section style="padding:60px 0; background:#ecf0f1;">
-<div style="
-    max-width:900px;
-    margin:auto;
-    background:white;
-    padding:40px;
-    border-radius:14px;
-    box-shadow:0 4px 12px rgba(0,0,0,0.08);
-">
+<section class="profile-section">
+    <div class="profile-card large-card">
 
-<h1 style="
-    text-align:center;
-    font-size:2.6em;
-    font-family:'Playfair Display', serif;
-    margin-bottom:40px;
-    color:#2c3e50;
-">
-    Edit Profile
-</h1>
+        <h1 class="edit-title">Edit Profile</h1>
 
-<?php
-function inputBox($content) {
-    return '<div style="margin-bottom:25px;">'.$content.'</div>';
-}
+        <?php
+        function inputBox($content)
+        {
+            return '<div class="input-row">' . $content . '</div>';
+        }
 
-$btnEdit = 'style="
-    background:#2c3e50;
-    color:white;
-    padding:6px 18px;
-    border-radius:6px;
-    text-decoration:none;
-    margin-left:10px;
-    font-size:0.9em;
-"';
+        // replace inline style variables with class attributes (UI only)
+        $btnEdit = 'class="btn-edit"';
+        $btnCancel = 'class="btn-cancel"';
+        $btnSave = 'class="btn-save"';
+        $inputStyle = 'class="form-control"';
+        ?>
 
-$btnCancel = 'style="
-    background:#e74c3c;
-    color:white;
-    padding:6px 18px;
-    border-radius:6px;
-    text-decoration:none;
-    font-size:0.9em;
-    margin-left:10px;
-"';
+        <!-- NAME -->
+        <?= inputBox(
+            '
+    <strong>Name</strong><br>' .
 
-$btnSave = 'style="
-    background:#27ae60;
-    color:white;
-    padding:7px 20px;
-    border-radius:6px;
-    border:none;
-    cursor:pointer;
-    font-size:0.95em;
-"';
-
-$inputStyle = 'style="
-    width:100%;
-    padding:12px 15px;
-    border:1px solid #ccc;
-    border-radius:8px;
-    margin-top:8px;
-"';
-?>
-
-<!-- NAME -->
-<?= inputBox('
-    <strong>Name</strong><br>'.
-
-    ($edit==='name' ?
-    '<form method="post" style="margin-top:10px;">
-        <input type="text" name="name" value="'.encode($user->name).'" required '.$inputStyle.'>
+                ($edit === 'name' ?
+                    '<form method="post" class="mini-form">
+        <input type="text" name="name" value="' . encode($user->name) . '" required ' . $inputStyle . '>
         <br><br>
-        <button type="submit" name="save_name" '.$btnSave.'>Save</button>
-        <a href="profile_edit.php" '.$btnCancel.'>Cancel</a>
+        <button type="submit" name="save_name" ' . $btnSave . '>Save</button>
+        <a href="profile_edit.php" ' . $btnCancel . '>Cancel</a>
     </form>'
-    :
-    encode($user->name).' <a href="?edit=name" '.$btnEdit.'>Edit</a>'
-    )
-) ?>
+                    :
+                    encode($user->name) . ' <a href="?edit=name" ' . $btnEdit . '>Edit</a>'
+                )
+        ) ?>
 
-<!-- EMAIL -->
-<?= inputBox('
-    <strong>Email</strong><br>'.
+        <!-- EMAIL -->
+        <?= inputBox(
+            '
+    <strong>Email</strong><br>' .
 
-    ($edit==='email' ?
-    '<form method="post" style="margin-top:10px;">
-        <input type="email" name="email" value="'.encode($user->email).'" required '.$inputStyle.'>
+                ($edit === 'email' ?
+                    '<form method="post" class="mini-form">
+        <input type="email" name="email" value="' . encode($user->email) . '" required ' . $inputStyle . '>
         <br><br>
-        <button type="submit" name="save_email" '.$btnSave.'>Save</button>
-        <a href="profile_edit.php" '.$btnCancel.'>Cancel</a>
+        <button type="submit" name="save_email" ' . $btnSave . '>Save</button>
+        <a href="profile_edit.php" ' . $btnCancel . '>Cancel</a>
     </form>'
-    :
-    encode($user->email).' <a href="?edit=email" '.$btnEdit.'>Edit</a>'
-    )
-) ?>
+                    :
+                    encode($user->email) . ' <a href="?edit=email" ' . $btnEdit . '>Edit</a>'
+                )
+        ) ?>
 
-<!-- PHONE -->
-<?php $phone_display = ltrim($user->phone, '0'); ?>
-<?= inputBox('
-    <strong>Phone (+60)</strong><br>'.
+        <!-- PHONE -->
+        <?php $phone_display = ltrim($user->phone, '0'); ?>
+        <?= inputBox(
+            '
+    <strong>Phone (+60)</strong><br>' .
 
-    ($edit==='phone' ?
-    '<form method="post" style="margin-top:10px;">
+                ($edit === 'phone' ?
+                    '<form method="post" class="mini-form">
         <div style="display:flex; gap:10px;">
             <span style="
                 background:#ecf0f1;
@@ -187,77 +145,69 @@ $inputStyle = 'style="
                 border-radius:8px;
             ">+60</span>
 
-            <input type="text" name="phone" value="'.encode($phone_display).'"
-                pattern="[1-9][0-9]{7,9}" required '.$inputStyle.' style="flex:1;">
+            <input type="text" name="phone" value="' . encode($phone_display) . '"
+                pattern="[1-9][0-9]{7,9}" required ' . $inputStyle . ' style="flex:1;">
         </div>
         <br>
-        <button type="submit" name="save_phone" '.$btnSave.'>Save</button>
-        <a href="profile_edit.php" '.$btnCancel.'>Cancel</a>
+        <button type="submit" name="save_phone" ' . $btnSave . '>Save</button>
+        <a href="profile_edit.php" ' . $btnCancel . '>Cancel</a>
     </form>'
-    :
-    '+60 '.encode($phone_display).' <a href="?edit=phone" '.$btnEdit.'>Edit</a>'
-    )
-) ?>
+                    :
+                    '+60 ' . encode($phone_display) . ' <a href="?edit=phone" ' . $btnEdit . '>Edit</a>'
+                )
+        ) ?>
 
-<!-- GENDER -->
-<?= inputBox('
-    <strong>Gender</strong><br>'.
+        <!-- GENDER -->
+        <?= inputBox(
+            '
+    <strong>Gender</strong><br>' .
 
-    ($gender_locked ?
-        encode($user->gender).' <span style="color:#7f8c8d;">(Locked)</span>'
-    :
-        ($edit==='gender' ?
-            '<form method="post" style="margin-top:10px;">
-                <select name="gender" '.$inputStyle.'>
-                    <option value="Male" '.($user->gender=='Male'?'selected':'').'>Male</option>
-                    <option value="Female" '.($user->gender=='Female'?'selected':'').'>Female</option>
+                ($gender_locked ?
+                    encode($user->gender) . ' <span style="color:#7f8c8d;">(Locked)</span>'
+                    : ($edit === 'gender' ?
+                        '<form method="post" class="mini-form">
+                <select name="gender" ' . $inputStyle . '>
+                    <option value="Male" ' . ($user->gender == 'Male' ? 'selected' : '') . '>Male</option>
+                    <option value="Female" ' . ($user->gender == 'Female' ? 'selected' : '') . '>Female</option>
                 </select><br><br>
-                <button type="submit" name="save_gender" '.$btnSave.'>Save</button>
-                <a href="profile_edit.php" '.$btnCancel.'>Cancel</a>
+                <button type="submit" name="save_gender" ' . $btnSave . '>Save</button>
+                <a href="profile_edit.php" ' . $btnCancel . '>Cancel</a>
             </form>'
-        :
-            encode($user->gender ?: "Not set").' <a href="?edit=gender" '.$btnEdit.'>Edit</a>'
-        )
-    )
-) ?>
+                        :
+                        encode($user->gender ?: "Not set") . ' <a href="?edit=gender" ' . $btnEdit . '>Edit</a>'
+                    )
+                )
+        ) ?>
 
-<!-- DOB -->
-<?= inputBox('
-    <strong>Date of Birth</strong><br>'.
+        <!-- DOB -->
+        <?= inputBox(
+            '
+    <strong>Date of Birth</strong><br>' .
 
-    ($dob_locked ?
-        strtoupper(date("M-d-Y", strtotime($user->date_of_birth))).' 
+                ($dob_locked ?
+                    strtoupper(date("M-d-Y", strtotime($user->date_of_birth))) . ' 
         <span style="color:#7f8c8d;">(Locked)</span>'
-    :
-        ($edit==='dob' ?
-            '<form method="post" style="margin-top:10px;">
+                    : ($edit === 'dob' ?
+                        '<form method="post" class="mini-form">
                 <input type="date" name="date_of_birth"
-                    value="'.$user->date_of_birth.'" required '.$inputStyle.'>
+                    value="' . $user->date_of_birth . '" required ' . $inputStyle . '>
                 <br><br>
-                <button type="submit" name="save_dob" '.$btnSave.'>Save</button>
-                <a href="profile_edit.php" '.$btnCancel.'>Cancel</a>
+                <button type="submit" name="save_dob" ' . $btnSave . '>Save</button>
+                <a href="profile_edit.php" ' . $btnCancel . '>Cancel</a>
             </form>'
-        :
-            ($user->date_of_birth
-                ? strtoupper(date("M-d-Y", strtotime($user->date_of_birth)))
-                : "Not set"
-            ).' <a href="?edit=dob" '.$btnEdit.'>Edit</a>'
-        )
-    )
-) ?>
+                        : ($user->date_of_birth
+                            ? strtoupper(date("M-d-Y", strtotime($user->date_of_birth)))
+                            : "Not set"
+                        ) . ' <a href="?edit=dob" ' . $btnEdit . '>Edit</a>'
+                    )
+                )
+        ) ?>
 
-<div style="text-align:center; margin-top:40px;">
-    <a href="profile_page.php" style="
-        background:#34495e;
-        color:white;
-        padding:10px 28px;
-        border-radius:6px;
-        text-decoration:none;
-        font-size:1em;
-    ">Back to Profile</a>
-</div>
+        <div class="center-actions">
+            <a href="profile_page.php" class="cta-button secondary">Back to Profile</a>
+        </div>
 
-</div>
+    </div>
 </section>
 
 <?php include '../_foot.php'; ?>

@@ -2,7 +2,7 @@
 require '../_base.php';
 require '../lib/db.php';
 
-auth();
+auth('Member');
 $user_id = $_user->user_id;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Insert into order_history
         $stm_hist = $_db->prepare("
             INSERT INTO order_history (history_id, order_id, status, message, changed_at, changed_by)
-            VALUES (?, ?, 'delivered', ?, NOW(), ?)
+            VALUES (?, ?, 'completed', ?, NOW(), ?)
         ");
         $stm_hist->execute([$history_id, $order_id, "Order received by user", $user_id]);
 

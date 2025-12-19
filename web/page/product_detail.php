@@ -1,24 +1,35 @@
 <?php
 require '../_base.php';
 require '../lib/db.php';
+require '../lib/category.php';
 
 $id = get('id');
 $stm = $_db->prepare("SELECT * FROM product WHERE product_id = ?");
 $stm->execute([$id]);
 $p = $stm->fetch();
 
-function categoryFolder($catId)
-{
-    return [
-        'CA0001' => 'glasses',
-        'CA0002' => 'sunglasses',
-        'CA0003' => 'contactlens',
-        'CA0004' => 'kids'
-    ][$catId] ?? 'others';
-}
-
-$folder = categoryFolder($p->category_id);
+$folder = $categoryFolders[$p->category_id] ?? 'others';
 $images = explode(',', $p->product_image);
+
+// Fetch reviews
+$stm_reviews = $_db->prepare("
+    SELECT oi.*, o.user_id, u.name, u.photo
+    FROM order_item oi
+    JOIN `order` o ON oi.order_id = o.order_id
+    JOIN users u ON o.user_id = u.user_id
+    WHERE oi.product_id = ? AND oi.user_rating IS NOT NULL
+    ORDER BY oi.rated_at DESC
+");
+$stm_reviews->execute([$id]);
+$reviews = $stm_reviews->fetchAll(PDO::FETCH_ASSOC);
+
+// Calculate average rating
+$avg_rating = 0;
+$total_reviews = count($reviews);
+if ($total_reviews > 0) {
+    $total_rating = array_sum(array_column($reviews, 'user_rating'));
+    $avg_rating = round($total_rating / $total_reviews, 1);
+}
 
 $_title = $p->product_name;
 include '../_head.php';
@@ -30,191 +41,197 @@ include '../_head.php';
 
     <!-- LEFT: IMAGE CAROUSEL -->
     <div style="width:400px;">
-
-        <!-- MAIN BIG IMAGE -->
-        <div style="position:relative; width:400px; height:400px; overflow:hidden; border:1px solid #ccc; border-radius:8px;">
-            <img id="mainImage"
-                src="/images/product/<?= $folder ?>/<?= trim($images[0]) ?>"
-                style="width:100%; height:100%; object-fit:cover;">
-
-            <!-- BUTTONS -->
-            <button onclick="prevImage()"
-                style="position:absolute; top:50%; left:10px; transform:translateY(-50%); 
-                       background:black; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; opacity:0.7;">
-                ❮
-            </button>
-
-            <button onclick="nextImage()"
-                style="position:absolute; top:50%; right:10px; transform:translateY(-50%); 
-                       background:black; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; opacity:0.7;">
-                ❯
-            </button>
+        <div id="mainImageContainer" style="position:relative; width:400px; height:400px; overflow:hidden; border:1px solid #ccc; border-radius:8px;">
+            <img id="mainImage" src="/images/product/<?= $folder ?>/<?= trim($images[0]) ?>" style="width:100%; height:100%; object-fit:cover;">
+            <button id="prevImageBtn" class="carousel-btn left" style="position:absolute; top:50%; left:10px; transform:translateY(-50%); background:black; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; opacity:0.7;">❮</button>
+            <button id="nextImageBtn" class="carousel-btn right" style="position:absolute; top:50%; right:10px; transform:translateY(-50%); background:black; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; opacity:0.7;">❯</button>
         </div>
 
-        <!-- THUMBNAILS -->
-        <div style="display:flex; gap:10px; margin-top:10px;">
+        <div id="thumbnails" style="display:flex; gap:10px; margin-top:10px;">
             <?php foreach ($images as $index => $img): ?>
                 <?php $img = trim($img); ?>
-                <img onclick="showImage(<?= $index ?>)"
-                    src="/images/product/<?= $folder ?>/<?= encode($img) ?>"
-                    style="width:70px; height:70px; object-fit:cover; border:2px solid #ccc; border-radius:6px; cursor:pointer;"
-                    id="thumb<?= $index ?>">
+                <img class="thumbnail" data-index="<?= $index ?>" src="/images/product/<?= $folder ?>/<?= encode($img) ?>" style="width:70px; height:70px; object-fit:cover; border:2px solid #ccc; border-radius:6px; cursor:pointer;">
             <?php endforeach; ?>
         </div>
-
     </div>
 
     <!-- RIGHT: PRODUCT INFO -->
     <div style="flex:1;">
         <p style="font-size:16px;"><?= nl2br(encode($p->product_description)) ?></p>
-
         <p><strong>Price:</strong>
-            <span style="font-size:22px; color:#2c3e50; font-weight:bold;">
-                RM <?= number_format($p->product_price, 2) ?>
-            </span>
+            <span style="font-size:22px; color:#2c3e50; font-weight:bold;">RM <?= number_format($p->product_price, 2) ?></span>
         </p>
-
         <p><strong>Quantity in Stock:</strong> <?= number_format($p->product_stock) ?> left</p>
 
         <?php $is_logged_in = isset($_SESSION['user']); ?>
-
-        <a href="javascript:void(0)" onclick="addToCart('<?= $p->product_id ?>')"
-            class="add-to-cart"
-            style="padding:12px 25px; background:#2c3e50; color:white; border-radius:5px; 
-               text-decoration:none; display:inline-block; font-size:16px; margin-top:15px;">
-            Add to Cart
-        </a>
+        <a href="javascript:void(0)" id="addToCartBtn" data-product-id="<?= $p->product_id ?>" class="add-to-cart" style="padding:12px 25px; background:#2c3e50; color:white; border-radius:5px; text-decoration:none; display:inline-block; font-size:16px; margin-top:15px;">Add to Cart</a>
     </div>
 
 </div>
 
-<!-- CAROUSEL SCRIPT -->
+<!-- REVIEWS SECTION -->
+<div style="margin-top:50px; padding:30px; background:#f8f9fa; border-radius:10px;">
+    <h2 style="margin-bottom:20px; font-size:24px; color:#2c3e50;">Customer Reviews</h2>
+
+    <?php if ($total_reviews > 0): ?>
+        <div style="display:flex; align-items:center; margin-bottom:30px; padding:15px; background:white; border-radius:8px;">
+            <div style="text-align:center; margin-right:30px;">
+                <div style="font-size:48px; font-weight:bold; color:#f39c12;"><?= $avg_rating ?></div>
+                <div style="color:#7f8c8d; margin-bottom:8px;">
+                    <?php for ($i = 0; $i < 5; $i++): ?>
+                        <span style="color:<?= $i < floor($avg_rating) ? '#f39c12' : '#ddd'; ?> ;font-size:18px;">★</span>
+                    <?php endfor; ?>
+                </div>
+                <div style="color:#666; font-size:14px;">Based on <?= $total_reviews ?> review<?= $total_reviews !== 1 ? 's' : '' ?></div>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($total_reviews > 0): ?>
+        <div id="reviewsList" style="display:flex; flex-direction:column; gap:15px;">
+            <?php foreach ($reviews as $review):
+                $photos = [];
+                if (!empty($review['rating_photo'])) {
+                    $decoded = json_decode($review['rating_photo'], true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                        $photos = array_filter(array_map('trim', $decoded));
+                    } else {
+                        $clean = trim($review['rating_photo']);
+                        $clean = preg_replace('/^\[+|\]+$/', '', $clean);
+                        $clean = str_replace(['"', "'"], '', $clean);
+                        $photos = array_filter(array_map('trim', explode(',', $clean)));
+                    }
+                }
+                $videos = !empty($review['rating_video']) ? array_filter(array_map('trim', explode(',', $review['rating_video']))) : [];
+            ?>
+                <div class="review-item" style="background:white; padding:20px; border-radius:8px; border-left:4px solid #f39c12;">
+                    <div style="display:flex; align-items:center; margin-bottom:15px;">
+                        <img src="<?= !empty($review['photo']) ? '/images/users/' . encode($review['photo']) : '/images/default-avatar.jpg' ?>" style="width:40px; height:40px; border-radius:50%; object-fit:cover; margin-right:10px;">
+                        <div>
+                            <div style="font-weight:bold; color:#2c3e50;"><?= encode($review['name']) ?></div>
+                            <div style="font-size:12px; color:#7f8c8d;"><?= date('d M Y', strtotime($review['rated_at'])) ?></div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                            <?php if ($i <= $review['user_rating']): ?>
+                                <span style="color:#f39c12;">★</span>
+                            <?php else: ?>
+                                <span style="color:#ccc;">☆</span>
+                            <?php endif; ?>
+                        <?php endfor; ?>
+
+                    </div>
+                    <div style="color:#333; line-height:1.6; margin-bottom:15px;"><?= nl2br(encode($review['user_comment'])) ?></div>
+                    <div class="review-media" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+                        <?php foreach ($photos as $photo):
+                            $photoPath = '/images/review/' . encode($photo); ?>
+                            <div class="media-photo" data-src="<?= $photoPath ?>" style="position:relative; width:80px; height:80px; border-radius:6px; overflow:hidden; cursor:pointer;">
+                                <img src="<?= $photoPath ?>" style="width:100%; height:100%; object-fit:cover;">
+                            </div>
+                        <?php endforeach; ?>
+                        <?php foreach ($videos as $video):
+                            $videoPath = '/images/review/' . encode($video); ?>
+                            <div class="media-video" data-src="<?= $videoPath ?>" style="position:relative; width:80px; height:80px; border-radius:6px; overflow:hidden; background:#000; cursor:pointer;">
+                                <video style="width:100%; height:100%; object-fit:cover;">
+                                    <source src="<?= $videoPath ?>" type="video/mp4">
+                                </video>
+                                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:24px; color:white;">▶</div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php else: ?>
+        <div style="text-align:center; padding:30px; color:#7f8c8d;">
+            <p>No reviews yet. Be the first to review this product!</p>
+        </div>
+    <?php endif; ?>
+</div>
+
+<div id="mediaModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+    <div style="position:relative; max-width:90%; max-height:90%;">
+        <button id="closeModalBtn" style="position:absolute; top:-40px; right:0; background:white; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:20px;">✕</button>
+        <img id="modalImage" style="max-width:100%; max-height:100%; display:none; border-radius:8px;">
+        <video id="modalVideo" style="max-width:100%; max-height:100%; display:none; border-radius:8px;" controls></video>
+    </div>
+</div>
+
 <script>
-    let images = <?= json_encode(array_map('trim', $images)) ?>;
-    let folder = "<?= $folder ?>";
-    let index = 0;
+    $(document).ready(function() {
+        let images = <?= json_encode(array_map('trim', $images)) ?>;
+        let folder = "<?= $folder ?>";
+        let index = 0;
 
-    function showImage(i) {
-        index = i;
-        document.getElementById("mainImage").src = "/images/product/" + folder + "/" + images[index];
-    }
-
-    function nextImage() {
-        index = (index + 1) % images.length;
-        showImage(index);
-    }
-
-    function prevImage() {
-        index = (index - 1 + images.length) % images.length;
-        showImage(index);
-    }
-
-    // Auto slideshow (every 3 seconds)
-    setInterval(nextImage, 3000);
-
-    function addToCart(productId) {
-        <?php if (!$is_logged_in): ?>
-            if (confirm('You need to login to add items to cart. Go to login page?')) {
-                const currentUrl = encodeURIComponent(window.location.href);
-                window.location.href = '/page/login.php?redirect=' + currentUrl;
-            }
-        <?php else: ?>
-            const xhr = new XMLHttpRequest();
-            const formData = new FormData();
-            formData.append('action', 'add');
-            formData.append('product_id', productId);
-
-            xhr.open('POST', 'cart.php');
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    showNotification('Product added to cart successfully!', 'success');
-                } else {
-                    showNotification('Error adding product to cart', 'error');
-                }
-            };
-            xhr.onerror = function() {
-                showNotification('Network error. Please try again.', 'error');
-            };
-            xhr.send(formData);
-        <?php endif; ?>
-    }
-
-    // Function to show notifications
-    function showNotification(message, type) {
-        // Remove any existing notifications first
-        const existingNotifications = document.querySelectorAll('.custom-notification');
-        existingNotifications.forEach(notification => notification.remove());
-
-        // Create notification element
-        const notification = document.createElement('div');
-        notification.className = 'custom-notification';
-        notification.style.position = 'fixed';
-        notification.style.top = '50%';
-        notification.style.left = '50%';
-        notification.style.transform = 'translate(-50%, -50%)';
-        notification.style.padding = '20px 30px';
-        notification.style.borderRadius = '8px';
-        notification.style.color = 'white';
-        notification.style.zIndex = '10000';
-        notification.style.fontWeight = 'bold';
-        notification.style.textAlign = 'center';
-        notification.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
-        notification.style.minWidth = '300px';
-        notification.style.maxWidth = '80%';
-        notification.style.cursor = 'pointer';
-        notification.style.transition = 'opacity 0.3s ease';
-
-        if (type === 'success') {
-            notification.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
-            notification.style.borderLeft = '5px solid #229954';
-        } else {
-            notification.style.background = 'linear-gradient(135deg, #e74c3c, #c0392b)';
-            notification.style.borderLeft = '5px solid #922b21';
+        function showImage(i) {
+            index = i;
+            $('#mainImage').attr('src', '/images/product/' + folder + '/' + images[index]);
         }
 
-        // Add icon
-        const icon = document.createElement('span');
-        icon.style.marginRight = '10px';
-        icon.style.fontSize = '20px';
-
-        if (type === 'success') {
-            icon.textContent = '✓';
-        } else {
-            icon.textContent = '✗';
-        }
-
-        const text = document.createElement('span');
-        text.textContent = message;
-
-        notification.appendChild(icon);
-        notification.appendChild(text);
-        document.body.appendChild(notification);
-
-        // Add click to remove functionality
-        notification.addEventListener('click', function() {
-            this.style.opacity = '0';
-            setTimeout(() => {
-                if (this.parentNode) {
-                    this.parentNode.removeChild(this);
-                }
-            }, 300); // Match transition duration
+        $('#nextImageBtn').click(function() {
+            showImage((index + 1) % images.length);
+        });
+        $('#prevImageBtn').click(function() {
+            showImage((index - 1 + images.length) % images.length);
         });
 
-        // Remove notification after 3 seconds
-        const timeoutId = setTimeout(() => {
-            notification.style.opacity = '0';
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 300);
+        setInterval(function() {
+            showImage((index + 1) % images.length);
         }, 3000);
 
-        // Clear timeout if notification is clicked
-        notification.addEventListener('click', function() {
-            clearTimeout(timeoutId);
+        $('.thumbnail').click(function() {
+            showImage($(this).data('index'));
         });
-    }
+
+        function openModal(src) {
+            $('#modalImage').hide().attr('src', src).show();
+            $('#modalVideo').hide();
+            $('#mediaModal').fadeIn();
+        }
+
+        function playVideo(src) {
+            $('#modalImage').hide();
+            $('#modalVideo').attr('src', src).show();
+            $('#mediaModal').fadeIn();
+        }
+
+        $('#closeModalBtn,#mediaModal').click(function() {
+            $('#modalVideo')[0].pause();
+            $('#mediaModal').fadeOut();
+        });
+
+        $('.media-photo').click(function() {
+            openModal($(this).data('src'));
+        });
+        $('.media-video').click(function() {
+            playVideo($(this).data('src'));
+        });
+
+        $('#addToCartBtn').click(function() {
+            let productId = $(this).data('product-id');
+            <?php if (!$is_logged_in): ?>
+                if (confirm('You need to login to add items to cart. Go to login page?')) {
+                    window.location.href = '/page/login.php?redirect=' + encodeURIComponent(window.location.href);
+                }
+            <?php else: ?>
+                $.ajax({
+                    url: 'cart.php',
+                    type: 'POST',
+                    data: {
+                        action: 'add',
+                        product_id: productId
+                    },
+                    success: function() {
+                        showNotification('Product added to cart successfully!', 'success');
+                    },
+                    error: function() {
+                        showNotification('Error adding product to cart', 'error');
+                    }
+                });
+            <?php endif; ?>
+        });
+    });
 </script>
 
 <?php include '../_foot.php'; ?>

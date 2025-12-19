@@ -74,15 +74,51 @@ function is_unique($value, $table, $field)
     return $stm->fetchColumn() == 0;
 }
 
+// Use for update (so it will check unique by excluding the currect detail)
+function is_unique_except($value, $table, $field, $same_field, $same_value)
+{
+    global $_db;
+    $stm = $_db->prepare("SELECT COUNT(*) FROM $table WHERE $field = ? AND $same_field != ?");
+    $stm->execute([$value, $same_value]);
+    return $stm->fetchColumn() == 0;
+}
+
 // Is email?
 function is_email($value)
 {
     return filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
 }
 
+// Return base url (host + port)
+function base($path = '') {
+    return "http://$_SERVER[SERVER_NAME]:$_SERVER[SERVER_PORT]/$path";
+}
+
+// Is exists?
+function is_exists($value, $table, $field) {
+    global $_db;
+    $stm = $_db->prepare("SELECT COUNT(*) FROM $table WHERE $field = ?");
+    $stm->execute([$value]);
+    return $stm->fetchColumn() > 0;
+}
+
 // ============================================================================
 // HTML Helpers
 // ============================================================================
+function table_headers($fields, $sort, $dir, $href = '') {
+    foreach ($fields as $k => $v) {
+        $d = 'asc'; // Default direction
+        $c = '';    // Default class
+        
+        // Alternative direction , set css class
+        if($k == $sort) {
+            $d = $dir == 'asc' ? 'desc' : 'asc';
+            $c = $dir;
+        }
+
+        echo "<th><a href='?sort=$k&dir=$d&$href' class='$c'>$v</a></th>";
+    }
+}
 
 
 // Encode HTML special characters
@@ -231,8 +267,7 @@ for ($i = $current_year; $i >= $current_year - 100; $i--) {
 $_user = $_SESSION['user'] ?? null;
 
 // Login user
-function login($user, $url = '/')
-{
+function login($user, $url = '/') {
     $_SESSION['user'] = $user;
     redirect($url);
 }
@@ -261,6 +296,27 @@ function auth(...$roles)
     redirect('/page/login.php');
 }
 
+// ============================================================================
+// Email Function
+// ============================================================================
+
+function get_mail() {
+    require_once 'lib/PHPMailer.php';
+    require_once 'lib/SMTP.php';
+
+    $m = new PHPMailer(true);
+    $m->isSMTP();
+    $m->SMTPAuth = true;
+    $m->Host = 'smtp.gmail.com';
+    $m->Port = 587;
+    $m->Username = 'foureyecollective2025@gmail.com';
+    $m->Password = 'tzah szfn nkip rmtu';
+    $m->CharSet = 'utf-8';
+    $m->setFrom($m->Username, 'Four Eyes Collective');
+
+    return $m;
+}
+
 function generateHistoryID($db)
 {
     // Get the last history_id
@@ -282,6 +338,8 @@ function statusColor($status)
         'shipped' => '#3498db',
         'delivered', 'completed' => '#27ae60',
         'cancelled' => '#e74c3c',
+        'return_requested' => '#bdc3c7',
+        'returned' => '#95a5a6 ',
         default => '#7f8c8d',
     };
 }

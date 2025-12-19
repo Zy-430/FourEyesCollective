@@ -1,5 +1,10 @@
 <?php
 
+require_once __DIR__ . '/lib/src/ColorExtractor.php';
+require_once __DIR__ . '/lib/src/Palette.php';
+require_once __DIR__ . '/lib/src/Color.php';
+
+
 //
 // SimpleImage
 //
@@ -18,9 +23,9 @@
 
 // use Exception;
 // use GdImage;
-// use League\ColorExtractor\Color;
-// use League\ColorExtractor\ColorExtractor;
-// use League\ColorExtractor\Palette;
+use League\ColorExtractor\ColorExtractor;
+use League\ColorExtractor\Palette;
+use League\ColorExtractor\Color;
 
 /**
  * A PHP class that makes working with images as simple as possible.
