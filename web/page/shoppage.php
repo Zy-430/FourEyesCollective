@@ -3,6 +3,7 @@ require '../_base.php';
 require '../lib/db.php';
 require '../lib/category.php';
 require '../lib/SimplePager.php';
+require '../lib/product_stats.php';
 
 $_title = 'Home | Shop';
 include '../_head.php';
@@ -289,75 +290,55 @@ $filterQuery = http_build_query($currentParams);
 
         <!-- PRODUCT GRID -->
         <?php if (count($products) > 0): ?>
-            <div class="products-grid"
-                style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:20px;">
-
+            <div class="product-grid">
                 <?php foreach ($products as $p): ?>
                     <?php
                     $folder = $categoryFolders[$p->category_id] ?? 'others';
                     $imgArray = explode(',', $p->product_image);
                     $firstImage = trim($imgArray[0]);
                     $imgPath = "/images/product/$folder/$firstImage";
+
+                    // Get sold count for product
+                    $soldCount = getProductSoldCount($p->product_id);
                     ?>
 
-                    <div class="product-card"
-                        style="border:1px solid #eee; padding:20px; border-radius:8px; 
-                                background:white; height:450px; display:flex; flex-direction:column;">
+                    <a href="product_detail.php?id=<?= $p->product_id ?>" class="product-card">
+                        <!-- Image Container -->
+                        <div class="product-image-container">
+                            <img src="<?= $imgPath ?>"
+                                alt="<?= encode($p->product_name) ?>">
 
-                        <!-- IMAGE -->
-                        <img src="<?= $imgPath ?>"
-                            style="width:100%; height:180px; object-fit:cover; border-radius:6px; margin-bottom:10px;">
-
-                        <!-- NAME -->
-                        <div style="height:51px; overflow:hidden; margin-bottom:10px;">
-                            <h3 style="font-size:17px; margin:0;"><?= encode($p->product_name) ?></h3>
+                            <!-- Heart Icon (Wishlist) - Only shows on hover -->
+                            <button class="product-heart-btn wishlist-btn"
+                                data-product-id="<?= $p->product_id ?>"
+                                onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist('<?= $p->product_id ?>', this);">
+                                <i class="far fa-heart"></i>
+                            </button>
                         </div>
 
-                        <!-- PRICE -->
-                        <div class="product-price"
-                            style="font-weight:bold; margin-bottom:10px; font-size:18px;">
-                            RM <?= number_format($p->product_price, 2) ?>
-                        </div>
-
-                        <!-- STOCK -->
-                        <div style="margin-bottom: 10px; font-size: 14px;">
-                            <?php if ($p->product_stock <= 10): ?>
-                                <span style="color: #c0392b; font-weight:bold;">
-                                    Stock: <?= number_format($p->product_stock) ?> (Selling Fast!)
-                                </span>
-                            <?php else: ?>
-                                <span style="color: #27ae60;">
-                                    Stock: <?= number_format($p->product_stock) ?>
-                                </span>
-                            <?php endif; ?>
-                        </div>
-
-                        <!-- BUTTONS -->
-                        <div style="margin-top:auto;">
-                            <!-- Top row: View Details (left) and Wishlist (right) -->
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                                <a href="product_detail.php?id=<?= $p->product_id ?>"
-                                    style="padding:8px 15px; background:#7f8c8d; color:white; border-radius:5px; text-decoration:none; flex:1; margin-right:10px; text-align:center;">
-                                    View Details
-                                </a>
-
-                                <button class="wishlist-btn"
-                                    data-product-id="<?= $p->product_id ?>"
-                                    style="background:none; border:1px solid #ddd; cursor:pointer; font-size:20px; color:#333; padding:5px 10px; border-radius:5px; transition: all 0.3s ease;"
-                                    title="Add to Wishlist">
-                                    <i class="far fa-heart"></i>
-                                </button>
+                        <!-- Product Info -->
+                        <div class="product-info">
+                            <!-- Category -->
+                            <div class="product-category">
+                                <?= encode($categories[$p->category_id] ?? 'Unknown') ?>
                             </div>
 
-                            <!-- Bottom row: Add to Cart (full width) -->
-                            <a href="#" class="add-to-cart" data-product-id="<?= $p->product_id ?>"
-                                style="display:block; padding:10px 20px; background:#2c3e50; color:white; border-radius:5px; text-decoration:none; cursor:pointer; text-align:center; transition: all 0.3s ease;">
-                                Add to Cart
-                            </a>
+                            <!-- Product Name -->
+                            <h3 class="product-name">
+                                <?= encode($p->product_name) ?>
+                            </h3>
+
+                            <!-- Price & Sold -->
+                            <div class="product-footer">
+                                <div class="product-price">
+                                    RM <?= number_format($p->product_price, 2) ?>
+                                </div>
+                                <div class="product-sold">
+                                    <span class="number"><?= number_format($soldCount) ?></span> sold
+                                </div>
+                            </div>
                         </div>
-
-                    </div>
-
+                    </a>
                 <?php endforeach; ?>
             </div>
 
@@ -415,118 +396,170 @@ $filterQuery = http_build_query($currentParams);
 <div id="mobileOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 999;"></div>
 
 <script>
-$(document).ready(function() {
-    const filterToggleMobile = $('#filterToggleMobile');
-    const filterSidebar = $('#filterSidebar');
-    const mobileFilterHeader = $('#mobileFilterHeader');
-    const closeFilters = $('#closeFilters');
-    const mobileOverlay = $('#mobileOverlay');
-    
-    // Check screen size on load and resize
-    function checkScreenSize() {
-        if (window.innerWidth <= 768) {
-            // Mobile view
-            filterToggleMobile.show();
-            filterSidebar.css({
-                'position': 'fixed',
-                'top': '0',
-                'left': '-280px',
-                'width': '250px',
-                'height': '100vh',
-                'background': 'white',
-                'z-index': '1000',
-                'padding': '20px',
-                'overflow-y': 'auto',
-                'box-shadow': '2px 0 10px rgba(0,0,0,0.1)',
-                'transition': 'left 0.3s ease'
-            });
-            mobileFilterHeader.show();
-            
-            // Update product grid for mobile
-            $('.products-grid').css({
-                'grid-template-columns': 'repeat(auto-fill, minmax(160px, 1fr))',
-                'gap': '15px'
-            });
-            $('.product-card').css({
-                'height': '400px',
-                'padding': '15px'
-            });
-        } else {
-            // Desktop view
-            filterToggleMobile.hide();
-            filterSidebar.css({
-                'position': 'static',
-                'left': '0',
-                'width': '250px',
-                'height': 'auto',
-                'background': 'transparent',
-                'z-index': 'auto',
-                'padding': '0',
-                'box-shadow': 'none'
-            });
-            mobileFilterHeader.hide();
+    $(document).ready(function() {
+        const filterToggleMobile = $('#filterToggleMobile');
+        const filterSidebar = $('#filterSidebar');
+        const mobileFilterHeader = $('#mobileFilterHeader');
+        const closeFilters = $('#closeFilters');
+        const mobileOverlay = $('#mobileOverlay');
+
+        // Check screen size on load and resize
+        function checkScreenSize() {
+            if (window.innerWidth <= 768) {
+                // Mobile view
+                filterToggleMobile.show();
+                filterSidebar.css({
+                    'position': 'fixed',
+                    'top': '0',
+                    'left': '-280px',
+                    'width': '250px',
+                    'height': '100vh',
+                    'background': 'white',
+                    'z-index': '1000',
+                    'padding': '20px',
+                    'overflow-y': 'auto',
+                    'box-shadow': '2px 0 10px rgba(0,0,0,0.1)',
+                    'transition': 'left 0.3s ease'
+                });
+                mobileFilterHeader.show();
+            } else {
+                // Desktop view
+                filterToggleMobile.hide();
+                filterSidebar.css({
+                    'position': 'static',
+                    'left': '0',
+                    'width': '250px',
+                    'height': 'auto',
+                    'background': 'transparent',
+                    'z-index': 'auto',
+                    'padding': '0',
+                    'box-shadow': 'none'
+                });
+                mobileFilterHeader.hide();
+                mobileOverlay.hide();
+                $('body').css('overflow', 'auto');
+            }
+        }
+
+        // Initial check
+        checkScreenSize();
+
+        // Check on resize
+        $(window).resize(checkScreenSize);
+
+        // Toggle filter sidebar on mobile
+        filterToggleMobile.click(function() {
+            filterSidebar.css('left', '0');
+            mobileOverlay.show();
+            $('body').css('overflow', 'hidden');
+        });
+
+        // Close filter sidebar
+        function closeFilterSidebar() {
+            filterSidebar.css('left', '-280px');
             mobileOverlay.hide();
-            
-            // Reset product grid for desktop
-            $('.products-grid').css({
-                'grid-template-columns': 'repeat(auto-fill, minmax(250px, 1fr))',
-                'gap': '20px'
-            });
-            $('.product-card').css({
-                'height': '450px',
-                'padding': '20px'
-            });
+            $('body').css('overflow', 'auto');
         }
-        
-        // Adjust grid for smaller screens
-        if (window.innerWidth <= 480) {
-            $('.products-grid').css({
-                'grid-template-columns': 'repeat(2, 1fr)',
-                'gap': '10px'
-            });
-            $('.product-card').css({
-                'height': '380px'
-            });
-        }
-    }
-    
-    // Initial check
-    checkScreenSize();
-    
-    // Check on resize
-    $(window).resize(checkScreenSize);
-    
-    // Toggle filter sidebar on mobile
-    filterToggleMobile.click(function() {
-        filterSidebar.css('left', '0');
-        mobileOverlay.show();
-        $('body').css('overflow', 'hidden');
-    });
-    
-    // Close filter sidebar
-    function closeFilterSidebar() {
-        filterSidebar.css('left', '-280px');
-        mobileOverlay.hide();
-        $('body').css('overflow', 'auto');
-    }
-    
-    mobileOverlay.click(closeFilterSidebar);
-    closeFilters.click(closeFilterSidebar);
-    
-    // Auto-submit for radio buttons
-    $('.auto-submit').change(function() {
-        $(this).closest('form').submit();
-    });
-    
-    // Prevent form submission on Enter in search field
-    $('#filterForm input[name="search"]').keypress(function(e) {
-        if (e.which == 13) {
-            e.preventDefault();
+
+        mobileOverlay.click(closeFilterSidebar);
+        closeFilters.click(closeFilterSidebar);
+
+        // Auto-submit for radio buttons
+        $('.auto-submit').change(function() {
+            $('#filterForm').find('[name="page"]').val(1);
             $(this).closest('form').submit();
-        }
+        });
+
+        // Prevent form submission on Enter in search field
+        $('#filterForm input[name="search"]').keypress(function(e) {
+            if (e.which == 13) {
+                e.preventDefault();
+                $('#filterForm').find('[name="page"]').val(1);
+                $(this).closest('form').submit();
+            }
+        });
+
+        // Apply custom price button
+        $('#filterForm button[name="apply_custom_price"]').click(function(e) {
+            e.preventDefault();
+            $('#filterForm').find('[name="price_range"]').prop('checked', false);
+            $('#filterForm').find('[name="page"]').val(1);
+            $(this).closest('form').submit();
+        });
     });
-});
 </script>
+<style>
+/* Additional styles for better product display */
+h1 {
+    color: #2c3e50;
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* Sort and filter header */
+.sorting-header {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+/* Pagination styles */
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 40px;
+}
+
+.pagination a, .pagination span {
+    padding: 8px 15px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.pagination a {
+    background: #2c3e50;
+    color: white;
+    transition: background 0.3s ease;
+}
+
+.pagination a:hover {
+    background: #1a252f;
+}
+
+.pagination span.current {
+    background: #3498db;
+    color: white;
+}
+
+/* Page numbers */
+.page-numbers {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+/* No products message */
+.no-products {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.no-products p {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 20px;
+}
+</style>
 
 <script src="/js/notifications.js"></script>
 <script src="/js/wishlist.js"></script>

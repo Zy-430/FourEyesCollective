@@ -10,7 +10,6 @@ if (!$_user) {
 
 $user_id = $_user->user_id;
 
-// Helper function to check if request is AJAX
 function is_ajax()
 {
     return isset($_SERVER['HTTP_X_REQUESTED_WITH']) &&
@@ -42,28 +41,12 @@ if (is_post()) {
             $product = $stm->fetch();
 
             if (!$product) {
-                if (is_ajax()) {
-                    echo json_encode([
-                        'success' => false,
-                        'message' => 'Product not found',
-                        'cart_count' => getCartCount($user_id, $_db)
-                    ]);
-                    exit;
-                }
                 temp('error', 'Product not found');
                 break;
             }
 
             // Check stock
             if ($product->product_stock < $quantity) {
-                if (is_ajax()) {
-                    echo json_encode([
-                        'success' => false,
-                        'message' => 'Insufficient stock',
-                        'cart_count' => getCartCount($user_id, $_db)
-                    ]);
-                    exit;
-                }
                 temp('error', 'Insufficient stock');
                 break;
             }
@@ -79,14 +62,6 @@ if (is_post()) {
                 $stm = $_db->prepare("UPDATE cart_item SET product_qty = ?, created_at = NOW() WHERE cart_item_id = ?");
                 $stm->execute([$new_qty, $existing_item->cart_item_id]);
 
-                if (is_ajax()) {
-                    echo json_encode([
-                        'success' => true,
-                        'message' => "Quantity updated in cart",
-                        'cart_count' => getCartCount($user_id, $_db)
-                    ]);
-                    exit;
-                }
                 temp('success', "Quantity updated in cart");
             } else {
                 // Insert new cart item
@@ -98,14 +73,6 @@ if (is_post()) {
                 $stm = $_db->prepare("INSERT INTO cart_item (cart_item_id, user_id, product_id, product_qty, item_status, created_at) VALUES (?, ?, ?, ?, 'in_cart', NOW())");
                 $stm->execute([$new_id, $user_id, $product_id, $quantity]);
 
-                if (is_ajax()) {
-                    echo json_encode([
-                        'success' => true,
-                        'message' => "Product added to cart successfully!",
-                        'cart_count' => getCartCount($user_id, $_db)
-                    ]);
-                    exit;
-                }
                 temp('success', "Product added to cart successfully!");
             }
             break;
@@ -115,14 +82,6 @@ if (is_post()) {
             $stm = $_db->prepare("UPDATE cart_item SET product_qty = ? WHERE cart_item_id = ? AND user_id = ? AND item_status = 'in_cart'");
             $stm->execute([$quantity, $cart_item_id, $user_id]);
 
-            if (is_ajax()) {
-                echo json_encode([
-                    'success' => true,
-                    'message' => "Quantity updated",
-                    'cart_count' => getCartCount($user_id, $_db)
-                ]);
-                exit;
-            }
             temp('success', "Quantity updated");
             break;
 
@@ -131,14 +90,6 @@ if (is_post()) {
             $stm = $_db->prepare("UPDATE cart_item SET item_status = 'abandoned', abandon_at = NOW() WHERE cart_item_id = ? AND user_id = ? AND item_status = 'in_cart'");
             $stm->execute([$cart_item_id, $user_id]);
 
-            if (is_ajax()) {
-                echo json_encode([
-                    'success' => true,
-                    'message' => "Item removed from cart",
-                    'cart_count' => getCartCount($user_id, $_db)
-                ]);
-                exit;
-            }
             temp('success', "Item removed from cart");
             break;
 
@@ -156,23 +107,8 @@ if (is_post()) {
                     ");
                     $stm->execute([$item_id, $user_id]);
                 }
-                if (is_ajax()) {
-                    echo json_encode([
-                        'success' => true,
-                        'message' => "Items ready for checkout",
-                        'redirect' => 'checkout.php'
-                    ]);
-                    exit;
-                }
                 redirect('checkout.php');
             } else {
-                if (is_ajax()) {
-                    echo json_encode([
-                        'success' => false,
-                        'message' => "Please select items to checkout"
-                    ]);
-                    exit;
-                }
                 temp('error', "Please select items to checkout");
             }
             break;
@@ -215,21 +151,21 @@ include '../_head.php';
 <link rel="stylesheet" href="/css/cart.css">
 <?php
 ?>
-
 <div class="cart-container">
     <h1 class="cart-title">Shopping Cart</h1>
 
     <?php if (empty($cart_items)): ?>
-        <div style="text-align: center; padding: 50px 20px;">
-            <p style="font-size: 18px; color: #666; margin-bottom: 20px;">Your cart is empty</p>
-            <a href="shoppage.php" style="padding: 12px 30px; background: #2c3e50; color: white; text-decoration: none; border-radius: 5px; display: inline-block;">
+        <div class="empty-cart">
+            <p>Your cart is empty</p>
+            <a href="shoppage.php" class="continue-shopping-btn">
                 Continue Shopping
             </a>
         </div>
     <?php else: ?>
-        <div style="display: grid; grid-template-columns: 1fr 350px; gap: 30px;">
-            <!-- Cart Items -->
-            <div>
+        <!-- Use the cart-grid class for responsive layout -->
+        <div class="cart-grid">
+            <!-- Cart Items - Will be on top on mobile -->
+            <div class="cart-items-section">
                 <div class="cart-items-box">
                     <form id="cartForm" method="post">
                         <input type="hidden" name="action" value="">
@@ -246,9 +182,6 @@ include '../_head.php';
 
                         <?php foreach ($cart_items as $item): ?>
                             <?php
-                            // Get image path
-
-
                             $folder = $categoryFolders[$item->category_id] ?? 'others';
                             $imgArray = explode(',', $item->product_image);
                             $firstImage = trim($imgArray[0]);
@@ -256,49 +189,55 @@ include '../_head.php';
                             ?>
 
                             <div class="cart-item-row">
-                                <div style="margin-right: 15px;">
+                                <!-- Checkbox (Left) -->
+                                <div class="cart-item-checkbox">
                                     <input type="checkbox" name="selected_items[]" value="<?= $item->cart_item_id ?>"
                                         class="item-checkbox"
-                                        style="margin-top: 40px;"
                                         data-price="<?= $item->product_price ?>"
                                         data-quantity="<?= $item->product_qty ?>">
                                 </div>
 
-                                <img src="<?= $imgPath ?>" alt="<?= encode($item->product_name) ?>" class="cart-item-image">
+                                <!-- Image (30%) -->
+                                <div class="cart-item-image-container">
+                                    <img src="<?= $imgPath ?>" alt="<?= encode($item->product_name) ?>" class="cart-item-image">
+                                </div>
 
-                                <div style="flex: 1;">
-                                    <h3 style="margin: 0 0 10px 0; font-size: 16px;">
-                                        <?= encode($item->product_name) ?>
-                                    </h3>
-                                    <p style="color: #666; margin: 0 0 10px 0; font-size: 14px;">
-                                        Category: <?= encode($item->category_name) ?>
-                                    </p>
-                                    <p class="price-each" data-price="<?= $item->product_price ?>">
-                                        <?= 'RM ' . number_format((float)$item->product_price, 2) ?>
-                                    </p>
+                                <!-- Product Details & Controls (70%) -->
+                                <div class="cart-item-details">
+                                    <h3 class="cart-item-name"><?= encode($item->product_name) ?></h3>
+                                    <p class="cart-item-category">Category: <?= encode($item->category_name) ?></p>
+                                    <p class="cart-item-price">RM <?= number_format((float)$item->product_price, 2) ?></p>
 
                                     <!-- Quantity Controls -->
-                                    <div style="display: flex; align-items: center; gap: 10px;">
-                                        <button type="button" class="qty-btn qty-decrease" data-cart-id="<?= $item->cart_item_id ?>" data-qty="<?= $item->product_qty ?>" <?= $item->product_qty <= 1 ? 'disabled' : '' ?>>
+                                    <div class="cart-item-controls">
+                                        <button type="button" class="qty-btn qty-decrease"
+                                            data-cart-id="<?= $item->cart_item_id ?>"
+                                            data-qty="<?= $item->product_qty ?>"
+                                            <?= $item->product_qty <= 1 ? 'disabled' : '' ?>>
                                             −
                                         </button>
 
                                         <span class="qty-number"><?= $item->product_qty ?></span>
 
-                                        <button type="button" class="qty-btn qty-increase" data-cart-id="<?= $item->cart_item_id ?>" data-qty="<?= $item->product_qty ?>">
+                                        <button type="button" class="qty-btn qty-increase"
+                                            data-cart-id="<?= $item->cart_item_id ?>"
+                                            data-qty="<?= $item->product_qty ?>">
                                             +
                                         </button>
 
-                                        <button type="button" class="remove-item" data-cart-id="<?= $item->cart_item_id ?>">Remove</button>
+                                        <button type="button" class="remove-item" data-cart-id="<?= $item->cart_item_id ?>">
+                                            Remove
+                                        </button>
                                     </div>
                                 </div>
 
-                                <div style="text-align: right; min-width: 120px;">
-                                    <div class="item-total" style="font-weight: bold; font-size: 18px; color: #2c3e50;">
-                                        <?= 'RM ' . number_format((float)($item->product_price * $item->product_qty), 2) ?>
+                                <!-- Total Price (Right) -->
+                                <div class="cart-item-total">
+                                    <div class="item-total-price">
+                                        RM <?= number_format((float)($item->product_price * $item->product_qty), 2) ?>
                                     </div>
-                                    <div style="color: #666; font-size: 14px;">
-                                        RM <?= number_format($item->product_price, 2) ?> each
+                                    <div class="item-unit-price">
+                                        RM <?= number_format((float)$item->product_price, 2) ?> each
                                     </div>
                                 </div>
                             </div>
@@ -307,43 +246,37 @@ include '../_head.php';
                 </div>
             </div>
 
-            <!-- Order Summary -->
-            <div>
-                <div class="cart-summary-box">
-                    <h3 style="margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid #e0e0e0; padding-bottom: 10px;">
-                        Cart Summary
-                    </h3>
+            <!-- Cart Summary -->
+            <div class="cart-summary-box">
+                <h3>Cart Summary</h3>
 
-                    <div style="margin-bottom: 20px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span>Subtotal (<span id="summaryCount"><?= $total_items_all ?></span> item<span id="summaryItemsPlural"><?= $total_items_all !== 1 ? 's' : '' ?></span>)</span>
-                            <span id="summarySubtotal" style="font-weight: bold;"><?= 'RM ' . number_format((float)$subtotal_all, 2) ?></span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                            <span>Shipping</span>
-                            <span id="shippingCost"><?= $delivery_fee_all > 0 ? 'RM ' . number_format((float)$delivery_fee_all, 2) : 'FREE' ?></span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-                            <span>Tax</span>
-                            <span>Included</span>
-                        </div>
+                <div class="summary-details">
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span id="summarySubtotal">RM <?= number_format((float)$subtotal_all, 2) ?></span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping</span>
+                        <span id="shippingCost"><?= $delivery_fee_all > 0 ? 'RM ' . number_format((float)$delivery_fee_all, 2) : 'FREE' ?></span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax</span>
+                        <span>Included</span>
                     </div>
 
-                    <div style="border-top: 2px solid #e0e0e0; padding-top: 20px; margin-bottom: 25px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: bold;">
-                            <span>Estimated Total</span>
-                            <span id="summaryEstimated"><?= 'RM ' . number_format((float)$estimated_total_all, 2) ?></span>
-                        </div>
+                    <div class="summary-row total">
+                        <span>Estimated Total</span>
+                        <span id="summaryEstimated">RM <?= number_format((float)$estimated_total_all, 2) ?></span>
                     </div>
-
-                    <button id="checkoutBtn" type="button" class="btn-checkout">
-                        <?= $subtotal_all > 0 ? 'Proceed to Checkout — ' . ( 'RM ' . number_format((float)$estimated_total_all, 2) ) : 'Proceed to Checkout' ?>
-                    </button>
-
-                    <a href="shoppage.php" style="display: block; text-align: center; color: #2c3e50; text-decoration: none; padding: 10px; border: 1px solid #2c3e50; border-radius: 5px;">
-                        Continue Shopping
-                    </a>
                 </div>
+
+                <button id="checkoutBtn" type="button" class="btn-checkout">
+                    Proceed to Checkout — RM <?= number_format((float)$estimated_total_all, 2) ?>
+                </button>
+
+                <a href="shoppage.php" class="continue-shopping-btn">
+                    Continue Shopping
+                </a>
             </div>
         </div>
     <?php endif; ?>

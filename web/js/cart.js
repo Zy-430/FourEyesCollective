@@ -25,13 +25,31 @@ $(function () {
 
     function updateSummary() {
         const $checked = $('.item-checkbox:checked');
+
+        // If no items are selected, show default values as requested:
+        // no value for subtotal, RM 0.00 estimated total and FREE shipping
+        if ($checked.length === 0) {
+            $('#summarySubtotal').text('RM 0.00');
+            $('#shippingCost').text('FREE');
+            $('#summaryEstimated').text(formatCurrency(0));
+            $('#checkoutBtn').text('Proceed to Checkout');
+            // Clear any count indicators if present
+            $('#summaryCount').text('');
+            $('#summaryItemsPlural').text('');
+
+            // Update selectAll state
+            const total = $('.item-checkbox').length;
+            $('#selectAll').prop('checked', false).prop('indeterminate', false);
+            return;
+        }
+
         let subtotal = 0;
         let totalItems = 0;
-        let rowsToConsider = $checked.length ? $checked : $('.item-checkbox');
 
-        rowsToConsider.each(function () {
+        $checked.each(function () {
             const $row = $(this).closest('.cart-item-row');
-            const price = safeNumber($row.find('.price-each').data('price'));
+            // Prefer data-price on checkbox; fallback to parsing visible price if missing
+            const price = safeNumber($(this).data('price')) || safeNumber($row.find('.cart-item-price').text().replace(/[^0-9.]/g, ''));
             const qty = safeNumber($row.find('.qty-number').text());
             subtotal += price * qty;
             totalItems += qty;
@@ -43,16 +61,32 @@ $(function () {
         $('#summaryCount').text(totalItems);
         $('#summaryItemsPlural').text(totalItems !== 1 ? 's' : '');
         $('#summarySubtotal').text(formatCurrency(subtotal));
-        $('#shippingCost').text(shipping > 0 ? formatCurrency(shipping) : (subtotal === 0 ? formatCurrency(0) : 'FREE'));
+        $('#shippingCost').text(shipping > 0 ? formatCurrency(shipping) : 'FREE');
         $('#summaryEstimated').text(formatCurrency(estimated));
 
         const checkoutLabel = subtotal > 0 ? 'Proceed to Checkout — ' + formatCurrency(estimated) : 'Proceed to Checkout';
         $('#checkoutBtn').text(checkoutLabel);
+
+        // Update selectAll state
+        const total = $('.item-checkbox').length;
+        const checkedCount = $checked.length;
+        $('#selectAll').prop('checked', total === checkedCount).prop('indeterminate', checkedCount > 0 && checkedCount < total);
     }
 
-    // Select All toggle
-    $('#selectAll').on('change', function () {
-        $('.item-checkbox').prop('checked', this.checked);
+    // Select All click - implement tri-state behaviour:
+    // If selectAll is indeterminate or currently checked, clicking it will uncheck all items.
+    // Otherwise it will select all items.
+    $('#selectAll').on('click', function (e) {
+        e.preventDefault(); // control the toggle manually
+        const el = this;
+        const $el = $(this);
+        if (el.indeterminate || el.checked) {
+            $('.item-checkbox').prop('checked', false);
+            $el.prop('checked', false).prop('indeterminate', false);
+        } else {
+            $('.item-checkbox').prop('checked', true);
+            $el.prop('checked', true).prop('indeterminate', false);
+        }
         updateSummary();
     });
 
@@ -60,7 +94,9 @@ $(function () {
     $(document).on('change', '.item-checkbox', function () {
         const total = $('.item-checkbox').length;
         const checked = $('.item-checkbox:checked').length;
-        $('#selectAll').prop('checked', total === checked);
+        const $selectAll = $('#selectAll');
+        $selectAll.prop('checked', total === checked);
+        $selectAll.prop('indeterminate', checked > 0 && checked < total);
         updateSummary();
     });
 
@@ -80,14 +116,20 @@ $(function () {
         fd.append('cart_item_id', cartId);
         fd.append('quantity', qty);
 
-        postForm('/page/cart.php', fd)
+        postForm('/page/AJAX/cart_ajax.php', fd)
             .then(resp => {
                 if (resp.success) {
+                    // Update displayed quantity
                     $row.find('.qty-number').text(qty);
-                    $row.find('.price-each').data('price');
+
+                    // Keep control state and data attributes in sync
+                    $row.find('.qty-decrease').prop('disabled', qty <= 1);
+                    $row.find('.qty-decrease, .qty-increase').attr('data-qty', qty);
+
                     // Update item total display
                     const price = safeNumber($row.find('.price-each').data('price'));
                     $row.find('.item-total').text(formatCurrency(price * qty));
+
                     showNotification(resp.message || 'Quantity updated', 'success');
                     updateSummary();
                     if (typeof refreshCartBadge === 'function') refreshCartBadge();
@@ -110,7 +152,7 @@ $(function () {
         fd.append('action', 'remove');
         fd.append('cart_item_id', cartId);
 
-        postForm('/page/cart.php', fd)
+        postForm('/page/AJAX/cart_ajax.php', fd)
             .then(resp => {
                 if (resp.success) {
                     $row.remove();
@@ -138,7 +180,7 @@ $(function () {
         fd.append('action', 'checkout');
         selected.each(function () { fd.append('selected_items[]', $(this).val()); });
 
-        postForm('/page/cart.php', fd)
+        postForm('/page/AJAX/cart_ajax.php', fd)
             .then(resp => {
                 if (resp.success) {
                     // If server requests redirect, follow it

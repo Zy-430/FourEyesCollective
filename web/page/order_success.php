@@ -148,7 +148,9 @@ try {
         $_db->prepare("UPDATE `order` SET status = 'pending' WHERE order_id = ?")->execute([$order_id]);
 
         // Insert order history
-        $history_id = "HIS" . str_pad(rand(1000, 9999), 4, "0", STR_PAD_LEFT);
+        $stm = $_db->query("SELECT MAX(CAST(SUBSTRING(history_id, 4) AS UNSIGNED)) AS max_id FROM order_history");
+        $max_history_id = $stm->fetch()->max_id ?? 0;
+        $history_id = 'HIS' . str_pad($max_history_id + 1, 4, '0', STR_PAD_LEFT);
         $_db->prepare("
             INSERT INTO order_history (history_id, order_id, status, changed_at, changed_by, message)
             VALUES (?, ?, 'pending', NOW(), ?, 'The order has been placed.')

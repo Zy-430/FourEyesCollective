@@ -14,7 +14,7 @@ $topProducts = getTopSellingProducts(5);
 $is_logged_in = isset($_SESSION['user']);
 ?>
 
-<!-- Hero Section with Background Image -->
+<!-- Hero Section -->
 <section class="hero-section" style="
     background: linear-gradient(rgba(44, 62, 80, 0.85), rgba(52, 73, 94, 0.9)), 
                 url('/images/background_2.jpg') center/cover no-repeat;
@@ -27,7 +27,7 @@ $is_logged_in = isset($_SESSION['user']);
     align-items: center;
 ">
     <div class="hero-content" style="
-        max-width: 800px; 
+        max-width: 1200px; 
         margin: 0 auto;
         padding: 0 20px;
         position: relative;
@@ -67,193 +67,265 @@ $is_logged_in = isset($_SESSION['user']);
     </div>
 </section>
 
-<!-- Top 5 Best Sellers Carousel -->
-<section class="featured-collection" style="margin: 60px 0;">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
-        <div style="
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 40px;
-            flex-wrap: wrap;
-            gap: 20px;
-        ">
+<!-- Top 5 Best Sellers - Now in one row -->
+<section class="featured-collection" style="margin: 80px 0; padding: 0 50px;">
+    <div style="max-width: 1400px; margin: 0 auto;">
+        <div style="text-align: center; margin-bottom: 50px;">
             <h2 style="
                 color: #2c3e50; 
                 font-family: 'Playfair Display', serif;
-                font-size: 2.5em;
-                margin: 0;
+                font-size: 2.8em;
+                margin: 0 0 15px 0;
+                font-weight: 700;
             ">Top 5 Best Sellers</h2>
-            <div style="display: flex; gap: 10px;">
-                <button class="carousel-prev" style="
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
-                    background: #2c3e50;
-                    color: white;
-                    border: none;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: all 0.3s ease;
-                ">❮</button>
-                <button class="carousel-next" style="
-                    width: 40px;
-                    height: 40px;
-                    border-radius: 50%;
-                    background: #2c3e50;
-                    color: white;
-                    border: none;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    transition: all 0.3s ease;
-                ">❯</button>
-            </div>
+            <p style="
+                color: #7f8c8d; 
+                font-size: 1.1em; 
+                max-width: 600px; 
+                margin: 0 auto 30px;
+                line-height: 1.6;
+            ">Our most popular eyewear chosen by thousands of satisfied customers</p>
         </div>
 
-        <!-- Carousel Container -->
-        <div class="carousel-container" style="
-            position: relative;
-            overflow: hidden;
-            padding: 10px 0;
-        ">
-            <div class="carousel-track" style="
-                display: flex;
-                gap: 30px;
-                transition: transform 0.5s ease;
-                padding: 10px;
-            ">
-                <?php foreach ($topProducts as $index => $product): ?>
-                    <?php
-                    $folder = $categoryFolders[$product->category_id] ?? 'others';
-                    $imgArray = explode(',', $product->product_image);
-                    $firstImage = trim($imgArray[0]);
-                    $imgPath = "/images/product/$folder/$firstImage";
-                    $soldCount = $product->total_sold ?? 0;
-                    ?>
+        <!-- Products Grid - Special Top 5 Layout -->
+        <div class="top5-grid">
+            <?php foreach ($topProducts as $index => $product): ?>
+                <?php
+                $folder = $categoryFolders[$product->category_id] ?? 'others';
+                $imgArray = explode(',', $product->product_image);
+                $firstImage = trim($imgArray[0]);
+                $imgPath = "/images/product/$folder/$firstImage";
+                $soldCount = $product->total_sold ?? 0;
+                ?>
 
-                    <div class="carousel-slide" style="
-                        flex: 0 0 calc(33.333% - 20px);
-                        min-width: 300px;
-                        border: 1px solid #e0e0e0;
-                        border-radius: 12px;
-                        padding: 20px;
-                        background: white;
-                        position: relative;
-                        transition: all 0.3s ease;
-                        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-                    ">
-                        <!-- Best Seller Badge -->
-                        <div style="
-                            position: absolute;
-                            top: 15px;
-                            left: 15px;
-                            background: #e74c3c;
-                            color: white;
-                            padding: 5px 12px;
-                            border-radius: 20px;
-                            font-size: 12px;
-                            font-weight: bold;
-                            z-index: 1;
-                        ">
-                            #<?= $index + 1 ?> Best Seller
-                        </div>
-
+                <div class="top5-product">
+                    <a href="product_detail.php?id=<?= $product->product_id ?>" class="product-card">
                         <!-- Image Container -->
-                        <div style="
-                            height: 220px;
-                            overflow: hidden;
-                            border-radius: 8px;
-                            margin-bottom: 20px;
-                            position: relative;
-                        ">
+                        <div class="product-image-container">
                             <img src="<?= $imgPath ?>"
-                                alt="<?= encode($product->product_name) ?>"
-                                class="hover-scale"
-                                style="
-                                    width: 100%;
-                                    height: 100%;
-                                    object-fit: cover;
-                                    transition: transform 0.5s ease;
-                                 ">
+                                alt="<?= encode($product->product_name) ?>">
+
+                            <!-- Heart Icon (Wishlist) -->
+                            <button class="product-heart-btn wishlist-btn"
+                                data-product-id="<?= $product->product_id ?>"
+                                onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist('<?= $product->product_id ?>', this);">
+                                <i class="far fa-heart"></i>
+                            </button>
+
+                            <!-- Mobile badge for top 3 -->
+                            <?php if ($index < 3): ?>
+                                <div class="mobile-badge">
+                                    #<?= $index + 1 ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
 
                         <!-- Product Info -->
-                        <div style="margin-bottom: 15px;">
-                            <h3 style="
-                                font-size: 18px;
-                                margin: 0 0 8px 0;
-                                color: #2c3e50;
-                                font-family: 'Roboto', sans-serif;
-                                font-weight: 600;
-                                height: 44px;
-                                overflow: hidden;
-                                display: -webkit-box;
-                                -webkit-line-clamp: 2;
-                                -webkit-box-orient: vertical;
-                            "><?= encode($product->product_name) ?></h3>
+                        <div class="product-info">
+                            <!-- Category -->
+                            <div class="product-category">
+                                <?= encode($categories[$product->category_id] ?? 'Unknown') ?>
+                            </div>
 
-                            <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <div style="font-size: 20px; font-weight: 700; color: #2c3e50;">
+                            <!-- Product Name -->
+                            <h3 class="product-name">
+                                <?= encode($product->product_name) ?>
+                            </h3>
+
+                            <!-- Price & Sold - UPDATED STYLE -->
+                            <div class="product-footer">
+                                <div class="product-price">
                                     RM <?= number_format($product->product_price, 2) ?>
                                 </div>
-                                <div style="font-size: 13px; color: #666;">
-                                    <span style="color: #e74c3c; font-weight: bold;">
-                                        <?= number_format($soldCount) ?> sold
-                                    </span>
+                                <div class="product-sold" style="
+                            background: #f8f9fa;
+                            padding: 4px 10px;
+                            border-radius: 12px;
+                            font-size: 12px;
+                            color: #666;
+                        ">
+                                    <span style="font-weight: 700; color: #2c3e50; margin-right: 4px;">
+                                        <?= number_format($soldCount) ?>
+                                    </span> sold
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Button -->
-                        <a href="product_detail.php?id=<?= $product->product_id ?>" class="hover-btn"
-                            style="
-                                display: block;
-                                text-align: center;
-                                padding: 12px;
-                                background: #2c3e50;
-                                color: white;
-                                border-radius: 6px;
-                                text-decoration: none;
-                                font-weight: 600;
-                                transition: all 0.3s ease;
-                                border: 2px solid #2c3e50;
-                           ">
-                            View Details
-                        </a>
-                    </div>
-                <?php endforeach; ?>
-            </div>
+                    </a>
+                </div>
+            <?php endforeach; ?>
         </div>
+    </div>
+</section>
 
-        <!-- Carousel Indicators -->
+<!-- Categories Quick Access Section - Now in one row -->
+<section class="categories-section" style="padding: 40px 50px; background: #f8f9fa;">
+    <div style="max-width: 1200px; margin: 0 auto;">
+        <h2 style="
+            text-align: center;
+            margin-bottom: 40px;
+            color: #2c3e50;
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5em;
+            font-weight: 600;
+        ">Browse by Category</h2>
+
         <div style="
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
         ">
-            <?php for ($i = 0; $i < ceil(count($topProducts) / 3); $i++): ?>
-                <button class="carousel-dot" data-index="<?= $i ?>" style="
-                    width: 12px;
-                    height: 12px;
+            <a href="/page/shoppage.php?cat=CA0001" class="category-card" style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 30px 20px;
+                background: white;
+                border-radius: 12px;
+                text-decoration: none;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+                transition: all 0.3s ease;
+                border: 1px solid #e0e0e0;
+                height: 100%;
+            ">
+                <div class="category-icon" style="
+                    width: 80px;
+                    height: 80px;
+                    margin-bottom: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: #f0f7ff;
                     border-radius: 50%;
-                    border: none;
-                    background: <?= $i === 0 ? '#2c3e50' : '#bdc3c7' ?>;
-                    cursor: pointer;
-                    transition: background 0.3s ease;
-                "></button>
-            <?php endfor; ?>
+                    transition: all 0.3s ease;
+                ">
+                    <img src="/images/glasses-icon.png" alt="Glasses" style="width: 40px; height: 40px;">
+                </div>
+                <div class="category-name" style="
+                    font-size: 1.3rem;
+                    font-weight: 600;
+                    color: #2c3e50;
+                    text-align: center;
+                    margin-top: 10px;
+                    font-family: 'Playfair Display', serif;
+                ">Glasses</div>
+            </a>
+
+            <a href="/page/shoppage.php?cat=CA0002" class="category-card" style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 30px 20px;
+                background: white;
+                border-radius: 12px;
+                text-decoration: none;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+                transition: all 0.3s ease;
+                border: 1px solid #e0e0e0;
+                height: 100%;
+            ">
+                <div class="category-icon" style="
+                    width: 80px;
+                    height: 80px;
+                    margin-bottom: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: #f0f7ff;
+                    border-radius: 50%;
+                    transition: all 0.3s ease;
+                ">
+                    <img src="/images/sunglasses-icon.png" alt="Sunglasses" style="width: 40px; height: 40px;">
+                </div>
+                <div class="category-name" style="
+                    font-size: 1.3rem;
+                    font-weight: 600;
+                    color: #2c3e50;
+                    text-align: center;
+                    margin-top: 10px;
+                    font-family: 'Playfair Display', serif;
+                ">Sunglasses</div>
+            </a>
+
+            <a href="/page/shoppage.php?cat=CA0003" class="category-card" style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 30px 20px;
+                background: white;
+                border-radius: 12px;
+                text-decoration: none;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+                transition: all 0.3s ease;
+                border: 1px solid #e0e0e0;
+                height: 100%;
+            ">
+                <div class="category-icon" style="
+                    width: 80px;
+                    height: 80px;
+                    margin-bottom: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: #f0f7ff;
+                    border-radius: 50%;
+                    transition: all 0.3s ease;
+                ">
+                    <img src="/images/contactlens-icon.png" alt="Contact Lens" style="width: 40px; height: 40px;">
+                </div>
+                <div class="category-name" style="
+                    font-size: 1.3rem;
+                    font-weight: 600;
+                    color: #2c3e50;
+                    text-align: center;
+                    margin-top: 10px;
+                    font-family: 'Playfair Display', serif;
+                ">Contact Lens</div>
+            </a>
+
+            <a href="/page/shoppage.php?cat=CA0004" class="category-card" style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 30px 20px;
+                background: white;
+                border-radius: 12px;
+                text-decoration: none;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+                transition: all 0.3s ease;
+                border: 1px solid #e0e0e0;
+                height: 100%;
+            ">
+                <div class="category-icon" style="
+                    width: 80px;
+                    height: 80px;
+                    margin-bottom: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: #f0f7ff;
+                    border-radius: 50%;
+                    transition: all 0.3s ease;
+                ">
+                    <img src="/images/kids-icon.png" alt="Kids" style="width: 40px; height: 40px;">
+                </div>
+                <div class="category-name" style="
+                    font-size: 1.3rem;
+                    font-weight: 600;
+                    color: #2c3e50;
+                    text-align: center;
+                    margin-top: 10px;
+                    font-family: 'Playfair Display', serif;
+                ">Kids</div>
+            </a>
         </div>
     </div>
 </section>
 
 <!-- Premium Features -->
-<section style="padding: 80px 0; background: white;">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+<section style="padding: 80px 50px; background: white;">
+    <div style="max-width: 1200px; margin: 0 auto;">
         <div style="
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -327,7 +399,7 @@ $is_logged_in = isset($_SESSION['user']);
                     font-size: 1.5em;
                 ">Free Shipping</h3>
                 <p style="color: #7f8c8d; line-height: 1.6; margin-bottom: 0;">
-                    Complimentary shipping on all orders over RM 100
+                    Complimentary shipping on all orders over RM 500
                 </p>
             </div>
         </div>
@@ -337,32 +409,27 @@ $is_logged_in = isset($_SESSION['user']);
 <?php if (!$is_logged_in): ?>
     <!-- Membership CTA -->
     <section style="
-    background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
-    color: white;
-    padding: 80px 0;
-    margin: 40px 0;
-    position: relative;
-    overflow: hidden;
-">
-        <div style="
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 0 20px;
-        text-align: center;
-        position: relative;
-        z-index: 2;
+        background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+        color: white;
+        padding: 80px 50px;
+        margin: 40px 0;
     ">
-            <h2 style="
-            font-family: 'Playfair Display', serif;
-            margin-bottom: 20px;
-            font-size: 2.8em;
-        ">Join Four Eyes Collective Today!</h2>
-            <p style="
-            margin-bottom: 40px;
-            font-size: 1.2em;
-            opacity: 0.95;
-            line-height: 1.6;
+        <div style="
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
         ">
+            <h2 style="
+                font-family: 'Playfair Display', serif;
+                margin-bottom: 20px;
+                font-size: 2.8em;
+            ">Join Four Eyes Collective Today!</h2>
+            <p style="
+                margin-bottom: 40px;
+                font-size: 1.2em;
+                opacity: 0.95;
+                line-height: 1.6;
+            ">
                 Register for a free exclusive membership
             </p>
             <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
@@ -400,149 +467,125 @@ $is_logged_in = isset($_SESSION['user']);
 <?php endif; ?>
 
 <script>
-    // Carousel functionality for top 5 products
     document.addEventListener('DOMContentLoaded', function() {
-        const carouselTrack = document.querySelector('.carousel-track');
-        const slides = document.querySelectorAll('.carousel-slide');
-        const prevBtn = document.querySelector('.carousel-prev');
-        const nextBtn = document.querySelector('.carousel-next');
-        const dots = document.querySelectorAll('.carousel-dot');
-
-        let currentIndex = 0;
-        const slidesToShow = 3;
-        const slideCount = slides.length;
-        const maxIndex = Math.max(0, Math.ceil(slideCount / slidesToShow) - 1);
-
-        // Initialize slide widths for responsiveness
-        function updateSlideWidth() {
-            const containerWidth = carouselTrack.parentElement.clientWidth;
-            const slideWidth = containerWidth / slidesToShow - 20; // 20px for gap
-            slides.forEach(slide => {
-                slide.style.flex = `0 0 ${slideWidth}px`;
-            });
-        }
-
-        updateSlideWidth();
-        window.addEventListener('resize', updateSlideWidth);
-
-        // Update carousel position
-        function updateCarousel() {
-            const slideWidth = slides[0].offsetWidth + 30; // width + gap
-            carouselTrack.style.transform = `translateX(-${currentIndex * slideWidth * slidesToShow}px)`;
-
-            // Update dots
-            dots.forEach((dot, index) => {
-                dot.style.background = index === currentIndex ? '#2c3e50' : '#bdc3c7';
-            });
-        }
-
-        // Event listeners for buttons
-        prevBtn.addEventListener('click', () => {
-            currentIndex = Math.max(0, currentIndex - 1);
-            updateCarousel();
-        });
-
-        nextBtn.addEventListener('click', () => {
-            currentIndex = Math.min(maxIndex, currentIndex + 1);
-            updateCarousel();
-        });
-
-        // Event listeners for dots
-        dots.forEach((dot, index) => {
-            dot.addEventListener('click', () => {
-                currentIndex = index;
-                updateCarousel();
-            });
-        });
-
-        // Auto-advance carousel (optional)
-        let autoSlideInterval = setInterval(() => {
-            if (currentIndex >= maxIndex) {
-                currentIndex = 0;
-            } else {
-                currentIndex++;
-            }
-            updateCarousel();
-        }, 5000);
-
-        // Pause auto-slide on hover
-        carouselTrack.parentElement.addEventListener('mouseenter', () => {
-            clearInterval(autoSlideInterval);
-        });
-
-        carouselTrack.parentElement.addEventListener('mouseleave', () => {
-            autoSlideInterval = setInterval(() => {
-                if (currentIndex >= maxIndex) {
-                    currentIndex = 0;
-                } else {
-                    currentIndex++;
-                }
-                updateCarousel();
-            }, 5000);
-        });
-
-        // Initialize
-        updateCarousel();
-
-        // Category card hover effects
+        // Add hover effects to category cards without changing icon color
         const categoryCards = document.querySelectorAll('.category-card');
         categoryCards.forEach(card => {
-            const overlay = card.querySelector('div:last-child');
-            const button = overlay.querySelector('div');
+            const icon = card.querySelector('.category-icon');
 
             card.addEventListener('mouseenter', () => {
-                overlay.style.opacity = '1';
-                button.style.transform = 'translateY(0)';
-                card.style.boxShadow = '0 12px 25px rgba(0,0,0,0.2)';
+                card.style.transform = 'translateY(-10px)';
+                card.style.boxShadow = '0 15px 30px rgba(0, 0, 0, 0.15)';
+                card.style.borderColor = '#2c3e50';
+                // Only scale the icon, don't change color
+                if (icon) {
+                    icon.style.transform = 'scale(1.1)';
+                }
             });
 
             card.addEventListener('mouseleave', () => {
-                overlay.style.opacity = '0';
-                button.style.transform = 'translateY(20px)';
-                card.style.boxShadow = '0 6px 20px rgba(0,0,0,0.15)';
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.08)';
+                card.style.borderColor = '#e0e0e0';
+                if (icon) {
+                    icon.style.transform = 'scale(1)';
+                    // Ensure background color stays the same
+                    icon.style.background = '#f0f7ff';
+                }
             });
         });
+
+        // Add hover effects to product cards
+        const productCards = document.querySelectorAll('.product-card');
+        productCards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-5px)';
+                card.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.1)';
+            });
+
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = 'none';
+            });
+        });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const topProducts = document.querySelectorAll('.top5-product');
+
+        function updateBadgeVisibility() {
+            if (window.innerWidth <= 768) {
+                // Show mobile badges
+                topProducts.forEach((product, index) => {
+                    const badge = product.querySelector('div[style*="position: absolute"]');
+                    if (badge && index < 3) {
+                        badge.style.display = 'block';
+                    }
+                });
+            } else {
+                // Hide mobile badges
+                topProducts.forEach(product => {
+                    const badge = product.querySelector('div[style*="position: absolute"]');
+                    if (badge) {
+                        badge.style.display = 'none';
+                    }
+                });
+            }
+        }
+
+        // Initial check
+        updateBadgeVisibility();
+
+        // Update on resize
+        window.addEventListener('resize', updateBadgeVisibility);
     });
 </script>
 
 <style>
-    @media (max-width: 1024px) {
-        .carousel-slide {
-            flex: 0 0 calc(50% - 15px) !important;
+    /* Responsive adjustments */
+    @media (max-width: 1200px) {
+        .products-grid {
+            grid-template-columns: repeat(3, 1fr) !important;
+        }
+
+        .categories-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
         }
     }
 
     @media (max-width: 768px) {
-        .hero-content h1 {
-            font-size: 2.5em !important;
+        .products-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
         }
 
-        .carousel-slide {
-            flex: 0 0 calc(100% - 10px) !important;
-        }
-
-        .category-grid {
+        .categories-grid {
             grid-template-columns: 1fr !important;
         }
-    }
 
-    @media (max-width: 480px) {
+        section {
+            padding: 40px 20px !important;
+        }
+
+        .featured-collection {
+            padding: 0 20px !important;
+        }
+
         .hero-content h1 {
-            font-size: 2em !important;
+            font-size: 2.5em !important;
         }
 
         .hero-content p {
             font-size: 1.1em !important;
         }
+    }
 
-        .cta-buttons {
-            flex-direction: column;
-            gap: 10px !important;
+    @media (max-width: 480px) {
+        .products-grid {
+            grid-template-columns: 1fr !important;
         }
 
-        .cta-button {
-            width: 100%;
-            text-align: center;
+        .hero-content h1 {
+            font-size: 2em !important;
         }
     }
 </style>

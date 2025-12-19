@@ -2,6 +2,7 @@
 require '../_base.php';
 require '../lib/db.php';
 require '../lib/category.php';
+require '../lib/product_stats.php';
 
 $id = get('id');
 $stm = $_db->prepare("SELECT * FROM product WHERE product_id = ?");
@@ -58,59 +59,99 @@ include '../_head.php';
 
     <!-- RIGHT: PRODUCT INFO -->
     <div style="flex:1;">
-        <p style="font-size:16px;"><?= nl2br(encode($p->product_description)) ?></p>
+        <p style="font-size:16px; line-height:1.6; margin-bottom:20px;">
+            <?= nl2br(encode($p->product_description)) ?>
+        </p>
 
-        <p><strong>Price:</strong>
-            <span style="font-size:22px; color:#2c3e50; font-weight:bold;">
+        <!-- Price -->
+        <p style="margin-bottom: 30px;">
+            <strong style="font-size: 18px;">Price:</strong>
+            <span style="font-size:32px; color:#2c3e50; font-weight:bold;">
                 RM <?= number_format($p->product_price, 2) ?>
             </span>
         </p>
 
-        <p><strong>Quantity in Stock:</strong> <?= number_format($p->product_stock) ?> left</p>
+        <!-- Quantity in Stock -->
+        <p style="margin-bottom: 30px; font-size: 16px;">
+            <strong>Quantity in Stock:</strong>
+            <span style="color: <?= $p->product_stock > 10 ? '#27ae60' : '#e74c3c' ?>; font-weight:bold;">
+                <?= number_format($p->product_stock) ?> left
+            </span>
+            <?php if ($p->product_stock <= 10): ?>
+                <span style="color: #e74c3c; font-weight:bold;">(Selling Fast!)</span>
+            <?php endif; ?>
+        </p>
 
-        <?php $is_logged_in = isset($_SESSION['user']); ?>
+        <!-- Sold Count (if available) -->
+        <?php
+        $soldCount = getProductSoldCount($id);
+        if ($soldCount > 0): ?>
+            <p style="margin-bottom: 30px; font-size: 16px;">
+                <strong>Total Sold:</strong>
+                <span style="color: #2c3e50; font-weight:bold;">
+                    <?= number_format($soldCount) ?> units
+                </span>
+            </p>
+        <?php endif; ?>
 
-        <a href="#" class="add-to-cart" data-product-id="<?= $p->product_id ?>"
-            style="padding:12px 25px; background:#2c3e50; color:white; border-radius:5px; 
-               text-decoration:none; display:inline-block; font-size:16px; margin-top:15px;">
-            Add to Cart
-        </a>
+        <!-- Action Buttons -->
+        <div class="product-actions">
+            <button class="action-btn btn-add-to-cart add-to-cart"
+                data-product-id="<?= $p->product_id ?>">
+                <i class="fas fa-shopping-cart"></i>
+                Add to Cart
+            </button>
+
+            <button class="action-btn btn-add-to-wishlist wishlist-btn"
+                data-product-id="<?= $p->product_id ?>"
+                onclick="toggleWishlist('<?= $p->product_id ?>', this)">
+                <i class="far fa-heart"></i>
+                Add to Wishlist
+            </button>
+        </div>
     </div>
 
-</div>
+    <!-- CAROUSEL SCRIPT -->
+    <script>
+        (function($) {
+            let images = <?= json_encode(array_map('trim', $images)) ?>;
+            let folder = "<?= $folder ?>";
+            let idx = 0;
 
-<!-- CAROUSEL SCRIPT -->
-<script>
-    (function($){
-        let images = <?= json_encode(array_map('trim', $images)) ?>;
-        let folder = "<?= $folder ?>";
-        let idx = 0;
+            function showImage(i) {
+                idx = i;
+                $('#mainImage').attr('src', '/images/product/' + folder + '/' + images[idx]);
+            }
 
-        function showImage(i){
-            idx = i;
-            $('#mainImage').attr('src', '/images/product/' + folder + '/' + images[idx]);
-        }
+            function nextImage() {
+                idx = (idx + 1) % images.length;
+                showImage(idx);
+            }
 
-        function nextImage(){
-            idx = (idx + 1) % images.length;
-            showImage(idx);
-        }
+            function prevImage() {
+                idx = (idx - 1 + images.length) % images.length;
+                showImage(idx);
+            }
 
-        function prevImage(){
-            idx = (idx - 1 + images.length) % images.length;
-            showImage(idx);
-        }
+            // DOM bindings
+            $(function() {
+                $(document).on('click', '.carousel-prev', function(e) {
+                    e.preventDefault();
+                    prevImage();
+                });
+                $(document).on('click', '.carousel-next', function(e) {
+                    e.preventDefault();
+                    nextImage();
+                });
+                $(document).on('click', '.thumb', function(e) {
+                    e.preventDefault();
+                    showImage(Number($(this).data('index')));
+                });
 
-        // DOM bindings
-        $(function(){
-            $(document).on('click', '.carousel-prev', function(e){ e.preventDefault(); prevImage(); });
-            $(document).on('click', '.carousel-next', function(e){ e.preventDefault(); nextImage(); });
-            $(document).on('click', '.thumb', function(e){ e.preventDefault(); showImage(Number($(this).data('index'))); });
-
-            // Auto slideshow every 3 seconds
-            setInterval(nextImage, 3000);
-        });
-    })(jQuery);
-</script>
-<script src="/js/notifications.js"></script>
-<?php include '../_foot.php'; ?>
+                // Auto slideshow every 3 seconds
+                setInterval(nextImage, 3000);
+            });
+        })(jQuery);
+    </script>
+    <script src="/js/notifications.js"></script>
+    <?php include '../_foot.php'; ?>
