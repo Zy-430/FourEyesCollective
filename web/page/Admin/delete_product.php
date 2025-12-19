@@ -1,6 +1,6 @@
 <?php
-require '../_base.php';
-require '../lib/db.php';
+require '../../_base.php';
+require '../../lib/db.php';
 auth('Admin');
 
 

@@ -1,7 +1,7 @@
 <?php
-require '../_base.php';
-require '../lib/db.php';
-include '../_admin_head.php';
+require '../../_base.php';
+require '../../lib/db.php';
+include '../../_admin_head.php';
 $_title = 'Add User';
 
 auth('Admin');
@@ -267,14 +267,14 @@ if (is_post()) {
         try {
             $m->send();
             // Redirect with success message
-            header("Location: user_list.php?role=$role&msg=added&user_id=$user_id");
+            header("Location: view_user.php?role=$role&msg=added&user_id=$user_id");
             exit;
         } catch (Exception $e) {
             // Error but still redirect (user was created)
             error_log("Email sending failed: " . $e->getMessage());
 
             // Redirect but with email_failed message
-            header("Location: user_list.php?role=$role&msg=added_no_email&user_id=$user_id");
+            header("Location: view_user.php?role=$role&msg=added_no_email&user_id=$user_id");
             exit;
         }
     }
@@ -289,7 +289,7 @@ if (is_post()) {
     <div class="form-container ">
         <form method="post" class="add-form" enctype="multipart/form-data">
             <div class="form-row">
-                <!-- USer ID -->
+                <!-- User ID -->
                 <div class="form-group">
                     <label><?= $role ?> ID</label>
                     <input type="text" id="id" name="user_id" class="form-control" required
@@ -420,8 +420,8 @@ if (is_post()) {
 
 
             <!-- Submit Buttons -->
-            <div class="form-row button-row" style="margin-top: 100px;">
-                <button type="button" class="btn btn-white" onclick="location.href='user_list.php?role=<?= $role ?>'">Back</button>
+            <div class="form-row button-row" style="margin-top: 40px;">
+                <button type="button" class="btn btn-white" onclick="location.href='view_user.php?role=<?= $role ?>'">Back</button>
                 <button type="submit" class="btn btn-add">Add</button>
                 <button type="reset" class="btn btn-white">Reset</button>
             </div>

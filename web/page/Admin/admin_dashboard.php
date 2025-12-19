@@ -1,7 +1,7 @@
-<?php require '../_base.php';
-require '../lib/db.php';
+<?php require '../../_base.php';
+require '../../lib/db.php';
 $_title = 'Admin Dashboard';
-include '../_admin_head.php';
+include '../../_admin_head.php';
 
 auth('Admin');
 $user_id = $_user->user_id;
@@ -25,6 +25,7 @@ $products = $_db->query("SELECT COUNT(*) as total FROM product")->fetch()->total
 <div class="admin-content">
     <h1 class="dashboard-title">Welcome Back, <?= $user->name ?> </h1>
     <p class="dashboard-subtitle">Manage your eyewear store from here.</p>
+
     <div class="admin-card-container">
         <div class="admin-card">
             <div class="card-title">Total Member</div>

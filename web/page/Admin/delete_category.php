@@ -1,6 +1,7 @@
 <?php
-require '../_base.php';
-require '../lib/db.php';
+require '../../_base.php';
+require '../../lib/db.php';
+include '../../_admin_head.php';
 auth('Admin');
 
 $id = get('id');

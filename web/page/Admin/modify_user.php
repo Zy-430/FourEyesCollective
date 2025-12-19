@@ -1,8 +1,8 @@
 <?php
-require '../_base.php';
-require '../lib/db.php';
+require '../../_base.php';
+require '../../lib/db.php';
+include '../../_admin_head.php';
 $_title = 'Modify User';
-include '../_admin_head.php';
 
 auth('Admin');
 
@@ -127,7 +127,7 @@ if (is_post()) {
         ]);
 
         // Redirect after successful update
-        header("Location: user_list.php?role=$role&msg=updated&user_id=$user_id");
+        header("Location: view_user.php?role=$role&msg=updated&user_id=$user_id");
         exit;
     }
 }
@@ -137,7 +137,7 @@ if (is_post()) {
 
 <div class="admin-content">
     <div class="content-header">
-        <h1 class="dashboard-title">Update <?= $u->role ?> (<?= $user_id ?>)</h1>
+        <h1 class="dashboard-title">Modify <?= $u->role ?> (<?= $user_id ?>)</h1>
     </div>
 
     <div class="form-container">
@@ -296,8 +296,8 @@ if (is_post()) {
 
 
             <!-- Submit Buttons -->
-            <div class="form-row button-row" style="margin-top: 100px;">
-                <button type="button" class="btn btn-white" onclick="location.href='user_list.php?role=<?= $role ?>'">Back</button>
+            <div class="form-row button-row" style="margin-top: 40px;">
+                <button type="button" class="btn btn-white" onclick="location.href='view_user.php?role=<?= $role ?>'">Back</button>
                 <button type="submit" class="btn btn-add">Update</button>
                 <button type="reset" class="btn btn-white">Reset</button>
             </div>

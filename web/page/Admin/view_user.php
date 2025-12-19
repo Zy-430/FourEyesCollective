@@ -1,7 +1,7 @@
 <?php
-require '../_base.php';
-require '../lib/db.php';
-include '../_admin_head.php';
+require '../../_base.php';
+require '../../lib/db.php';
+include '../../_admin_head.php';
 
 auth('Admin');
 
@@ -50,7 +50,7 @@ in_array($dir, ['asc', 'desc']) || $dir = 'asc';
 
 // Pagination
 $page = req('page', 1);
-require_once '../lib/SimplePager.php';
+require_once '../../lib/SimplePager.php';
 
 // Build query 
 $where = [];
@@ -161,7 +161,7 @@ $query_string = implode('&', $query_params);
                 <?php endif; ?>
             </div>
         <?php endif; ?>
-        <div class="header-actions">
+        <div class="header-actions small">
             <!-- Filter dropdown -->
             <div class="dropdown">
                 <button class="btn-default btn-add" type="button" id="filterDropdown">
@@ -238,7 +238,7 @@ $query_string = implode('&', $query_params);
     </div>
 
     <div class="table-container">
-        <table class="table">
+        <table class="table table-small">
             <tr>
                 <th></th>
                 <?= table_headers($fields, $sort, $dir, "page=$page") ?>
@@ -290,7 +290,7 @@ $query_string = implode('&', $query_params);
                     <td><?= $u->user_id ?></td>
                     <!-- Show user name and profile photo (click the photo can enlarge it) -->
                     <td class="name-container">
-                        <img src="../images/users/<?= $firstImage ?>" alt="<?= htmlspecialchars($u->name) ?>"
+                        <img src="../../images/users/<?= $firstImage ?>" alt="<?= htmlspecialchars($u->name) ?>"
                             class="member-avatar clickable-photo" onclick="openPhotoModal(this.src)">
                         <?= $u->name ?>
                     </td>
@@ -329,5 +329,4 @@ $query_string = implode('&', $query_params);
 </div>
 
 </body>
-
 </html>
