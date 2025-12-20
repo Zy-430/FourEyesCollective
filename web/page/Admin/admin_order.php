@@ -202,8 +202,8 @@ $_title = "Admin Orders | Four Eyes Collective";
     <div class="table-container">
 
         <!-- Orders Table -->
-           <div class="table-container">
-        <table class="table table-small">
+        <div class="table-container">
+            <table class="table table-small">
                 <thead>
                     <tr>
                         <th style="padding:10px; text-align:left; font-weight:600; text-transform: uppercase;">Order ID</th>
@@ -226,7 +226,7 @@ $_title = "Admin Orders | Four Eyes Collective";
                             <td style="padding:10px; font-weight:bold; color:#e67e22;"><?= ucfirst($o['status']) ?></td>
                             <td style="padding:10px; text-align:center; display:flex; gap:5px; justify-content:center;">
                                 <!-- View Details Button -->
-                                <form method="GET" action="order_details.php" style="display:inline;">
+                                <form method="GET" action="../order_details.php" style="display:inline;">
                                     <input type="hidden" name="order_id" value="<?= $o['order_id'] ?>">
                                     <button type="submit" style="background:none; border:none; cursor:pointer;">
                                         <img src="../../images/icons/view.png" alt="View" style="width:22px;">
@@ -265,7 +265,7 @@ $_title = "Admin Orders | Four Eyes Collective";
 
                                 <!-- Show Invoice only if status is completed -->
                                 <?php if ($o['status'] === 'completed'): ?>
-                                    <form method="GET" action="order_invoice.php" style="display:inline;">
+                                    <form method="GET" action="../order_invoice.php" style="display:inline;">
                                         <input type="hidden" name="order_id" value="<?= $o['order_id'] ?>">
                                         <button type="submit" style="background:none; border:none; cursor:pointer;">
                                             <img src="../../images/icons/invoice.png" alt="Invoice" style="width:22px;">
@@ -286,73 +286,73 @@ $_title = "Admin Orders | Four Eyes Collective";
                     Showing <?= (($page - 1) * $limit) + 1 ?> - <?= min($page * $limit, $totalRecords) ?> of <?= $totalRecords ?> orders
                 </div>
                 <div class="pagination">
-                <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                    <a href="?page=<?= $i ?>&search=<?= urlencode($search) ?>&status=<?= $status_filter ?>"
-                        style="
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <a href="?page=<?= $i ?>&search=<?= urlencode($search) ?>&status=<?= $status_filter ?>"
+                            style="
                 padding:6px 12px;
                 border-radius:4px;
                 text-decoration:none;
                 font-size:14px;
                 <?= $i == $page
-                        ? 'background:#2c3e50; color:white;'
-                        : 'background:#ecf0f1; color:#333;' ?>
+                            ? 'background:#2c3e50; color:white;'
+                            : 'background:#ecf0f1; color:#333;' ?>
            ">
-                        <?= $i ?>
-                    </a>
-                <?php endfor; ?>
+                            <?= $i ?>
+                        </a>
+                    <?php endfor; ?>
+
+                </div>
+            <?php endif; ?>
 
             </div>
-        <?php endif; ?>
-
     </div>
-</div>
 
-<script>
-    $(document).ready(function() {
+    <script>
+        $(document).ready(function() {
 
-        // Handle regular status change forms
-        $('.status-update-form').on('change', '.status-select', function() {
+            // Handle regular status change forms
+            $('.status-update-form').on('change', '.status-select', function() {
 
-            var $form = $(this).closest('.status-update-form');
-            var $submitBtn = $form.find('.status-submit-btn');
-            var currentStatus = $form.find('option[selected]').val();
-            var selectedStatus = $(this).val();
+                var $form = $(this).closest('.status-update-form');
+                var $submitBtn = $form.find('.status-submit-btn');
+                var currentStatus = $form.find('option[selected]').val();
+                var selectedStatus = $(this).val();
 
-            if (selectedStatus !== currentStatus && selectedStatus !== '') {
-                $submitBtn.show();
-            } else {
-                $submitBtn.hide();
-            }
+                if (selectedStatus !== currentStatus && selectedStatus !== '') {
+                    $submitBtn.show();
+                } else {
+                    $submitBtn.hide();
+                }
+            });
+
+            // Handle return approval form submission
+            $('.return-approval-form').on('submit', function(e) {
+
+                var newStatus = $(this).find('.return-status-select').val();
+
+                if (newStatus === '') {
+                    e.preventDefault();
+                    alert('Please select an action');
+                    return false;
+                }
+
+                if (!confirm('Are you sure you want to update this order status?')) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // Handle regular status update form submission
+            $('.status-update-form').on('submit', function(e) {
+
+                if (!confirm('Are you sure you want to update this order status?')) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
         });
-
-        // Handle return approval form submission
-        $('.return-approval-form').on('submit', function(e) {
-
-            var newStatus = $(this).find('.return-status-select').val();
-
-            if (newStatus === '') {
-                e.preventDefault();
-                alert('Please select an action');
-                return false;
-            }
-
-            if (!confirm('Are you sure you want to update this order status?')) {
-                e.preventDefault();
-                return false;
-            }
-        });
-
-        // Handle regular status update form submission
-        $('.status-update-form').on('submit', function(e) {
-
-            if (!confirm('Are you sure you want to update this order status?')) {
-                e.preventDefault();
-                return false;
-            }
-        });
-
-    });
-</script>
+    </script>
 
 </div>
 </body>

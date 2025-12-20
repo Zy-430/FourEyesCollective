@@ -2,12 +2,15 @@
 require '../_base.php';
 require '../lib/db.php';
 require('../lib/fpdf/fpdf.php');
+
 auth();
 
 $order_id = $_GET['order_id'] ?? $_POST['order_id'] ?? null;
 $type = $_GET['type'] ?? $_POST['type'] ?? 'pdf';
 
 if (!$order_id) exit('Invalid order');
+
+$isAdmin = $_user->role === 'Admin';
 
 // Fetch order + user + address + payment + receipt
 $stm = $_db->prepare("
@@ -23,9 +26,11 @@ JOIN users u ON o.user_id = u.user_id
 LEFT JOIN payment p ON o.order_id = p.order_id
 LEFT JOIN receipt r ON o.order_id = r.order_id
 LEFT JOIN address a ON a.address_id = o.address_id
-WHERE o.order_id = ? AND o.user_id = ?
+WHERE o.order_id = ? 
+AND (o.user_id = ? OR ? = 1)
 ");
-$stm->execute([$order_id, $_user->user_id]);
+
+$stm->execute([$order_id, $_user->user_id, $isAdmin ? 1 : 0]);
 $order = $stm->fetch(PDO::FETCH_ASSOC);
 if (!$order) exit('Order not found');
 
@@ -109,8 +114,7 @@ $pdf->SetFont('Arial','B',12);
 $pdf->Cell(155,8,"Total Amount",1,0,'R'); // 90+25+40 = 155
 $pdf->Cell(35,8,number_format($order['total_amount'],2),1,1,'R');
 
-// Output PDF
-if($type==='pdf'){
-    $pdf->Output('D', "order_{$order['order_id']}.pdf");
-    exit;
-}
+// Display PDF in browser
+$pdf->Output('I', "receipt_{$order['order_id']}.pdf"); // 'I' = inline
+exit;
+?>

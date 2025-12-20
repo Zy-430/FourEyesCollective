@@ -41,7 +41,7 @@ if (is_post()) {
             $tmp = $_FILES['product_images']['tmp_name'][$key];
             $safeName = time() . "_" . preg_replace("/[^A-Za-z0-9._-]/", "_", $name);
 
-            $targetDir = "../images/product/$folder/";
+            $targetDir = $_SERVER['DOCUMENT_ROOT'] . "/images/product/$folder/";
             $targetFile = $targetDir . $safeName;
 
             if (move_uploaded_file($tmp, $targetFile)) {
@@ -133,19 +133,19 @@ if (is_post()) {
                     <label>Status:</label>
                     <div class="radio-group">
                         <div class="radio-option">
-                                <input type="checkbox" name="product_status" checked>
-                                <label style="padding-top:5px; text-transform:none;">Active</label>
+                            <input type="checkbox" name="product_status" checked>
+                            <label style="padding-top:5px; text-transform:none;">Active</label>
                         </div>
                     </div>
                 </div>
             </div>
-                
-                <!-- Submit Buttons -->
-                <div class="form-row button-row" style="margin-top: 100px;">
-                    <button type="button" class="btn btn-white" onclick="location.href='view_product.php'">Back</button>
-                    <button type="submit" class="btn btn-add">Add</button>
-                    <button type="reset" class="btn btn-white">Reset</button>
-                </div>
+
+            <!-- Submit Buttons -->
+            <div class="form-row button-row" style="margin-top: 100px;">
+                <button type="button" class="btn btn-white" onclick="location.href='view_product.php'">Back</button>
+                <button type="submit" class="btn btn-add">Add</button>
+                <button type="reset" class="btn btn-white">Reset</button>
+            </div>
         </form>
     </div>
 </div>

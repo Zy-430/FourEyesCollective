@@ -10,15 +10,15 @@ $user_id = get('user_id');
 // Load product
 $stm = $_db->prepare("SELECT * FROM users WHERE user_id = ?");
 $stm->execute([$user_id]);
-$u = $stm->fetch();
+$user = $stm->fetch();
 
 
-if (!$u) {
+if (!$user) {
     die("User not found.");
 }
 
-[$year_db, $month_db, $date_db] = explode('-', $u->date_of_birth);
-$role = $u->role;
+[$year_db, $month_db, $date_db] = explode('-', $user->date_of_birth);
+$role = $user->role;
 
 if (is_post()) {
 
@@ -30,7 +30,7 @@ if (is_post()) {
     $date               = req('date');
     $month              = req('month');
     $year               = req('year');
-    $photo              = get_file('photo');
+    $photo              = $_FILES['photo'] ?? null;
     $status             = req('status');
 
     $date_of_birth = "$year-$month-$date";
@@ -55,12 +55,19 @@ if (is_post()) {
         $_err['gender'] = 'Invalid value';
     }
 
-    // Validate photo (optional : user can uplaod / use default image)
-    if ($photo && $photo->size > 0) {
+     // Validate photo (optional : user can upload / use default image)
+    $photo_filename = 'default_user.png'; // Default filename
+
+    if ($photo && $photo['error'] == 0 && $photo['size'] > 0) {
         // Only validate if a photo was uploaded
-        if (!str_starts_with($photo->type, 'image/')) {
+        $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+        $ext = strtolower(pathinfo($photo['name'], PATHINFO_EXTENSION));
+
+        if (!str_starts_with($photo['type'], 'image/')) {
             $_err['photo'] = 'Must be an image';
-        } else if ($photo->size > 1 * 1024 * 1024) {
+        } else if (!in_array($ext, $allowed)) {
+            $_err['photo'] = 'Only JPG, PNG, GIF files are allowed';
+        } else if ($photo['size'] > 1 * 1024 * 1024) {
             $_err['photo'] = 'Maximum 1MB';
         }
     }
@@ -96,11 +103,24 @@ if (is_post()) {
     // Update into database
     if (!$_err) {
 
-        if ($photo && $photo->size > 0) {
-            $photo_filename = save_photo($photo, '../images/users');
+        // Handle photo upload
+        if ($photo && $photo['error'] == 0 && $photo['size'] > 0 && !isset($_err['photo'])) {
+            $upload_dir = $_SERVER['DOCUMENT_ROOT'] . '/images/users/';
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+
+            $ext = strtolower(pathinfo($photo['name'], PATHINFO_EXTENSION));
+            $photo_filename = 'user_' . $user_id . '.' . $ext;
+            $file_path = $upload_dir . $photo_filename;
+
+            if (move_uploaded_file($photo['tmp_name'], $file_path)) {
+                // Photo uploaded successfully
+            } else {
+                $photo_filename = $user->photo;
+            }
         } else {
-            // Use default photo
-            $photo_filename = $u->photo;
+            $photo_filename = $user ->photo;
         }
 
         $stm = $_db->prepare('
@@ -137,7 +157,7 @@ if (is_post()) {
 
 <div class="admin-content">
     <div class="content-header">
-        <h1 class="dashboard-title">Modify <?= $u->role ?> (<?= $user_id ?>)</h1>
+        <h1 class="dashboard-title">Modify <?= $user->role ?> (<?= $user_id ?>)</h1>
     </div>
 
     <div class="form-container">
@@ -145,9 +165,9 @@ if (is_post()) {
             <div class="form-row">
                 <!-- USer ID -->
                 <div class="form-group">
-                    <label><?= $u->role ?> ID</label>
+                    <label><?= $user->role ?> ID</label>
                     <input type="text" id="id" name="user_id" class="form-control" required
-                        value="<?= $u->user_id ?>" readonly>
+                        value="<?= $user->user_id ?>" readonly>
                 </div>
 
                 <!-- Email -->
@@ -155,7 +175,7 @@ if (is_post()) {
                     <label for="email">Email *</label>
                     <input type="email" id="email" name="email" class="form-control" required
                         placeholder="<?= $role ?>@email.com" maxlength="100"
-                        value="<?= encode($u->email) ?>">
+                        value="<?= encode($user->email) ?>">
                     <?= err('email') ?>
                 </div>
 
@@ -164,7 +184,7 @@ if (is_post()) {
                     <label for="name">Name *</label>
                     <input type="text" id="name" name="name" class="form-control" required
                         placeholder="Enter <?= $role ?> name" maxlength="100"
-                        value="<?= encode($u->name) ?>">
+                        value="<?= encode($user->name) ?>">
                     <?= err('name') ?>
                 </div>
 
@@ -180,7 +200,7 @@ if (is_post()) {
                         placeholder="123456789"
                         pattern="[1-9][0-9]{7,9}"
                         maxlength="9"
-                        value="<?= encode($u->phone) ?>">
+                        value="<?= encode($user->phone) ?>">
                     <?= err('phone') ?>
                 </div>
 
@@ -195,7 +215,7 @@ if (is_post()) {
                                     id="gender_<?= $id ?>"
                                     name="gender"
                                     value="<?= $id ?>" required
-                                    <?= $u->gender == $id ? 'checked' : '' ?>>
+                                    <?= $user->gender == $id ? 'checked' : '' ?>>
                                 <label for="gender_<?= $id ?>" style="text-transform:none;"><?= $text ?></label>
                             </div>
                         <?php endforeach; ?>
@@ -249,8 +269,7 @@ if (is_post()) {
                         <label class="photo-upload-label" for="photo" tabindex="0">
                             <div class="photo-preview">
                                 <img id="photoPreview"
-                                    src="/images/users/<?= encode($u->photo) ?>"
-                                    onerror="this.src='/images/upload.png'">
+                                    src="/images/users/<?= encode($user->photo) ?>" >
                             </div>
 
                             <input type="file" id="photo" name="photo" accept="image/*" style="display: none;">
@@ -268,7 +287,7 @@ if (is_post()) {
                 <!-- Registration Date -->
                 <div class="form-group">
                     <label for="registration_date">Registration Date</label>
-                    <?php $reg_date = date('Y-m-d', strtotime($u->registration_date)); ?>
+                    <?php $reg_date = date('Y-m-d', strtotime($user->registration_date)); ?>
                     <input type="date" id="registration_date" name="registration_date" class="form-control"
                         value="<?= encode($reg_date) ?>" readonly>
                 </div>
@@ -279,12 +298,12 @@ if (is_post()) {
                     <div class="radio-group">
                         <div class="radio-option">
                             <input type="radio" id="status_active" name="status" value="Active"
-                                <?= $u->status == 'Active' ? 'checked' : '' ?>>
+                                <?= $user->status == 'Active' ? 'checked' : '' ?>>
                             <label for="status_active" style="text-transform:none;">Active</label>
                         </div>
                         <div class="radio-option">
                             <input type="radio" id="status_inactive" name="status" value="Inactive"
-                                <?= $u->status == 'Inactive' ? 'checked' : '' ?>>
+                                <?= $user->status == 'Inactive' ? 'checked' : '' ?>>
                             <label for="status_inactive" style="text-transform:none;">Inactive</label>
                         </div>
                     </div>

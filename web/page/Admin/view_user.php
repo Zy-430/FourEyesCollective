@@ -204,7 +204,7 @@ $query_string = implode('&', $query_params);
                             <button type="submit" class="btn-default btn-filter-small">
                                 Apply
                             </button>
-                            <button type="button" class="btn-default btn-reset-small" onclick="location.href='?'">
+                            <button type="button" class="btn-default btn-reset-small" onclick="location.href='?role=<?= $role ?>'">
                                 Clear
                             </button>
                         </div>
@@ -241,7 +241,7 @@ $query_string = implode('&', $query_params);
         <table class="table table-small">
             <tr>
                 <th></th>
-                <?= table_headers($fields, $sort, $dir, "page=$page") ?>
+                <?= table_headers($fields, $sort, $dir, "role=$role&page=$page") ?>
             </tr>
 
             <?php foreach ($member as $u): ?>
@@ -329,4 +329,5 @@ $query_string = implode('&', $query_params);
 </div>
 
 </body>
+
 </html>

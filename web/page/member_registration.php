@@ -3,13 +3,12 @@ require '../_base.php';
 require '../lib/db.php';
 require '../lib/email_action.php';
 
-
 // Registration is only for member ; admin will be add manually through admin mode
 
-//Form submit
+// Form submit
 if (is_post()) {
 
-    //Input
+    // Input
     $email              = req('email');
     $name               = req('name');
     $password           = req('password');
@@ -21,13 +20,12 @@ if (is_post()) {
     $date               = req('date');
     $month              = req('month');
     $year               = req('year');
-    $photo              = get_file('photo');
+    $photo              = $_FILES['photo'] ?? null;
 
-
-    //Combine date of birth
+    // Combine date of birth
     $date_of_birth = "$year-$month-$date";
 
-    //Validate email
+    // Validate email
     if (strlen($email) > 100) {
         $_err['email'] = 'Maximum 100 characters';
     } else if (!is_email($email)) {
@@ -36,7 +34,7 @@ if (is_post()) {
         $_err['email'] = 'Duplicated email';
     }
 
-    //Validate name
+    // Validate name
     if (strlen($name) > 100) {
         $_err['name'] = 'Maximum length 100';
     }
@@ -49,33 +47,39 @@ if (is_post()) {
             'Password must be at least 8 characters and include uppercase, lowercase, number and symbol';
     }
 
-
-    //Validate Confirm password 
+    // Validate Confirm password 
     if ($password !== $confirm_password) {
         $_err['confirm_password'] = 'Passwords do not match. Please try again!';
     }
 
-    //Validate gender
+    // Validate gender
     if (!array_key_exists($gender, $_genders)) {
         $_err['gender'] = 'Invalid value';
     }
 
-    // Validate photo (optional : user can uplaod / use default image)
-    if ($photo && $photo->size > 0) {
+    // Validate photo (optional : user can upload / use default image)
+    $photo_filename = 'user_default.jpg'; // Default filename
+    
+    if ($photo && $photo['error'] == 0 && $photo['size'] > 0) {
         // Only validate if a photo was uploaded
-        if (!str_starts_with($photo->type, 'image/')) {
+        $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+        $ext = strtolower(pathinfo($photo['name'], PATHINFO_EXTENSION));
+        
+        if (!str_starts_with($photo['type'], 'image/')) {
             $_err['photo'] = 'Must be an image';
-        } else if ($photo->size > 1 * 1024 * 1024) {
+        } else if (!in_array($ext, $allowed)) {
+            $_err['photo'] = 'Only JPG, PNG, GIF files are allowed';
+        } else if ($photo['size'] > 1 * 1024 * 1024) {
             $_err['photo'] = 'Maximum 1MB';
         }
     }
 
-    //Validate phone number
+    // Validate phone number
     if (!preg_match('/^[1-9][0-9]{7,9}$/', $phone)) {
         $_err['phone'] = 'Phone number must be in format 0XXXXXXXXX';
     }
 
-    //Validate day , month , year (later combine for date of borth)
+    // Validate day , month , year (later combine for date of birth)
     if ($date == '' || $month == '' || $year == '') {
         $_err['date_of_birth'] = 'Date of birth is required';
     } else {
@@ -87,7 +91,7 @@ if (is_post()) {
         } else if (!checkdate($month, $date, $year)) {
             $_err['date_of_birth'] = 'Invalid date of birth';
         } else {
-            //Age restriction (member must be at least 12 years old)
+            // Age restriction (member must be at least 12 years old)
             $current_year = date('Y');
             $age = $current_year - $year;
             if ($age < 12) {
@@ -106,12 +110,25 @@ if (is_post()) {
     // Password hashing
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-
     // Insert into database
     if (!$_err) {
-
-        if ($photo && $photo->size > 0) {
-            $photo_filename = save_photo($photo, '../images/users');
+        // Handle photo upload
+        if ($photo && $photo['error'] == 0 && $photo['size'] > 0 && !isset($_err['photo'])) {
+            $upload_dir = __DIR__ . '/../images/users/';
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+            
+            $ext = strtolower(pathinfo($photo['name'], PATHINFO_EXTENSION));
+            $photo_filename = 'user_' . $user_id . '.' . $ext;
+            $file_path = $upload_dir . $photo_filename;
+            
+            if (move_uploaded_file($photo['tmp_name'], $file_path)) {
+                // Photo uploaded successfully
+            } else {
+                // If upload fails, use default
+                $photo_filename = 'default_user.png';
+            }
         } else {
             // Use default photo
             $photo_filename = 'default_user.png';
@@ -133,7 +150,7 @@ if (is_post()) {
         $stm = $_db->prepare('
             INSERT INTO users 
             (user_id, role, email, password, name, gender, phone, date_of_birth, photo, registration_date, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)
         ');
 
         $stm->execute([
@@ -146,7 +163,6 @@ if (is_post()) {
             $phone,
             $date_of_birth,
             $photo_filename,
-            $registration_date,
             $status
         ]);
 
@@ -200,6 +216,14 @@ $_title = 'Member Registration';
         }
 
         .photo-upload-container:hover .drag-text {
+            display: block;
+        }
+        
+        /* Error styling for photo upload */
+        .photo-error {
+            color: #e74c3c;
+            font-size: 0.9em;
+            margin-top: 5px;
             display: block;
         }
     </style>
@@ -298,7 +322,6 @@ $_title = 'Member Registration';
                             <div class="photo-preview">
                                 <img id="photoPreview" src="/images/upload.png">
                             </div>
-
                             <input type="file" id="photo" name="photo" accept="image/*" style="display: none;">
                         </label>
                         <div class="upload-instructions">
@@ -307,6 +330,7 @@ $_title = 'Member Registration';
                             <p>• Optional - you can add later</p>
                         </div>
                     </div>
+                    <span class="photo-error"><?= $_err['photo'] ?? '' ?></span>
                 </div>
 
                 <div class="form-group">
@@ -458,24 +482,7 @@ $_title = 'Member Registration';
             }
         }
 
-        // Also allow clicking the entire drop zone to trigger file input
-        dropZone.addEventListener('click', function(e) {
-            // Only trigger if the click wasn't on the file input or label
-            if (e.target !== photoInput && !photoLabel.contains(e.target)) {
-                photoInput.click();
-            }
-        });
-
-        // Show drag text on hover
-        dropZone.addEventListener('mouseenter', function() {
-            const dragText = dropZone.querySelector('.drag-text');
-            if (dragText) dragText.style.display = 'block';
-        });
-
-        dropZone.addEventListener('mouseleave', function() {
-            const dragText = dropZone.querySelector('.drag-text');
-            if (dragText) dragText.style.display = 'none';
-        });
+       
     </script>
 </body>
 

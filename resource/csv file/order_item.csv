@@ -1,0 +1,21 @@
+order_item_id,order_id,product_id,product_quantity,price,subtotal,user_rating,user_comment,rated_at,rating_photo,rating_video
+OI0001,OR0001,PR0001,210,2,420,5,Very comfortable and lightweight!,2025-11-03 10:00:00,pr0001_review.jpg,NULL
+OI0002,OR0001,PR0002,105,2,210,4,"Stylish frame, worth the price.",2025-11-03 10:05:00,pr0002_review.jpg,NULL
+OI0003,OR0002,PR0003,420,1,420,5,High-quality and looks premium.,2025-11-04 11:30:00,pr0003_review.jpg,NULL
+OI0004,OR0003,PR0001,210,1,210,,,,NULL,NULL
+OI0005,OR0004,PR0004,350,3,1050,4,"Great fit, slightly tight at first.",2025-11-06 12:00:00,pr0004_review.jpg,NULL
+OI0006,OR0005,PR0002,105,4,420,4,"Good product, delivery was fast.",2025-11-07 15:00:00,pr0002_review2.jpg,NULL
+OI0007,OR0006,PR0003,420,1,420,5,Excellent clarity and quality.,2025-11-07 18:20:00,pr0003_review2.jpg,NULL
+OI0008,OR0007,PR0001,210,2,420,5,My favourite daily glasses!,2025-11-08 10:30:00,pr0001_review2.jpg,NULL
+OI0009,OR0008,PR0004,350,2,700,4,"Good design, fits well.",2025-11-11 10:00:00,pr0004_review2.jpg,NULL
+OI0010,OR0009,PR0002,105,4,420,4,Nice and sturdy.,2025-11-10 18:30:00,NULL,NULL
+OI0011,OR0010,PR0003,420,1,420,5,"Very clear lens, happy with purchase.",2025-11-12 9:00:00,pr0003_review3.jpg,NULL
+OI0012,OR0011,PR0001,210,1,210,,,,NULL,NULL
+OI0013,OR0012,PR0004,350,2,700,4,"Design is nice, quality is good.",2025-11-13 16:00:00,NULL,NULL
+OI0014,OR0013,PR0002,105,5,525,5,"Bought multiple as gifts, all good!",2025-11-14 11:00:00,pr0002_review3.jpg,review_vid001.mp4
+OI0015,OR0014,PR0003,420,1,420,4,Comfortable to wear whole day.,2025-11-15 11:30:00,NULL,NULL
+OI0016,OR0015,PR0001,210,2,420,5,Great for work and study.,2025-11-17 9:15:00,pr0001_review3.jpg,NULL
+OI0017,OR0016,PR0004,350,2,700,4,Good frame quality.,2025-11-06 12:30:00,NULL,NULL
+OI00118,OR0017,PR0002,105,4,420,5,Recommended! Very durable.,2025-11-07 12:00:00,pr0002_review4.jpg,NULL
+OI0019,OR0019,PR0003,420,1,420,4,Happy with the purchase.,2025-11-10 12:30:00,NULL,NULL
+OI0020,OR0020,PR0001,210,3,630,5,Exactly as advertised!,2025-11-09 18:30:00,pr0001_review4.jpg,NULL

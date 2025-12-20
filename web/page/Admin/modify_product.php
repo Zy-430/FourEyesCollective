@@ -28,7 +28,7 @@ if (isset($_GET['delete_img'])) {
     });
 
     $folder = $categoryFolders[$p->category_id] ?? 'others';
-    $filePath = "../images/product/$folder/$imgToDelete";
+    $filePath = $_SERVER['DOCUMENT_ROOT'] . "/images/product/$folder/$imgToDelete";
 
     if (file_exists($filePath)) {
         unlink($filePath);
@@ -39,6 +39,11 @@ if (isset($_GET['delete_img'])) {
 
     $stm = $_db->prepare("UPDATE product SET product_image = ? WHERE product_id = ?");
     $stm->execute([$finalImageString, $id]);
+
+    $stm = $_db->prepare("SELECT * FROM product WHERE product_id = ?");
+    $stm->execute([$id]);
+    $p = $stm->fetch();
+    $folder = $categoryFolders[$p->category_id] ?? 'others';
 
     // Redirect back to the modify page
     header("Location: modify_product.php?id=$id&msg=img_deleted");
@@ -63,11 +68,19 @@ if (is_post()) {
     $newImages = [];
 
     if (!empty($_FILES['product_images']['name'][0])) {
+        $folder = $categoryFolders[$category_id] ?? 'others';
+        $upload_dir = $_SERVER['DOCUMENT_ROOT'] . "/images/product/$folder/";
+
+        // Create directory if it doesn't exist
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0755, true);
+        }
+
         foreach ($_FILES['product_images']['name'] as $key => $name) {
             $tmp = $_FILES['product_images']['tmp_name'][$key];
             $safeName = time() . "_" . preg_replace("/[^A-Za-z0-9._-]/", "_", $name);
             $folder = $categoryFolders[$category_id] ?? 'others';
-            $target = "../images/product/$folder/$safeName";
+            $target = $upload_dir . $safeName;
 
             if (move_uploaded_file($tmp, $target)) {
                 $newImages[] = $safeName;
@@ -190,7 +203,7 @@ if (is_post()) {
                                     ×
                                 </a>
 
-                                <img src="/images/product/<?= $folder ?>/<?= $img ?>"
+                               <img src="/images/product/<?= $folder ?>/<?= $img ?>"
                                     style="width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid #ccc;">
                             </div>
                         <?php endforeach; ?>

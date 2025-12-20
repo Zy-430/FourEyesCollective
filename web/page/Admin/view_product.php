@@ -103,7 +103,13 @@ $priceRanges = [
 
         <?php if (get('msg') == 'deleted'): ?>
             <div class="success-message">
-                Product deleted!
+                Product deleted successfully!
+            </div>
+        <?php endif; ?>
+
+        <?php if (get('msg') == 'restored'): ?>
+            <div class="success-message">
+                Product restored successfully!
             </div>
         <?php endif; ?>
         <div class="header-actions small">
@@ -209,9 +215,18 @@ $priceRanges = [
                             <p><strong>Stock: <?= $p->product_stock ?></strong></p>
                             <p style="color:#b10000;">⚠️ Low Stock</p>
                             <div style="margin-top:10px; display:flex; gap:10px;">
-                            <a href="modify_product.php?id=<?= $p->product_id ?>" style="flex:1; padding:8px; background:#2980b9; color:white; text-align:center; border-radius:5px; text-decoration:none;"><i class="fas fa-edit" style="font-size:14px;"></i> Modify</a>
-                                <a href="delete_product.php?id=<?= $p->product_id ?>" onclick="return confirm('Are you sure?');" style="flex:1; 
-                            padding:8px; background:#c0392b; color:white; text-align:center; border-radius:5px; text-decoration:none;"><i class="fas fa-trash" style="font-size:14px;padding-right:5px;"></i>Delete</a>
+                                <a href="modify_product.php?id=<?= $p->product_id ?>" style="flex:1; padding:8px; background:#2980b9; color:white; text-align:center; border-radius:5px; text-decoration:none;"><i class="fas fa-edit" style="font-size:14px;"></i> Modify</a>
+                                <?php if ($p->product_status == 1): ?>
+                                    <a href="delete_product.php?id=<?= $p->product_id ?>&action=delete" onclick="return confirm('Are you sure?');" style="flex:1; 
+            padding:8px; background:#c0392b; color:white; text-align:center; border-radius:5px; text-decoration:none;">
+                                        <i class="fas fa-trash" style="font-size:14px;padding-right:5px;"></i>Delete
+                                    </a>
+                                <?php else: ?>
+                                    <a href="delete_product.php?id=<?= $p->product_id ?>&action=restore" onclick="return confirm('Are you sure?');" style="flex:1; 
+            padding:8px; background:#27ae60; color:white; text-align:center; border-radius:5px; text-decoration:none;">
+                                        <i class="fas fa-redo" style="font-size:14px;padding-right:5px;"></i>Restore
+                                    </a>
+                                <?php endif ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -232,8 +247,17 @@ $priceRanges = [
                         <p>Status: <span style="font-weight:bold; color:<?= $p->product_status ? 'green' : 'red' ?>;"> <?= $p->product_status ? 'Active' : 'Inactive' ?> </span> </p>
                         <div style="margin-top:10px; display:flex; gap:10px;">
                             <a href="modify_product.php?id=<?= $p->product_id ?>" style="flex:1; padding:8px; background:#2980b9; color:white; text-align:center; border-radius:5px; text-decoration:none;"><i class="fas fa-edit" style="font-size:14px;"></i> Modify</a>
-                            <a href="delete_product.php?id=<?= $p->product_id ?>" onclick="return confirm('Are you sure?');" style="flex:1; 
-                            padding:8px; background:#c0392b; color:white; text-align:center; border-radius:5px; text-decoration:none;"><i class="fas fa-trash" style="font-size:14px;padding-right:5px;"></i>Delete</a>
+                            <?php if ($p->product_status == 1): ?>
+        <a href="delete_product.php?id=<?= $p->product_id ?>&action=delete" onclick="return confirm('Are you sure?');" style="flex:1; 
+            padding:8px; background:#c0392b; color:white; text-align:center; border-radius:5px; text-decoration:none;">
+            <i class="fas fa-trash" style="font-size:14px;padding-right:5px;"></i>Delete
+        </a>
+    <?php else: ?>
+        <a href="delete_product.php?id=<?= $p->product_id ?>&action=restore" onclick="return confirm('Are you sure?');" style="flex:1; 
+            padding:8px; background:#27ae60; color:white; text-align:center; border-radius:5px; text-decoration:none;">
+            <i class="fas fa-redo" style="font-size:14px;padding-right:5px;"></i>Restore
+        </a>
+    <?php endif ?>
                         </div>
                     </div>
                 <?php endforeach; ?>

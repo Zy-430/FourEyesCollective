@@ -40,7 +40,7 @@ if (is_post()) {
     $name               = req('name');
     $gender             = req('gender');
     $phone              = req('phone');
-    $photo              = get_file('photo');
+    $photo              = $_FILES['photo'] ?? null;
 
     // To get DOB
     $date               = req('date');
@@ -69,12 +69,19 @@ if (is_post()) {
         $_err['gender'] = 'Invalid value';
     }
 
-    // Validate photo (optional : user can uplaod / use default image)
-    if ($photo && $photo->size > 0) {
+    // Validate photo (optional : user can upload / use default image)
+    $photo_filename = 'default_user.png'; // Default filename
+
+    if ($photo && $photo['error'] == 0 && $photo['size'] > 0) {
         // Only validate if a photo was uploaded
-        if (!str_starts_with($photo->type, 'image/')) {
+        $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+        $ext = strtolower(pathinfo($photo['name'], PATHINFO_EXTENSION));
+
+        if (!str_starts_with($photo['type'], 'image/')) {
             $_err['photo'] = 'Must be an image';
-        } else if ($photo->size > 1 * 1024 * 1024) {
+        } else if (!in_array($ext, $allowed)) {
+            $_err['photo'] = 'Only JPG, PNG, GIF files are allowed';
+        } else if ($photo['size'] > 1 * 1024 * 1024) {
             $_err['photo'] = 'Maximum 1MB';
         }
     }
@@ -102,19 +109,33 @@ if (is_post()) {
         }
     }
 
+
+    // Password hashing
+    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+
     // Insert into database
     if (!$_err) {
 
-        if ($photo && $photo->size > 0) {
-            $photo_filename = save_photo($photo, '../images/users');
+        // Handle photo upload
+        if ($photo && $photo['error'] == 0 && $photo['size'] > 0 && !isset($_err['photo'])) {
+            $upload_dir = $_SERVER['DOCUMENT_ROOT'] . '/images/users/';
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+
+            $ext = strtolower(pathinfo($photo['name'], PATHINFO_EXTENSION));
+            $photo_filename = 'user_' . $user_id . '.' . $ext;
+            $file_path = $upload_dir . $photo_filename;
+
+            if (move_uploaded_file($photo['tmp_name'], $file_path)) {
+                // Photo uploaded successfully
+            } else {
+                // If upload fails, use default
+                $photo_filename = 'user_default.jpg';
+            }
         } else {
             // Use default photo
-            $photo_filename = 'default_user.png';
-        }
-
-        // Get current date for registration_date 
-        if (empty($registration_date)) {
-            $registration_date = date('Y-m-d');
+            $photo_filename = 'user_default.jpg';
         }
 
         // Begin transaction
@@ -122,20 +143,19 @@ if (is_post()) {
 
         $stm = $_db->prepare('
         INSERT INTO users (user_id, role, email, password, name, gender, phone, date_of_birth, photo, registration_date, status)
-        VALUES (?, ?, ?, SHA1(?), ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)
     ');
 
         $stm->execute([
             $user_id,
             $role,
             $email,
-            $password,
+            $hashed_password,
             $name,
             $gender,
             $phone,
             $date_of_birth,
             $photo_filename,
-            $registration_date,
             $status
         ]);
 
@@ -431,19 +451,19 @@ if (is_post()) {
 
 </div>
 
-  <script>
-        // Photo preview function
-        document.getElementById('photo').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('photoPreview').src = e.target.result;
-                }
-                reader.readAsDataURL(file);
+<script>
+    // Photo preview function
+    document.getElementById('photo').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('photoPreview').src = e.target.result;
             }
-        });
-    </script>
+            reader.readAsDataURL(file);
+        }
+    });
+</script>
 </body>
 
 

@@ -360,10 +360,11 @@ function statusColor($status)
         'shipped' => '#3498db',
         'delivered', 'completed' => '#27ae60',
         'cancelled' => '#e74c3c',
+        'return_requested' => '#bdc3c7',
+        'returned' => '#95a5a6 ',
         default => '#7f8c8d',
     };
 }
-
 
 function generateMemberID($db)
 {

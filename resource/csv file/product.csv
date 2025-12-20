@@ -1,0 +1,23 @@
+product_id,product_name,product_description,product_price,product_stock,product_image,category_id,product_status
+PR0001,SmartBuy Collection,"A lightweight everyday frame designed for long hours of comfort, perfect for study, work, or casual wear.",210,100,SmartBuy Collection.JPG,CA0001,1
+PR0002,Ralph by Ralph Lauren,Sleek and modern design that enhances your facial features while offering reliable durability.,350,100,Ralph by Ralph Lauren.JPG,CA0001,1
+PR0003,Ashley Lala,High-quality acetate material that ensures long-lasting use while maintaining a premium feel.,280,100,Ashley Lala.JPG,CA0001,1
+PR0004,DNXY,"Flexible arms designed for comfort, making this the ideal daily eyewear choice.",300,100,DNXY.JPG,CA0001,1
+PR0005,WH8SH,A fashionable rectangular frame suitable for both formal and casual outfits.,190,100,WH8SH.JPG,CA0001,1
+PR0006,Duckly,"Durable and lightweight, offering a perfect balance of style and practicality.",400,100,"Duckly 6.PNG, 6a.PNG, 6b.PNG",CA0001,1
+PR0007,RedBean RB2130,"Designed for outdoor adventures, offering maximum sun protection with a trendy finish.",350,100,RedBean RB2130.JPG,CA0002,1
+PR0008,RedBean RB2133,"A classic aviator shape that never goes out of style, perfect for everyday sun use.",450,100,RedBean RB2133.JPG,CA0002,1
+PR0009,RedBean RB2120,UV400-protected lenses that shield your eyes from harmful rays while keeping you stylish.,430,100,RedBean RB2120.JPG,CA0002,1
+PR0010,RedBean RB2139,"Sleek metal bridge design for a clean, minimalist aesthetic.",320,100,RedBean RB2139.JPG,CA0002,1
+PR0011,RedBean RB2125,Retro round sunglasses that bring back vintage charm with modern comfort.,450,100,RedBean RB2125.JPG,CA0002,1
+PR0012,FreshKon Charmante Daily,Moisture-rich lenses designed to keep your eyes fresh even after long hours of screen time.,80,100,"FreshKon Charmante Daily 1.JPG, 1a.JPG",CA0003,1
+PR0013,Acuvue Moist Daily,Daily wear lenses that offer exceptional comfort and natural color enhancement.,70,100,Acuvue Moist Daily.JPG,CA0003,1
+PR0014,Bincon Monthly,Natural color series that enhances your eye tone subtly and beautifully.,70,100,"Bincon Monthly 5.JPG, 5a.JPG",CA0003,1
+PR0015,FreshKon ALLURING EYES Monthly,Monthly disposable lenses perfect for frequent wearers who want convenience and comfort.,85,100,"FreshKon ALLURING EYES Monthly 4.JPG, 4a.JPG",CA0003,1
+PR0016,FreshKon COLORS FUSION Monthly,High-oxygen permeable material to keep your eyes hydrated and healthy.,80,100,"FreshKon COLORS FUSION Monthly 2.JPG, 2a.JPG",CA0003,1
+PR0017,moody Mirror Mirror Monthly,Natural-looking lenses designed to subtly enhance your real eye color.,60,100,"moody Mirror Mirror Monthly 6.JPEG, 6a.JPEG, 6b.JPEG",CA0003,1
+PR0018,RedBean RB1007,Soft nose pads and rounded edges to ensure maximum comfort and safety.,250,100,RedBean RB1007.JPG,CA0004,1
+PR0019,ToHi TH1003,Lightweight and flexible frame specially designed for active kids.,200,100,ToHi TH1003.JPG,CA0004,1
+PR0020,ToHi TH1002,Vibrant colors to make wearing glasses fun and exciting for children.,200,100,ToHi TH1002.JPG,CA0004,1
+PR0021,ToHi TH1001,"Combination of durability and cute design, perfect for school and play.",200,100,ToHi TH1001.JPG,CA0004,1
+PR0022,Joy JY1009,Lightweight polycarbonate frame that provides safety and comfort for growing kids.,180,100,Joy JY1009.JPG,CA0004,1
