@@ -174,8 +174,10 @@ include '../_head.php';
 
                         <div class="cart-header">
                             <div style="display: flex; align-items: center;">
-                                <input type="checkbox" id="selectAll" style="margin-right: 15px;">
-                                <span style="font-weight: bold;">Select All Items</span>
+                                <label style="display:flex; align-items:center; cursor:pointer;">
+                                    <input type="checkbox" id="selectAll" style="margin-right: 15px;">
+                                    <span style="font-weight: bold;">Select All Items</span>
+                                </label>
                                 <span style="margin-left: auto; color: #666;"><?= count($cart_items) ?> item(s)</span>
                             </div>
                         </div>

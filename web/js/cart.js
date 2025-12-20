@@ -73,20 +73,14 @@ $(function () {
         $('#selectAll').prop('checked', total === checkedCount).prop('indeterminate', checkedCount > 0 && checkedCount < total);
     }
 
-    // Select All click - implement tri-state behaviour:
-    // If selectAll is indeterminate or currently checked, clicking it will uncheck all items.
-    // Otherwise it will select all items.
-    $('#selectAll').on('click', function (e) {
-        e.preventDefault(); // control the toggle manually
-        const el = this;
+    // Select All change - handle checkbox via native toggle so label clicks work
+    $('#selectAll').on('change', function () {
         const $el = $(this);
-        if (el.indeterminate || el.checked) {
-            $('.item-checkbox').prop('checked', false);
-            $el.prop('checked', false).prop('indeterminate', false);
-        } else {
-            $('.item-checkbox').prop('checked', true);
-            $el.prop('checked', true).prop('indeterminate', false);
-        }
+        const checked = $el.prop('checked');
+        // Set each item checkbox to the same state and trigger their change handlers
+        $('.item-checkbox').prop('checked', checked).trigger('change');
+        // Clear indeterminate visual state
+        $el.prop('indeterminate', false);
         updateSummary();
     });
 
