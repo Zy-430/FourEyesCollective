@@ -132,18 +132,18 @@ $is_logged_in = isset($_SESSION['user']);
                                 <?= encode($product->product_name) ?>
                             </h3>
 
-                            <!-- Price & Sold - UPDATED STYLE -->
+                            <!-- Price & Sold  -->
                             <div class="product-footer">
                                 <div class="product-price">
                                     RM <?= number_format($product->product_price, 2) ?>
                                 </div>
                                 <div class="product-sold" style="
-                            background: #f8f9fa;
-                            padding: 4px 10px;
-                            border-radius: 12px;
-                            font-size: 12px;
-                            color: #666;
-                        ">
+                                    background: #f8f9fa;
+                                    padding: 4px 10px;
+                                    border-radius: 12px;
+                                    font-size: 12px;
+                                    color: #666;
+                                    ">
                                     <span style="font-weight: 700; color: #2c3e50; margin-right: 4px;">
                                         <?= number_format($soldCount) ?>
                                     </span> sold

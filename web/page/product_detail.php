@@ -96,19 +96,18 @@ include '../_head.php';
 
         <!-- Action Buttons -->
         <div class="product-actions">
-            <button class="action-btn btn-add-to-cart add-to-cart"
+            <button type="button" class="action-btn btn-add-to-cart add-to-cart"
                 data-product-id="<?= $p->product_id ?>">
                 <i class="fas fa-shopping-cart"></i>
                 Add to Cart
             </button>
 
-            <button class="action-btn btn-add-to-wishlist wishlist-btn"
-                data-product-id="<?= $p->product_id ?>"
-                onclick="toggleWishlist('<?= $p->product_id ?>', this)">
+            <button type="button" class="action-btn btn-add-to-wishlist wishlist-btn"
+                data-product-id="<?= $p->product_id ?>">
                 <i class="far fa-heart"></i>
                 Add to Wishlist
             </button>
-        </div>
+        </div>"
     </div>
 
     <!-- CAROUSEL SCRIPT -->
@@ -154,4 +153,5 @@ include '../_head.php';
         })(jQuery);
     </script>
     <script src="/js/notifications.js"></script>
+    <script src="/js/wishlist.js"></script>
     <?php include '../_foot.php'; ?>

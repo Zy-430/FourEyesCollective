@@ -1211,7 +1211,7 @@ footer {
 .top5-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 25px;
+    gap: 10px;
     margin: 40px 0;
 }
 
