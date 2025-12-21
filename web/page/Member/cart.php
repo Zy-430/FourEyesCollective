@@ -157,7 +157,7 @@ include '../../_head.php';
     <?php if (empty($cart_items)): ?>
         <div class="empty-cart">
             <p>Your cart is empty</p>
-            <a href="shoppage.php" class="continue-shopping-btn">
+            <a href="../shoppage.php" class="continue-shopping-btn">
                 Continue Shopping
             </a>
         </div>

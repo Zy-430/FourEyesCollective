@@ -3,6 +3,19 @@ body {
     overflow-y:auto;
     width: 98%;
     font-size: 1rem;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+}
+
+body.product {
+    overflow-x: auto;
+    overflow-y: auto;
+    width: 98%;
+    font-size: 1rem;
+    display: block !important;
+    position: static !important;
+    flex-direction: initial !important;
 }
 
 /* Sidebar */
@@ -1522,6 +1535,43 @@ i {
     font-weight: 500;
 }
 
+/* Review */
+
+.toggle-review-btn {
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.2s ease, transform 0.1s ease;
+    min-width: 80px;
+}
+
+/* Hide (visible → hidden) */
+.toggle-review-btn[data-status="visible"] {
+    background-color: #e74c3c;
+    color: #fff;
+}
+
+.toggle-review-btn[data-status="visible"]:hover {
+    background-color: #c0392b;
+}
+
+/* Unhide (hidden → visible) */
+.toggle-review-btn[data-status="hidden"] {
+    background-color: #27ae60;
+    color: #fff;
+}
+
+.toggle-review-btn[data-status="hidden"]:hover {
+    background-color: #1e8449;
+}
+
+/* Click feedback */
+.toggle-review-btn:active {
+    transform: scale(0.97);
+}
 
 /* Responsive */
 @media (max-width: 768px) {

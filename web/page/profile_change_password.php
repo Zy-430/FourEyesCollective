@@ -6,6 +6,11 @@ auth('Admin', 'Member');
 
 $user_id = $_user->user_id;
 
+// Server-side strong password check
+function isStrongPassword($password) {
+    return preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/', $password);
+}
+
 // Handle form submission
 if (is_post()) {
     $current_password = $_POST['current_password'] ?? '';
@@ -21,20 +26,19 @@ if (is_post()) {
         $_SESSION['error'] = "User not found.";
     } elseif (!password_verify($current_password, $user->password)) {
         $_SESSION['error'] = "Current password is incorrect.";
-    } elseif (!is_strong_password($new_password)) {
-        $_SESSION['error'] = "Password must be at least 8 characters and include uppercase, lowercase, number and symbol";
-    } elseif (strlen($new_password) < 6) {
-        $_SESSION['error'] = "New password must be at least 6 characters long.";
-    } elseif (strlen($new_password) < 6) {
-        $_SESSION['error'] = "New password must be at least 6 characters long.";
-    }else {
+    } elseif ($new_password !== $confirm_password) {
+        $_SESSION['error'] = "New password and confirm password do not match.";
+    } elseif (!isStrongPassword($new_password)) {
+        $_SESSION['error'] = "Password must be at least 8 characters and include uppercase, lowercase, number, and symbol.";
+    } elseif (password_verify($new_password, $user->password)) {
+        $_SESSION['error'] = "New password cannot be the same as your current password.";
+    } else {
         $hashed = password_hash($new_password, PASSWORD_DEFAULT);
-
         $_db->prepare("UPDATE users SET password = ? WHERE user_id = ?")
             ->execute([$hashed, $user_id]);
 
         $_SESSION['success'] = "Password changed successfully.";
-        redirect('profile_page.php');
+        redirect('profile_page.php'); // redirect only on success
     }
 }
 
@@ -47,21 +51,7 @@ include '../_head.php';
     <div class="profile-card narrow-card">
         <h1 class="centered-title">Change Password</h1>
 
-        <?php if (isset($_SESSION['success'])): ?>
-            <div class="alert success">
-                <?= $_SESSION['success'] ?>
-            </div>
-            <?php unset($_SESSION['success']); ?>
-        <?php endif; ?>
-
-        <?php if (isset($_SESSION['error'])): ?>
-            <div class="alert error">
-                <?= $_SESSION['error'] ?>
-            </div>
-            <?php unset($_SESSION['error']); ?>
-        <?php endif; ?>
-
-        <form method="post">
+        <form method="post" id="changePasswordForm">
             <div class="form-group">
                 <label>Current Password *</label>
                 <input type="password" name="current_password" class="form-control" required>
@@ -87,7 +77,51 @@ include '../_head.php';
                 Back to Profile
             </a>
         </div>
+
+        <div class="forgot-link">
+            <a href="forgot_password.php">Forgot password?</a>
+        </div>
     </div>
 </section>
 
 <?php include '../_foot.php'; ?>
+<script src="notification.js"></script>
+
+<script>
+$(function() {
+    // Show notifications from PHP session
+    <?php if (!empty($_SESSION['error'])): ?>
+        showNotification("<?= addslashes($_SESSION['error']) ?>", "error");
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+
+    <?php if (!empty($_SESSION['success'])): ?>
+        showNotification("<?= addslashes($_SESSION['success']) ?>", "success");
+        <?php unset($_SESSION['success']); ?>
+    <?php endif; ?>
+
+    // Client-side live validation for new password
+    function isStrongPasswordJS(password) {
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/.test(password);
+    }
+
+    $('#changePasswordForm input[name="new_password"]').on('input', function() {
+        const val = $(this).val();
+        if (!isStrongPasswordJS(val)) {
+            showNotification(
+                "Password must be at least 8 characters and include uppercase, lowercase, number, and symbol.",
+                "error"
+            );
+        }
+    });
+
+    // Confirm password check
+    $('#changePasswordForm input[name="confirm_password"]').on('input', function() {
+        const newPass = $('#changePasswordForm input[name="new_password"]').val();
+        const confirmPass = $(this).val();
+        if (confirmPass !== newPass) {
+            showNotification("Confirm password does not match new password.", "error");
+        }
+    });
+});
+</script>

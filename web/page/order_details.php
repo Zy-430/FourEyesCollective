@@ -11,7 +11,7 @@ $isAdmin = $_user->role === 'Admin';
 // Fetch order + payment + user + address
 $stm = $_db->prepare("
     SELECT 
-        o.order_id, o.order_date, o.total_amount, o.status,
+        o.order_id, o.order_date, o.total_amount, o.status, o.delivered_at,
         u.name AS customer_name,
         a.recipient_name, a.address_line1, a.address_line2, a.city, a.state, a.postcode, a.country,
         p.payment_method_type AS payment_brand,
@@ -28,6 +28,38 @@ $stm->execute([$order_id, $_user->user_id, $isAdmin ? 1 : 0]);
 $order = $stm->fetch(PDO::FETCH_ASSOC);
 
 if (!$order) exit("Order not found or deniew access");
+
+// ===== Return eligibility logic =====
+$returnWindowDays = 30; // return within...days
+
+$canReturn = false;
+$returnDaysLeft = 0;
+
+if (in_array($order['status'], ['delivered', 'completed']) && !empty($order['delivered_at'])) {
+
+    $deliveredAt = new DateTime($order['delivered_at']);
+    $now = new DateTime();
+
+    $expiryDate = clone $deliveredAt;
+    $expiryDate->modify("+{$returnWindowDays} days");
+
+    if ($now <= $expiryDate) {
+
+        // check existing return request
+        $chk = $_db->prepare("
+            SELECT COUNT(*) 
+            FROM order_history 
+            WHERE order_id = ? 
+            AND status = 'return_requested'
+        ");
+        $chk->execute([$order['order_id']]);
+
+        if ($chk->fetchColumn() == 0) {
+            $canReturn = true;
+            $returnDaysLeft = $now->diff($expiryDate)->days;
+        }
+    }
+}
 
 // Fetch items
 $stm_items = $_db->prepare("
@@ -152,7 +184,6 @@ include '../_head.php';
         </div>
     <?php endif; ?>
 
-    <!-- Buttons (kept same logic) -->
     <?php if (in_array($order['status'], ['delivered', 'pending', 'completed', 'returned', 'cancelled']) && !$isAdmin): ?>
         <div class="card">
             <div class="actions-row">
@@ -174,9 +205,13 @@ include '../_head.php';
                         Rate
                     </button>
 
-                    <button id="returnBtn" data-order-id="<?= encode($order['order_id']) ?>" class="cta-button large">
-                        Return
-                    </button>
+                    <?php if ($canReturn): ?>
+                        <button id="returnBtn"
+                            data-order-id="<?= encode($order['order_id']) ?>"
+                            class="cta-button large">
+                            Return (<?= $returnDaysLeft ?> day<?= $returnDaysLeft > 1 ? 's' : '' ?> left)
+                        </button>
+                    <?php endif; ?>
 
                     <button id="orderAgainBtn" data-order-id="<?= encode($order['order_id']) ?>" class="cta-button large">
                         Order Again

@@ -18,7 +18,9 @@ $stm_reviews = $_db->prepare("
     FROM order_item oi
     JOIN `order` o ON oi.order_id = o.order_id
     JOIN users u ON o.user_id = u.user_id
-    WHERE oi.product_id = ? AND oi.user_rating IS NOT NULL
+    WHERE oi.product_id = ? 
+    AND oi.user_rating IS NOT NULL
+    AND oi.review_status = 'visible'
     ORDER BY oi.rated_at DESC
 ");
 $stm_reviews->execute([$id]);
@@ -163,7 +165,14 @@ include '../_head.php';
                         $photos = array_filter(array_map('trim', explode(',', $clean)));
                     }
                 }
-                $videos = !empty($review['rating_video']) ? array_filter(array_map('trim', explode(',', $review['rating_video']))) : [];
+                $videos = [];
+                if (!empty($review['rating_video'])) {
+                    $decoded = json_decode($review['rating_video'], true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                        $videos = array_filter(array_map('trim', $decoded));
+                    }
+                }
+
             ?>
                 <div class="review-item" style="background:white; padding:20px; border-radius:8px; border-left:4px solid #f39c12;">
                     <div style="display:flex; align-items:center; margin-bottom:15px;">
@@ -261,6 +270,55 @@ include '../_head.php';
         });
     })(jQuery);
 </script>
+
+<script>
+    $(function() {
+        const $modal = $('#mediaModal');
+        const $modalImage = $('#modalImage');
+        const $modalVideo = $('#modalVideo');
+
+        // Photo click
+        $(document).on('click', '.media-photo', function() {
+            const src = $(this).data('src');
+
+            $modalVideo.hide().attr('src', '');
+            $modalImage.attr('src', src).show();
+
+            $modal.fadeIn().css('display', 'flex');
+        });
+
+        // Video click
+        $(document).on('click', '.media-video', function() {
+            const src = $(this).data('src');
+
+            $modalImage.hide().attr('src', '');
+            $modalVideo.attr('src', src).show()[0].play();
+
+            $modal.fadeIn().css('display', 'flex');
+        });
+
+        // Close modal
+        $('#closeModalBtn').on('click', function() {
+            closeModal();
+        });
+
+        // Click outside content to close
+        $modal.on('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        function closeModal() {
+            $modal.fadeOut();
+            $modalImage.hide().attr('src', '');
+            $modalVideo.hide().attr('src', '').each(function() {
+                this.pause();
+            });
+        }
+    });
+</script>
+
 <script src="/js/notifications.js"></script>
 <script src="/js/wishlist.js"></script>
 <?php include '../_foot.php'; ?>

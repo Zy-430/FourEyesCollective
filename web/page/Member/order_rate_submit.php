@@ -15,39 +15,55 @@ if (!$order_item_id || $user_rating < 1 || $user_rating > 5) {
 }
 
 /* ---------------------------
-   Handle photo uploads
+   Handle photo & video uploads
+   Max 5 files each
 ---------------------------- */
 $photos = [];
-if (!empty($_FILES['rating_photo']['name'][0])) {
-    $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/images/review/';
-    if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0777, true);
-    }
+$videos = [];
 
-    foreach ($_FILES['rating_photo']['tmp_name'] as $i => $tmpName) {
+if (!empty($_FILES['rating_media']['name'][0])) {
+    $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/images/review/';
+    if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+
+    foreach ($_FILES['rating_media']['tmp_name'] as $i => $tmpName) {
         if (!is_uploaded_file($tmpName)) continue;
 
-        $filename = uniqid('rev_') . '_' . basename($_FILES['rating_photo']['name'][$i]);
+        $originalName = basename($_FILES['rating_media']['name'][$i]);
+        $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+        $allowedImage = ['jpg','jpeg','png','gif'];
+        $allowedVideo = ['mp4','mov','webm'];
+
+        if (!in_array($ext, array_merge($allowedImage, $allowedVideo))) continue;
+
+        $filename = uniqid('rev_') . '_' . $originalName;
         move_uploaded_file($tmpName, $uploadDir . $filename);
-        $photos[] = $filename;
+
+        if (in_array($ext, $allowedImage) && count($photos) < 5) {
+            $photos[] = $filename;
+        } elseif (in_array($ext, $allowedVideo) && count($videos) < 5) {
+            $videos[] = $filename;
+        }
     }
 }
 
 /* ---------------------------
-   Update rating FIRST
+   Update rating
 ---------------------------- */
 $stmUpdate = $_db->prepare("
     UPDATE order_item
     SET user_rating = ?,
         user_comment = ?,
         rated_at = NOW(),
-        rating_photo = ?
+        rating_photo = ?,
+        rating_video = ?
     WHERE order_item_id = ?
 ");
 $stmUpdate->execute([
     $user_rating,
     $user_comment,
     json_encode($photos),
+    json_encode($videos),
     $order_item_id
 ]);
 
@@ -62,7 +78,6 @@ $stmRemain = $_db->prepare("
       AND oi.user_rating IS NULL
 ");
 $stmRemain->execute([$_user->user_id]);
-
 $remaining = $stmRemain->fetchColumn();
 
 /* ---------------------------

@@ -25,14 +25,35 @@ if ($tabActive === 'to-ship') {
     $statusFilter = " AND o.status = '$tabActive'";
 }
 
+// Pagination settings
+$page = max(1, (int)($_GET['page'] ?? 1));
+$limit = 3; // orders per page
+$offset = ($page - 1) * $limit;
+
+// Then prepare the paginated query
 $stm = $_db->prepare("
-    SELECT o.order_id, o.total_amount, o.status, o.order_date 
+    SELECT o.order_id, o.total_amount, o.status, o.order_date, o.delivered_at
     FROM `order` o 
     WHERE o.user_id=? $statusFilter 
     ORDER BY $orderBy
+    LIMIT ? OFFSET ?
 ");
-$stm->execute([$user_id]);
+
+$stm->bindValue(1, $user_id, PDO::PARAM_STR);
+$stm->bindValue(2, $limit, PDO::PARAM_INT);
+$stm->bindValue(3, $offset, PDO::PARAM_INT);
+$stm->execute();
 $orders = $stm->fetchAll(PDO::FETCH_ASSOC);
+
+$stm_count = $_db->prepare("
+    SELECT COUNT(*) 
+    FROM `order` o 
+    WHERE o.user_id=? $statusFilter
+");
+$stm_count->execute([$user_id]);
+$totalItems = $stm_count->fetchColumn();
+$totalPages = ceil($totalItems / $limit);
+
 
 // Fetch categories for images
 $stm_cat = $_db->query("SELECT category_id, folder FROM category");
@@ -82,6 +103,28 @@ include '../../_head.php';
             <p class="no-orders">No orders found.</p>
         <?php else: ?>
             <?php foreach ($orders as $order): ?>
+                <?php
+                $canReturn = false;
+                $returnDaysLeft = null;
+
+                if (
+                    in_array($order['status'], ['delivered', 'completed']) &&
+                    !empty($order['delivered_at'])
+                ) {
+                    $deliveredDate = new DateTime($order['delivered_at']);
+                    $today = new DateTime();
+
+                    if ($today >= $deliveredDate) {
+                        $daysPassed = $deliveredDate->diff($today)->days;
+
+                        if ($daysPassed <= 30) {
+                            $canReturn = true;
+                            $returnDaysLeft = 30 - $daysPassed;
+                        }
+                    }
+                }
+
+                ?>
                 <div class="order-card"
                     data-id="<?= $order['order_id'] ?>"
                     data-status="<?= $order['status'] ?>">
@@ -91,6 +134,11 @@ include '../../_head.php';
                     <div class="order-summary">
                         <p class="order-id">Order ID: <?= $order['order_id'] ?></p>
                         <p class="order-date"><?= date('d M Y H:i', strtotime($order['order_date'])) ?></p>
+                        <?php if ($canReturn): ?>
+                            <p class="return-countdown">
+                                Return available for <strong><?= $returnDaysLeft ?></strong> more day<?= $returnDaysLeft > 1 ? 's' : '' ?>.
+                            </p>
+                        <?php endif; ?>
                     </div>
 
                     <div class="order-images">
@@ -118,8 +166,19 @@ include '../../_head.php';
 
                             <?php if ($order['status'] == 'completed'): ?>
                                 <button type="button" class="rate-link cta-button large" data-id="<?= $order['order_id'] ?>">Rate</button>
-                                <button type="button" class="return-btn cta-button large" data-id="<?= $order['order_id'] ?>">Return</button>
-                                <button type="button" class="order-again-btn cta-button large" data-id="<?= $order['order_id'] ?>">Order Again</button>
+                                <?php if ($canReturn): ?>
+                                    <button type="button"
+                                        class="return-btn cta-button large"
+                                        data-id="<?= $order['order_id'] ?>">
+                                        Return (<?= $returnDaysLeft ?> day<?= $returnDaysLeft > 1 ? 's' : '' ?> left)
+                                    </button>
+                                <?php endif; ?>
+
+                                <button type="button"
+                                    class="order-again-btn cta-button large"
+                                    data-id="<?= $order['order_id'] ?>">
+                                    Order Again
+                                </button>
                             <?php endif; ?>
 
                             <?php if (in_array($order['status'], ['returned', 'cancelled'])): ?>
@@ -129,6 +188,17 @@ include '../../_head.php';
                     </div>
                 </div>
             <?php endforeach; ?>
+            <?php if ($totalPages > 1): ?>
+                <div style="margin-top:30px; display:flex; gap:8px; justify-content:center;">
+                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                        <a href="?page=<?= $i ?>&tab=<?= urlencode($tabActive) ?>&sort=<?= urlencode($sort) ?>"
+                            style="padding:6px 12px; border-radius:4px; text-decoration:none; font-size:14px; <?= $i == $page ? 'background:#2c3e50;color:white;' : 'background:#ecf0f1;color:#333;' ?>">
+                            <?= $i ?>
+                        </a>
+                    <?php endfor; ?>
+                </div>
+            <?php endif; ?>
+
         <?php endif; ?>
     </div>
 
@@ -149,8 +219,14 @@ include '../../_head.php';
             <option value="Other">Other</option>
         </select>
         <div style="display:flex; justify-content:flex-end; gap:10px;">
-            <button onclick="closeCancelModal()" style="padding:8px 15px;background:#bdc3c7;border:none;border-radius:4px;">Close</button>
-            <button id="confirmCancelBtn" style="padding:8px 15px;background:#e74c3c;color:white;border:none;border-radius:4px;">Confirm Cancel</button>
+            <button type="button" id="closeCancelBtn"
+                style="padding:8px 15px;background:#bdc3c7;border:none;border-radius:4px;">
+                Close
+            </button>
+            <button id="confirmCancelBtn"
+                style="padding:8px 15px;background:#e74c3c;color:white;border:none;border-radius:4px;">
+                Confirm Cancel
+            </button>
         </div>
     </div>
 </div>
@@ -265,6 +341,10 @@ include '../../_head.php';
             e.stopPropagation();
             var orderId = $(this).closest('.order-card').data('id');
             window.location.href = '/page/Member/order_rate.php?order_id=' + orderId;
+        });
+
+        $('#closeCancelBtn').on('click', function() {
+            $modal.css('display', 'none');
         });
 
         // Click anywhere on order card

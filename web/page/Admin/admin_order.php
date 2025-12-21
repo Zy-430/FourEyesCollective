@@ -4,7 +4,6 @@ require '../../lib/db.php';
 include '../../_admin_head.php';
 require_once '../../lib/SimplePager.php';
 
-
 auth('Admin');
 $admin_id = $_user->user_id;
 
@@ -14,16 +13,13 @@ $autoCompleteStmt = $_db->prepare("
     WHERE status = 'delivered'
       AND delivered_at <= DATE_SUB(NOW(), INTERVAL 3 DAY)
 ");
-
 $autoCompleteStmt->execute();
 $deliveredOrders = $autoCompleteStmt->fetchAll(PDO::FETCH_COLUMN);
 
 foreach ($deliveredOrders as $order_id) {
-    // Update status to completed
     $updateStmt = $_db->prepare("UPDATE `order` SET status = 'completed' WHERE order_id = ?");
     $updateStmt->execute([$order_id]);
 
-    // Log into order_history
     $history_id = generateHistoryID($_db);
     $historyStmt = $_db->prepare("
         INSERT INTO order_history(history_id, order_id, status, changed_by, message, changed_at)
@@ -32,108 +28,93 @@ foreach ($deliveredOrders as $order_id) {
     $historyStmt->execute([$history_id, $order_id, $admin_id]);
 }
 
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $order_id = $_POST['order_id'];
+    $order_id   = $_POST['order_id'];
     $new_status = $_POST['new_status'];
-    $message = trim($_POST['message']);
+    $message    = trim($_POST['message']);
 
-    // Get current order info
     $stm = $_db->prepare("SELECT status FROM `order` WHERE order_id = ?");
     $stm->execute([$order_id]);
     $order = $stm->fetch(PDO::FETCH_ASSOC);
 
     if ($order) {
         $current_status = $order['status'];
+        $allowed = false;
 
-        // Only update the order table if status changed
-        if ($new_status !== $current_status) {
-            // Validate allowed transitions
-            $allowed = false;
-            if ($current_status == 'pending' && in_array($new_status, ['shipped', 'cancelled'])) $allowed = true;
-            if ($current_status == 'shipped' && $new_status == 'delivered') $allowed = true;
+        if ($current_status == 'pending' && in_array($new_status, ['shipped', 'cancelled'])) $allowed = true;
+        if ($current_status == 'shipped' && $new_status == 'delivered') $allowed = true;
+        if ($current_status == 'return_requested' && in_array($new_status, ['returned', 'return_rejected'])) $allowed = true;
 
-            // Return approval flow
-            if ($current_status == 'return_requested' && in_array($new_status, ['returned', 'return_rejected'])) $allowed = true;
+        if ($allowed) {
+            $_db->beginTransaction();
+            try {
+                // Update order status
+                if ($new_status === 'delivered') {
+                    $update = $_db->prepare("UPDATE `order` SET status = ?, delivered_at = NOW() WHERE order_id = ?");
+                } else {
+                    $update = $_db->prepare("UPDATE `order` SET status = ? WHERE order_id = ?");
+                }
+                $update->execute([$new_status, $order_id]);
 
-            if (!$allowed) {
-                $error_msg = "Invalid status change from $current_status → $new_status.";
-                goto skip_history;
+                // Restock products if return approved
+                if ($new_status === 'returned') {
+                    $stm_items = $_db->prepare("SELECT product_id, product_qty FROM order_item WHERE order_id = ?");
+                    $stm_items->execute([$order_id]);
+                    $items = $stm_items->fetchAll(PDO::FETCH_ASSOC);
+
+                    $stm_update_stock = $_db->prepare("UPDATE product SET product_stock = product_stock + ? WHERE product_id = ?");
+                    foreach ($items as $item) {
+                        $stm_update_stock->execute([$item['product_qty'], $item['product_id']]);
+                    }
+                }
+
+                // Insert order history
+                $history_id = generateHistoryID($_db);
+                $history = $_db->prepare("
+                    INSERT INTO order_history(history_id, order_id, status, changed_by, message, changed_at)
+                    VALUES (?, ?, ?, ?, ?, NOW())
+                ");
+                $history->execute([$history_id, $order_id, $new_status, $admin_id, $message]);
+
+                $_db->commit();
+                $success_msg = "Order $order_id updated successfully.";
+            } catch (Exception $e) {
+                $_db->rollBack();
+                $error_msg = "Error updating order: " . $e->getMessage();
             }
-
-            // Update order status
-            if ($new_status === 'delivered') {
-                $update = $_db->prepare("UPDATE `order` SET status = ?, delivered_at = NOW() WHERE order_id = ?");
-            } else {
-                $update = $_db->prepare("UPDATE `order` SET status = ? WHERE order_id = ?");
-            }
-            $update->execute([$new_status, $order_id]);
+        } else {
+            $error_msg = "Invalid status change from $current_status → $new_status.";
         }
-
-        // Generate new history ID
-        $history_id = generateHistoryID($_db);
-
-        // Insert into order_history
-        $history = $_db->prepare("
-            INSERT INTO order_history(history_id, order_id, status, changed_by, message, changed_at)
-            VALUES (?, ?, ?, ?, ?, NOW())
-        ");
-        $history->execute([
-            $history_id,
-            $order_id,
-            $new_status,
-            $admin_id,
-            $message
-        ]);
-
-        $success_msg = "Order $order_id updated successfully.";
-
-        skip_history:;
     }
 }
 
-// Pagination settings
+// --- Pagination, search, table code remains unchanged ---
 $page = max(1, (int)($_GET['page'] ?? 1));
-$limit = 8; // orders per page
+$limit = 5;
 $offset = ($page - 1) * $limit;
 
-
-
-// Search
 $search = trim($_GET['search'] ?? '');
 $status_filter = $_GET['status'] ?? 'all';
 
 $where = [];
 $params = [];
 
-// Status filter
 if ($status_filter !== 'all') {
     $where[] = "o.status = ?";
     $params[] = $status_filter;
 }
 
-// Search filter
 if ($search !== '') {
     $where[] = "(
-        o.order_id LIKE ?
-        OR u.name LIKE ?
-        OR u.email LIKE ?
-        OR o.status LIKE ?
+        o.order_id LIKE ? OR u.name LIKE ? OR u.email LIKE ? OR o.status LIKE ?
     )";
-
     $searchTerm = "%$search%";
     array_push($params, $searchTerm, $searchTerm, $searchTerm, $searchTerm);
 }
 
 $whereSql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
 
-$countSql = "
-    SELECT COUNT(*) 
-    FROM `order` o
-    JOIN users u ON o.user_id = u.user_id
-    $whereSql
-";
-
+$countSql = "SELECT COUNT(*) FROM `order` o JOIN users u ON o.user_id = u.user_id $whereSql";
 $stm = $_db->prepare($countSql);
 $stm->execute($params);
 $totalRecords = $stm->fetchColumn();
@@ -147,7 +128,6 @@ $dataSql = "
     ORDER BY o.order_date DESC
     LIMIT $limit OFFSET $offset
 ";
-
 $stm = $_db->prepare($dataSql);
 $stm->execute($params);
 $orders = $stm->fetchAll(PDO::FETCH_ASSOC);
@@ -217,7 +197,7 @@ $_title = "Admin Orders | Four Eyes Collective";
                 </thead>
                 <tbody>
                     <?php foreach ($orders as $o): ?>
-                        <tr style="border-bottom:1px solid #ddd;">
+                        <tr style="border-bottom:1px solid #ddd; height:80px;">
                             <td style="padding:10px;"><?= $o['order_id'] ?></td>
                             <td style="padding:10px;"><?= htmlspecialchars($o['customer_name']) ?></td>
                             <td style="padding:10px;"><?= htmlspecialchars($o['customer_email']) ?></td>
@@ -288,15 +268,10 @@ $_title = "Admin Orders | Four Eyes Collective";
                 <div class="pagination">
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                         <a href="?page=<?= $i ?>&search=<?= urlencode($search) ?>&status=<?= $status_filter ?>"
-                            style="
-                padding:6px 12px;
-                border-radius:4px;
-                text-decoration:none;
-                font-size:14px;
-                <?= $i == $page
+                            class="pagination" style="
+                            <?= $i == $page
                             ? 'background:#2c3e50; color:white;'
-                            : 'background:#ecf0f1; color:#333;' ?>
-           ">
+                            : 'background:#ecf0f1; color:#333;' ?>">
                             <?= $i ?>
                         </a>
                     <?php endfor; ?>

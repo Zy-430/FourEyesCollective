@@ -20,7 +20,7 @@
     <script src="/js/addToCart.js"></script>
 </head>
 
-<body data-logged-in="<?= $_user ? '1' : '0' ?>">
+<body data-logged-in="<?= $_user ? '1' : '0' ?>" >
     <header>
         <nav>
             <div id="left-sidebar">

@@ -11,6 +11,7 @@ $stm_orders = $_db->prepare("
     FROM `order`
     WHERE user_id = ?
     ORDER BY order_date DESC
+    LIMIT 3
 ");
 $stm_orders->execute([$user_id]);
 $recent_orders = $stm_orders->fetchAll(PDO::FETCH_ASSOC);

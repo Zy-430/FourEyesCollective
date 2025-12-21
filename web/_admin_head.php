@@ -56,6 +56,11 @@ $current_url = $_SERVER['REQUEST_URI'];
                 Order Management
             </a>
 
+            <a href="admin_review.php"
+                class="<?= $current_script == 'admin_review.php' ? 'active' : '' ?>">
+                Review Management
+            </a>
+
             <a href="view_product_report.php"
                 class="<?= $current_script == 'view_product_report.php' ? 'active' : '' ?>">
                 Report
