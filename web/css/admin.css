@@ -1,6 +1,6 @@
 body {
     overflow-x: auto;
-    overflow-y:auto;
+    overflow-y: auto;
     width: 98%;
     font-size: 1rem;
     display: flex;
@@ -255,7 +255,7 @@ i {
     height: 100%;
     padding: 1rem;
     transition: all 0.3s ease;
-    width: 80%;    
+    width: 80%;
 }
 
 .dashboard-title {
@@ -470,7 +470,7 @@ i {
 
 .btn,
 .btn-default,
-.btn-add {
+.btn-add .btn-clear {
     padding: 0.8rem 1.2rem;
     font-size: 1rem;
 }
@@ -483,6 +483,16 @@ i {
 
 .btn-add:hover {
     background: linear-gradient(135deg, #1e40af, #162b65);
+}
+
+.btn-clear {
+    background: #686c6f;
+    border-radius: 8px;
+    color: #ffffff;
+}
+
+.btn-clear:hover {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
 }
 
 /* Search Box */
@@ -1012,20 +1022,24 @@ i {
 
 /* Smaller header actions */
 .header-actions.small {
-    gap: 10px; /* Reduced gap */
+    gap: 10px;
+    /* Reduced gap */
 }
 
 .header-actions.small .btn-default {
-    padding: 8px 15px; /* Reduced padding */
+    padding: 8px 15px;
+    /* Reduced padding */
     font-size: 12px;
 }
 
 .header-actions.small .btn-add {
-    padding: 8px 16px; /* Reduced padding */
+    padding: 8px 16px;
+    /* Reduced padding */
 }
 
 .header-actions.small .search-box {
-    padding: 6px 14px 6px 36px; /* Reduced padding */
+    padding: 6px 14px 6px 36px;
+    /* Reduced padding */
 }
 
 .header-actions.small .search-box i {
@@ -1034,7 +1048,8 @@ i {
 }
 
 .header-actions.small .search-box input {
-    width: 160px; /* Smaller search input */
+    width: 160px;
+    /* Smaller search input */
     font-size: 13px;
 }
 
@@ -1045,7 +1060,8 @@ i {
 
 /* Adjust filter dropdown content for smaller size */
 .header-actions.small .dropdown-content {
-    min-width: 350px; /* Smaller width */
+    min-width: 350px;
+    /* Smaller width */
     padding: 12px;
     margin-top: 8px;
 }
@@ -1091,18 +1107,22 @@ i {
 
 /* Smaller table size - Add this new class */
 .table-small {
-    font-size: 0.9em; /* Reduce font size proportionally */
+    font-size: 0.9em;
+    /* Reduce font size proportionally */
 }
 
 /* Adjust table headers for smaller size */
 .table-small th {
-    padding: 12px 8px; /* Reduced padding */
-    font-size: 16px; /* Smaller font size */
+    padding: 12px 8px;
+    /* Reduced padding */
+    font-size: 16px;
+    /* Smaller font size */
 }
 
 /* Adjust table cells for smaller size */
 .table-small td {
-    padding: 8px 8px; /* Reduced padding */
+    padding: 8px 8px;
+    /* Reduced padding */
     font-size: 14px;
 }
 
@@ -1149,12 +1169,12 @@ i {
 }
 
 /* Adjust table container for smaller size */
-.table-small + .pagination-container {
+.table-small+.pagination-container {
     padding: 12px;
 }
 
 /* Adjust pagination for smaller table */
-.table-small + .pagination-container .pagination a {
+.table-small+.pagination-container .pagination a {
     min-width: 28px;
     height: 28px;
     font-size: 12px;
@@ -1163,7 +1183,8 @@ i {
 
 /* Adjust filter tags for smaller table */
 .filter-content {
-    padding: 8px 20px; /* Reduced padding */
+    padding: 8px 20px;
+    /* Reduced padding */
     margin-bottom: 5px;
     margin-top: 5px;
 }
@@ -1179,13 +1200,15 @@ i {
 
 /* Adjust search box for smaller size */
 .search-box input {
-    width: 180px; /* Slightly smaller */
+    width: 180px;
+    /* Slightly smaller */
     font-size: 13px;
 }
 
 /* Adjust dropdown content for smaller size */
 .dropdown-content {
-    min-width: 400px; /* Reduced width */
+    min-width: 400px;
+    /* Reduced width */
     padding: 15px;
 }
 
@@ -1336,7 +1359,8 @@ i {
 /* Right content area */
 .view-products-content {
     flex: 1;
-    min-width: 0; /* Prevent flex item overflow */
+    min-width: 0;
+    /* Prevent flex item overflow */
 }
 
 /* Sort header */
@@ -1630,22 +1654,22 @@ i {
         gap: 15px;
         align-items: flex-start;
     }
-    
+
     .view-products-sort-options {
         width: 100%;
         justify-content: flex-start;
     }
-    
+
     .view-products-grid {
         grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
         gap: 15px;
     }
-    
+
     .view-product-card-actions {
         flex-direction: column;
         gap: 8px;
     }
-    
+
     .view-product-card-actions a {
         width: 100%;
     }
@@ -1670,12 +1694,12 @@ i {
         flex-direction: column;
         gap: 20px;
     }
-    
+
     .view-products-filter-sidebar {
         width: 100%;
         position: static;
     }
-    
+
     .view-products-grid {
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
         gap: 20px;

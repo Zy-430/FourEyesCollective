@@ -137,104 +137,66 @@ $query_string = implode('&', $query_params);
             </div>
         <?php endif; ?>
 
-        <!-- Show filter content (search , gender & status) -->
-        <?php if ($search || $gender !== '' || $status !== ''): ?>
-            <div class="filter-content">
-                <span>Filter Contents: </span>
-                <?php if ($search): ?>
-                    <span class="filter-tag">
-                        Search: <?= htmlspecialchars($search) ?>
-                        <a href="?<?= http_build_query(array_merge($_GET, ['search' => '', 'page' => 1])) ?>">&times;</a>
-                    </span>
-                <?php endif; ?>
-                <?php if ($gender !== ''): ?>
-                    <span class="filter-tag">
-                        Gender: <?= $genders[$gender] ?>
-                        <a href="?<?= http_build_query(array_merge($_GET, ['gender' => '', 'page' => 1])) ?>">&times;</a>
-                    </span>
-                <?php endif; ?>
-                <?php if ($status !== ''): ?>
-                    <span class="filter-tag">
-                        Status: <?= $statuses[$status] ?>
-                        <a href="?<?= http_build_query(array_merge($_GET, ['status' => '', 'page' => 1])) ?>">&times;</a>
-                    </span>
-                <?php endif; ?>
-            </div>
-        <?php endif; ?>
-        <div class="header-actions small">
-            <!-- Filter dropdown -->
-            <div class="dropdown">
-                <button class="btn-default btn-add" type="button" id="filterDropdown">
-                    <i class="fas fa-filter"></i> Filter
-                </button>
-                <!-- Hidden filter form that appears on click -->
-                <div class="dropdown-content" id="filterForm">
-                    <form method="get" class="filter-dropdown-form">
-                        <input type="hidden" name="role" value="<?= $role ?>">
-                        <div class="filter-row">
-                            <div class="filter-group">
-                                <label>Gender:</label>
-                                <select name="gender" class="filter-select">
-                                    <?php foreach ($genders as $value => $label): ?>
-                                        <option value="<?= $value ?>" <?= $gender === $value ? 'selected' : '' ?>>
-                                            <?= $label ?>
-                                        </option>
-                                    <?php endforeach ?>
-                                </select>
-                            </div>
+        
+        <div class="header-actions small" style="margin-top:10px;">
+    <form method="GET" style="display:flex; gap:10px; align-items:center;">
+        
+        <!-- Preserve role -->
+        <input type="hidden" name="role" value="<?= $role ?>">
 
-                            <div class="filter-group">
-                                <label>Status:</label>
-                                <select name="status" class="filter-select">
-                                    <?php foreach ($statuses as $value => $label): ?>
-                                        <option value="<?= $value ?>" <?= $status === $value ? 'selected' : '' ?>>
-                                            <?= $label ?>
-                                        </option>
-                                    <?php endforeach ?>
-                                </select>
-                            </div>
-                        </div>
+        <!-- Search (ENTER to submit) -->
+        <input type="text"
+            name="search"
+            value="<?= htmlspecialchars($search) ?>"
+            placeholder="Search by ID, Name, Email"
+            style="padding:8px; width:260px; border-radius:5px; border:1px solid #ccc;">
 
-                        <!-- Hidden fields for preserve sorting and pagination -->
-                        <input type="hidden" name="sort" value="<?= $sort ?>">
-                        <input type="hidden" name="dir" value="<?= $dir ?>">
-                        <input type="hidden" name="page" value="1"> <!-- Reset to page 1 when filter -->
+        <!-- Status filter -->
+        <select name="status"
+            style="padding:8px; border-radius:5px; border:1px solid #ccc;">
+            <?php foreach ($statuses as $value => $label): ?>
+                <option value="<?= $value ?>" <?= $status === $value ? 'selected' : '' ?>>
+                    <?= $label ?>
+                </option>
+            <?php endforeach ?>
+        </select>
 
-                        <div class="filter-actions">
-                            <button type="submit" class="btn-default btn-filter-small">
-                                Apply
-                            </button>
-                            <button type="button" class="btn-default btn-reset-small" onclick="location.href='?role=<?= $role ?>'">
-                                Clear
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+        <!-- Gender filter -->
+        <select name="gender"
+            style="padding:8px; border-radius:5px; border:1px solid #ccc;">
+            <?php foreach ($genders as $value => $label): ?>
+                <option value="<?= $value ?>" <?= $gender === $value ? 'selected' : '' ?>>
+                    <?= $label ?>
+                </option>
+            <?php endforeach ?>
+        </select>
 
-            <button class="btn-default btn-add" onclick="location.href='add_user.php?role=<?= $role ?>'">
-                <i class="fas fa-plus"></i> Add New <?= $role ?>
-            </button>
+        <!-- Preserve sorting -->
+        <input type="hidden" name="sort" value="<?= $sort ?>">
+        <input type="hidden" name="dir" value="<?= $dir ?>">
+        <input type="hidden" name="page" value="1">
 
-            <!-- Submit search form -->
-            <form method="get" class="search-form">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="hidden" name="role" value="<?= $role ?>">
-                    <input type="text"
-                        name="search"
-                        value="<?= htmlspecialchars($search) ?>"
-                        placeholder="Search members..."
-                        onchange="this.form.submit()">
-                    <!-- Preserve other parameters -->
-                    <input type="hidden" name="gender" value="<?= $gender ?>">
-                    <input type="hidden" name="status" value="<?= $status ?>">
-                    <input type="hidden" name="sort" value="<?= $sort ?>">
-                    <input type="hidden" name="dir" value="<?= $dir ?>">
-                    <input type="hidden" name="page" value="1">
-                </div>
-            </form>
-        </div>
+        <!-- Filter button -->
+        <button type="submit" class="btn-default btn-add">
+            <i class="fas fa-filter"></i>Filter
+        </button>
+
+        <!-- Clear button -->
+        <button type="button"
+            class="btn-default btn-clear"
+            onclick="location.href='?role=<?= $role ?>'">
+            <i class="fas fa-eraser"></i>Clear
+        </button>
+
+        <!-- Add button -->
+        <button type="button"
+            class="btn-default btn-add"
+            onclick="location.href='add_user.php?role=<?= $role ?>'">
+            <i class="fas fa-plus"></i> Add
+        </button>
+
+    </form>
+</div>
     </div>
 
     <div class="table-container">

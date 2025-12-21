@@ -174,7 +174,12 @@ $_title = "Admin Orders | Four Eyes Collective";
                 <!-- Submit button -->
                 <button type="submit"
                     class="btn-default btn-add">
-                    Search / Filter
+                    <i class="fas fa-filter"></i>Filter
+                </button>
+
+                <!-- Clear button -->
+                <button type="button" class="btn-default btn-clear" onclick="window.location.href='<?= basename($_SERVER['PHP_SELF']) ?>'">
+                    <i class="fas fa-eraser"></i> Clear
                 </button>
             </form>
         </div>
@@ -270,8 +275,8 @@ $_title = "Admin Orders | Four Eyes Collective";
                         <a href="?page=<?= $i ?>&search=<?= urlencode($search) ?>&status=<?= $status_filter ?>"
                             class="pagination" style="
                             <?= $i == $page
-                            ? 'background:#2c3e50; color:white;'
-                            : 'background:#ecf0f1; color:#333;' ?>">
+                                ? 'background:#2c3e50; color:white;'
+                                : 'background:#ecf0f1; color:#333;' ?>">
                             <?= $i ?>
                         </a>
                     <?php endfor; ?>

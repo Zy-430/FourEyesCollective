@@ -126,7 +126,7 @@ $priceRanges = [
         <div class="header-actions small">
             <!-- Add New Product Button -->
             <a href="add_product.php" class="btn-default btn-add" style="text-decoration: none; font-weight:bolder;">
-                <i class="fas fa-plus"></i> Add New Product
+                <i class="fas fa-plus"></i> Add
             </a>
         </div>
 

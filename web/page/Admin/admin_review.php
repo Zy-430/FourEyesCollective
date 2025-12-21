@@ -91,7 +91,12 @@ $_title = "Admin Review Management | Four Eyes Collective";
                         <option value="<?= $i ?>" <?= $rating_filter == (string)$i ? 'selected' : '' ?>><?= $i ?> Stars</option>
                     <?php endfor; ?>
                 </select>
-                <button type="submit" class="btn-default btn-add">Search / Filter</button>
+                <button type="submit" class="btn-default btn-add"><i class="fas fa-filter"></i>Filter</button>
+
+                <!-- Clear button -->
+                <button type="button" class="btn-default btn-clear" onclick="window.location.href='<?= basename($_SERVER['PHP_SELF']) ?>'">
+                    <i class="fas fa-eraser"></i> Clear
+                </button>
             </form>
         </div>
     </div>

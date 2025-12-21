@@ -39,7 +39,7 @@ $categories = $stmt->fetchAll();
         <div class="header-actions small">
             <!-- ADD CATEGORY BUTTON -->
             <button class="btn-default btn-add" onclick="location.href='add_category.php'">
-                <i class="fas fa-plus"></i> Add New Category
+                <i class="fas fa-plus"></i> Add
             </button>
         </div>
     </div>
