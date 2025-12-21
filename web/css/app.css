@@ -25,6 +25,7 @@ body {
     flex-direction: column;
     background: #fff;
     line-height: 1.6;
+    overflow-x: hidden;
 }
 
 /* Header Styles */

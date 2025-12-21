@@ -97,7 +97,7 @@ $priceRanges = [
 ];
 ?>
 
-<div class="admin-content ">
+<div class="admin-content">
     <div class="content-header">
         <h1 class="dashboard-title">Manage Products</h1>
         <?php if (get('msg') == 'added'): ?>

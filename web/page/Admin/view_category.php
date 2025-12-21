@@ -9,7 +9,10 @@ $_title = 'Manage Categories';
 // Sorting
 $fields = [
     'category_id' => 'Category ID',
-    'category_name' => 'Category Name'
+    'category_name' => 'Category Name',
+    'active_count' => 'Active Products',
+    'inactive_count' => 'Inactive Products',
+    'total_count' => 'Total',
 ];
 
 $sort = req('sort');
@@ -19,7 +22,17 @@ $dir = req('dir');
 in_array($dir, ['asc', 'desc']) || $dir = 'asc';
 
 // Fetch categories with sorting
-$stmt = $_db->prepare("SELECT * FROM category ORDER BY $sort $dir");
+$sql = "SELECT 
+            c.*, 
+            COUNT(p.product_id) as total_count,
+            SUM(CASE WHEN p.product_status = 1 THEN 1 ELSE 0 END) as active_count,
+            SUM(CASE WHEN p.product_status = 0 THEN 1 ELSE 0 END) as inactive_count
+        FROM category c
+        LEFT JOIN product p ON c.category_id = p.category_id
+        GROUP BY c.category_id, c.category_name
+        ORDER BY $sort $dir";
+
+$stmt = $_db->prepare($sql);
 $stmt->execute();
 $categories = $stmt->fetchAll();
 ?>
@@ -49,7 +62,7 @@ $categories = $stmt->fetchAll();
 
             <thead>
                 <tr>
-                    <th></th>
+                    <th style="text-align:center;">Actions</th>
                     <?= table_headers($fields, $sort, $dir) ?>
                 </tr>
             </thead>
@@ -66,7 +79,7 @@ $categories = $stmt->fetchAll();
                         <tr>
                             <td class="actions-row">
                                 <div class="action-buttons" style="justify-content:center; gap:10px;">
-                                    <a href="modify_category.php?id=<?= $c->category_id ?>" class="btn-default edit-btn" >
+                                    <a href="modify_category.php?id=<?= $c->category_id ?>" class="btn-default edit-btn">
                                         <i class="fas fa-edit"></i>
                                     </a>
 
@@ -85,7 +98,43 @@ $categories = $stmt->fetchAll();
                             <td>
                                 <?= encode($c->category_name) ?>
                             </td>
+                            
+                            
+                            <td style="text-align:center;">
+                                <?php if ($c->active_count > 0): ?>
+                                    <a href="view_product.php?cat=<?= $c->category_id ?>&status=active"
+                                        style="color:black; text-decoration:none; font-weight:bold;"
+                                        title="View active products">
+                                        <?= $c->active_count ?>
+                                    </a>
+                                <?php else: ?>
+                                    <span style="color:#95a5a6;">0</span>
+                                <?php endif; ?>
+                            </td>
+                            
+                            <td style="text-align:center;">
+                                <?php if ($c->inactive_count > 0): ?>
+                                    <a href="view_product.php?cat=<?= $c->category_id ?>&status=inactive"
+                                        style="color:black; text-decoration:none; font-weight:bold;"
+                                        title="View inactive products">
+                                        <?= $c->inactive_count ?>
+                                    </a>
+                                <?php else: ?>
+                                    <span style="color:#95a5a6;">0</span>
+                                <?php endif; ?>
+                            </td>
 
+                            <td style="text-align:center;">
+                                <?php if ($c->total_count > 0): ?>
+                                    <a href="view_product.php?cat=<?= $c->category_id ?>"
+                                        style="color:black; text-decoration:none; font-weight:bold;"
+                                        title="View all products in this category">
+                                        <?= $c->total_count ?>
+                                    </a>
+                                <?php else: ?>
+                                    <span style="color:#95a5a6;">0</span>
+                                <?php endif; ?>
+                            </td>
 
                         </tr>
                     <?php endforeach; ?>

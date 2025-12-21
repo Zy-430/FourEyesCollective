@@ -137,72 +137,72 @@ $query_string = implode('&', $query_params);
             </div>
         <?php endif; ?>
 
-        
+
         <div class="header-actions small" style="margin-top:10px;">
-    <form method="GET" style="display:flex; gap:10px; align-items:center;">
-        
-        <!-- Preserve role -->
-        <input type="hidden" name="role" value="<?= $role ?>">
+            <form method="GET" style="display:flex; gap:10px; align-items:center;">
 
-        <!-- Search (ENTER to submit) -->
-        <input type="text"
-            name="search"
-            value="<?= htmlspecialchars($search) ?>"
-            placeholder="Search by ID, Name, Email"
-            style="padding:8px; width:260px; border-radius:5px; border:1px solid #ccc;">
+                <!-- Preserve role -->
+                <input type="hidden" name="role" value="<?= $role ?>">
 
-        <!-- Status filter -->
-        <select name="status"
-            style="padding:8px; border-radius:5px; border:1px solid #ccc;">
-            <?php foreach ($statuses as $value => $label): ?>
-                <option value="<?= $value ?>" <?= $status === $value ? 'selected' : '' ?>>
-                    <?= $label ?>
-                </option>
-            <?php endforeach ?>
-        </select>
+                <!-- Search (ENTER to submit) -->
+                <input type="text"
+                    name="search"
+                    value="<?= htmlspecialchars($search) ?>"
+                    placeholder="Search by ID, Name, Email"
+                    style="padding:8px; width:260px; border-radius:5px; border:1px solid #ccc;">
 
-        <!-- Gender filter -->
-        <select name="gender"
-            style="padding:8px; border-radius:5px; border:1px solid #ccc;">
-            <?php foreach ($genders as $value => $label): ?>
-                <option value="<?= $value ?>" <?= $gender === $value ? 'selected' : '' ?>>
-                    <?= $label ?>
-                </option>
-            <?php endforeach ?>
-        </select>
+                <!-- Status filter -->
+                <select name="status"
+                    style="padding:8px; border-radius:5px; border:1px solid #ccc;">
+                    <?php foreach ($statuses as $value => $label): ?>
+                        <option value="<?= $value ?>" <?= $status === $value ? 'selected' : '' ?>>
+                            <?= $label ?>
+                        </option>
+                    <?php endforeach ?>
+                </select>
 
-        <!-- Preserve sorting -->
-        <input type="hidden" name="sort" value="<?= $sort ?>">
-        <input type="hidden" name="dir" value="<?= $dir ?>">
-        <input type="hidden" name="page" value="1">
+                <!-- Gender filter -->
+                <select name="gender"
+                    style="padding:8px; border-radius:5px; border:1px solid #ccc;">
+                    <?php foreach ($genders as $value => $label): ?>
+                        <option value="<?= $value ?>" <?= $gender === $value ? 'selected' : '' ?>>
+                            <?= $label ?>
+                        </option>
+                    <?php endforeach ?>
+                </select>
 
-        <!-- Filter button -->
-        <button type="submit" class="btn-default btn-add">
-            <i class="fas fa-filter"></i>Filter
-        </button>
+                <!-- Preserve sorting -->
+                <input type="hidden" name="sort" value="<?= $sort ?>">
+                <input type="hidden" name="dir" value="<?= $dir ?>">
+                <input type="hidden" name="page" value="1">
 
-        <!-- Clear button -->
-        <button type="button"
-            class="btn-default btn-clear"
-            onclick="location.href='?role=<?= $role ?>'">
-            <i class="fas fa-eraser"></i>Clear
-        </button>
+                <!-- Filter button -->
+                <button type="submit" class="btn-default btn-add">
+                    <i class="fas fa-filter"></i>Filter
+                </button>
 
-        <!-- Add button -->
-        <button type="button"
-            class="btn-default btn-add"
-            onclick="location.href='add_user.php?role=<?= $role ?>'">
-            <i class="fas fa-plus"></i> Add
-        </button>
+                <!-- Clear button -->
+                <button type="button"
+                    class="btn-default btn-clear"
+                    onclick="location.href='?role=<?= $role ?>'">
+                    <i class="fas fa-eraser"></i>Clear
+                </button>
 
-    </form>
-</div>
+                <!-- Add button -->
+                <button type="button"
+                    class="btn-default btn-add"
+                    onclick="location.href='add_user.php?role=<?= $role ?>'">
+                    <i class="fas fa-plus"></i> Add
+                </button>
+
+            </form>
+        </div>
     </div>
 
     <div class="table-container">
         <table class="table table-small">
             <tr>
-                <th></th>
+                <th>Actions</th>
                 <?= table_headers($fields, $sort, $dir, "role=$role&page=$page") ?>
             </tr>
 

@@ -641,12 +641,12 @@ i {
     gap: 8px;
 }
 
-.edit-btn {
+.restore-btn {
     background: #23b46e;
     border-radius: 100%;
 }
 
-.edit-btn:hover {
+.restore-btn:hover {
     background: linear-gradient(135deg, #1eaf66, #166555);
 }
 
@@ -659,12 +659,12 @@ i {
     background: linear-gradient(135deg, #af1e1e, #653416);
 }
 
-.restore-btn {
+.edit-btn {
     background: #1d4ed8;
     border-radius: 100%;
 }
 
-.restore-btn:hover {
+.edit-btn:hover {
     background: linear-gradient(135deg, #2563eb, #1e40af);
 }
 
