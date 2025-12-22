@@ -171,11 +171,18 @@
 
 /* Filter form */
 .review-filter {
-    display: flex;
-    justify-content: flex-end; 
+    position: relative;
     margin-bottom: 20px;
+    width: fit-content;
 }
 
+.review-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
 
 .review-pill {
     display: inline-block;
