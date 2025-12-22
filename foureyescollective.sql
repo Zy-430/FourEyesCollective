@@ -329,38 +329,39 @@ CREATE TABLE `order_item` (
   `user_comment` text DEFAULT NULL,
   `rated_at` timestamp NULL DEFAULT NULL,
   `rating_photo` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`rating_photo`)),
-  `rating_video` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`rating_video`))
+  `rating_video` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`rating_video`)),
+  `review_status` enum('visible','hidden') DEFAULT 'visible'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `order_item`
 --
 
-INSERT INTO `order_item` (`order_item_id`, `order_id`, `product_id`, `product_qty`, `price`, `subtotal`, `user_rating`, `user_comment`, `rated_at`, `rating_photo`, `rating_video`) VALUES
-('OI0001', 'OR0001', 'PR0001', 2, 210, 420, 5, 'Very comfortable and lightweight!', '2025-11-03 02:00:00', '[\"pr0001_review.jpg\"]', NULL),
-('OI0002', 'OR0001', 'PR0002', 2, 105, 210, 4, 'Stylish frame, worth the price.', '2025-11-03 02:05:00', '[\"pr0002_review.jpg\"]', NULL),
-('OI0003', 'OR0002', 'PR0003', 1, 420, 420, NULL, NULL, NULL, NULL, NULL),
-('OI0004', 'OR0003', 'PR0001', 1, 210, 210, NULL, NULL, NULL, NULL, NULL),
-('OI0005', 'OR0004', 'PR0004', 3, 350, 1050, NULL, NULL, NULL, NULL, NULL),
-('OI0006', 'OR0005', 'PR0002', 4, 105, 420, NULL, NULL, NULL, NULL, NULL),
-('OI0007', 'OR0006', 'PR0003', 1, 420, 420, NULL, NULL, NULL, NULL, NULL),
-('OI0008', 'OR0007', 'PR0001', 2, 210, 420, NULL, NULL, NULL, NULL, NULL),
-('OI0009', 'OR0008', 'PR0004', 2, 350, 700, 4, 'Good design, fits well.', '2025-11-11 02:00:00', '[\"pr0004_review2.jpg\"]', NULL),
-('OI0010', 'OR0009', 'PR0002', 4, 105, 420, NULL, NULL, NULL, NULL, NULL),
-('OI0011', 'OR0010', 'PR0003', 1, 420, 420, 5, 'Very clear lens, happy with purchase.', '2025-11-12 01:00:00', '[\"pr0003_review3.jpg\"]', NULL),
-('OI0012', 'OR0011', 'PR0001', 1, 210, 210, NULL, NULL, NULL, NULL, NULL),
-('OI0013', 'OR0012', 'PR0004', 2, 350, 700, NULL, NULL, NULL, NULL, NULL),
-('OI0014', 'OR0013', 'PR0002', 5, 105, 525, 5, 'Bought multiple as gifts, all good!', '2025-11-14 03:00:00', '[\"pr0002_review3.jpg\"]', NULL),
-('OI0015', 'OR0014', 'PR0003', 1, 420, 420, NULL, NULL, NULL, NULL, NULL),
-('OI0016', 'OR0015', 'PR0001', 2, 210, 420, NULL, NULL, NULL, NULL, NULL),
-('OI0017', 'OR0016', 'PR0004', 2, 350, 700, 4, 'Good frame quality.', '2025-11-06 04:30:00', NULL, NULL),
-('OI0018', 'OR0017', 'PR0002', 4, 105, 420, NULL, NULL, NULL, NULL, NULL),
-('OI0019', 'OR0018', 'PR0003', 1, 420, 420, 4, 'Happy with the purchase.', '2025-11-08 07:30:00', NULL, NULL),
-('OI0020', 'OR0019', 'PR0003', 1, 420, 420, NULL, NULL, NULL, NULL, NULL),
-('OI0021', 'OR0020', 'PR0001', 3, 210, 630, NULL, NULL, NULL, NULL, NULL),
-('OI0022', 'OR0021', 'PR0001', 2, 210, 420, NULL, NULL, NULL, NULL, NULL),
-('OI0023', 'OR0022', 'PR0002', 3, 105, 315, NULL, NULL, NULL, NULL, NULL),
-('OI0024', 'OR0023', 'PR0003', 1, 420, 420, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `order_item` (`order_item_id`, `order_id`, `product_id`, `product_qty`, `price`, `subtotal`, `user_rating`, `user_comment`, `rated_at`, `rating_photo`, `rating_video`, `review_status`) VALUES
+('OI0001', 'OR0001', 'PR0001', 2, 210, 420, 5, 'Very comfortable and lightweight!', '2025-11-03 02:00:00', '[\"pr0001_review.jpg\"]', NULL, 'visible'),
+('OI0002', 'OR0001', 'PR0002', 2, 105, 210, 4, 'Stylish frame, worth the price.', '2025-11-03 02:05:00', '[\"pr0002_review.jpg\"]', NULL, 'visible'),
+('OI0003', 'OR0002', 'PR0003', 1, 420, 420, NULL, NULL, NULL, NULL, NULL, 'visible'),
+('OI0004', 'OR0003', 'PR0001', 1, 210, 210, NULL, NULL, NULL, NULL, NULL, 'visible'),
+('OI0005', 'OR0004', 'PR0004', 3, 350, 1050, NULL, NULL, NULL, NULL, NULL, 'visible'),
+('OI0006', 'OR0005', 'PR0002', 4, 105, 420, NULL, NULL, NULL, NULL, NULL, 'visible'),
+('OI0007', 'OR0006', 'PR0003', 1, 420, 420, NULL, NULL, NULL, NULL, NULL, 'visible'),
+('OI0008', 'OR0007', 'PR0001', 2, 210, 420, NULL, NULL, NULL, NULL, NULL, 'visible'),
+('OI0009', 'OR0008', 'PR0004', 2, 350, 700, 4, 'Good design, fits well.', '2025-11-11 02:00:00', '[\"pr0004_review2.jpg\"]', NULL, 'hidden'),
+('OI0010', 'OR0009', 'PR0002', 4, 105, 420, NULL, NULL, NULL, NULL, NULL, 'visible'),
+('OI0011', 'OR0010', 'PR0003', 1, 420, 420, 5, 'Very clear lens, happy with purchase.', '2025-11-12 01:00:00', '[\"pr0003_review3.jpg\"]', NULL, 'visible'),
+('OI0012', 'OR0011', 'PR0001', 1, 210, 210, NULL, NULL, NULL, NULL, NULL, 'visible'),
+('OI0013', 'OR0012', 'PR0004', 2, 350, 700, NULL, NULL, NULL, NULL, NULL, 'visible'),
+('OI0014', 'OR0013', 'PR0002', 5, 105, 525, 5, 'Bought multiple as gifts, all good!', '2025-11-14 03:00:00', '[\"pr0002_review3.jpg\"]', NULL, 'visible'),
+('OI0015', 'OR0014', 'PR0003', 1, 420, 420, NULL, NULL, NULL, NULL, NULL, 'visible'),
+('OI0016', 'OR0015', 'PR0001', 2, 210, 420, NULL, NULL, NULL, NULL, NULL, 'visible'),
+('OI0017', 'OR0016', 'PR0004', 2, 350, 700, 4, 'Good frame quality.', '2025-11-06 04:30:00', NULL, NULL, 'hidden'),
+('OI0018', 'OR0017', 'PR0002', 4, 105, 420, NULL, NULL, NULL, NULL, NULL, 'visible'),
+('OI0019', 'OR0018', 'PR0003', 1, 420, 420, 4, 'Happy with the purchase.', '2025-11-08 07:30:00', NULL, NULL, 'visible'),
+('OI0020', 'OR0019', 'PR0003', 1, 420, 420, NULL, NULL, NULL, NULL, NULL, 'visible'),
+('OI0021', 'OR0020', 'PR0001', 3, 210, 630, NULL, NULL, NULL, NULL, NULL, 'visible'),
+('OI0022', 'OR0021', 'PR0001', 2, 210, 420, 3, 'good', '2025-12-21 06:29:49', NULL, NULL, 'visible'),
+('OI0023', 'OR0022', 'PR0002', 3, 105, 315, NULL, NULL, NULL, NULL, NULL, 'visible'),
+('OI0024', 'OR0023', 'PR0003', 1, 420, 420, NULL, NULL, NULL, NULL, NULL, 'visible');
 
 -- --------------------------------------------------------
 

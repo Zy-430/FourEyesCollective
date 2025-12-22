@@ -26,34 +26,44 @@ $current_url = $_SERVER['REQUEST_URI'];
         </div>
 
         <nav class="admin-menu">
-            <a href="/page/admin_dashboard.php"
+            <a href="admin_dashboard.php"
                 class="<?= $current_script == 'admin_dashboard.php' ? 'active' : '' ?>">
                 Dashboard
             </a>
 
-            <a href="user_list.php?role=Admin"
-                class="<?= (strpos($current_url, 'user_list.php') !== false && isset($_GET['role']) && $_GET['role'] == 'Admin') ? 'active' : '' ?>">
+            <a href="view_user.php?role=Admin"
+                class="<?= (strpos($current_url, 'view_user.php') !== false && isset($_GET['role']) && $_GET['role'] == 'Admin') ? 'active' : '' ?>">
                 Admin Management
             </a>
 
-            <a href="user_list.php?role=Member"
-                class="<?= (strpos($current_url, 'user_list.php') !== false && isset($_GET['role']) && $_GET['role'] == 'Member') ? 'active' : '' ?>">
+            <a href="view_user.php?role=Member"
+                class="<?= (strpos($current_url, 'view_user.php') !== false && isset($_GET['role']) && $_GET['role'] == 'Member') ? 'active' : '' ?>">
                 Member Management
             </a>
 
-            <a href="/page/view_category.php"
-                class="<?= $current_script == 'view-category.php' ? 'active' : '' ?>">
+            <a href="view_category.php"
+                class="<?= $current_script == 'view_category.php' ? 'active' : '' ?>">
                 Category Management
             </a>
 
-            <a href="/page/view_product.php"
+            <a href="view_product.php"
                 class="<?= $current_script == 'view_product.php' ? 'active' : '' ?>">
                 Product Management
             </a>
 
-            <a href="/page/admin_order.php"
+            <a href="admin_order.php"
                 class="<?= $current_script == 'admin_order.php' ? 'active' : '' ?>">
-                Order History
+                Order Management
+            </a>
+
+            <a href="admin_review.php"
+                class="<?= $current_script == 'admin_review.php' ? 'active' : '' ?>">
+                Review Management
+            </a>
+
+            <a href="view_product_report.php"
+                class="<?= $current_script == 'view_product_report.php' ? 'active' : '' ?>">
+                Report
             </a>
         </nav>
 
@@ -83,7 +93,7 @@ $current_url = $_SERVER['REQUEST_URI'];
     <div class="admin-header">
         <h2 class="admin-title">Four Eyes Collective Administration Panel</h2>
         <div class="admin-logout">
-            <a href="logout.php"><i class="fa-solid fa-right-from-bracket" style="color: #162b65"></i>
+            <a href="../logout.php"><i class="fa-solid fa-right-from-bracket" style="color: #162b65"></i>
             </a>
         </div>
     </div>

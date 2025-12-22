@@ -15,26 +15,18 @@ function addToCart(productId) {
     formData.append('action', 'add');
     formData.append('product_id', productId);
 
-    xhr.open('POST', '/page/cart.php');
+    xhr.open('POST', '/page/ajax/cart_ajax.php');
+    // Mark as AJAX request
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
     xhr.onload = function () {
         if (xhr.status === 200) {
             showNotification('Product added to cart successfully!', 'success');
 
             // Update cart badge immediately
-            fetch('/page/cart_count.php')
-                .then(res => res.json())
-                .then(data => {
-                    const badge = document.getElementById('cart-badge');
-                    if (!badge) return;
-
-                    if (data.cart_count > 0) {
-                        badge.textContent = data.cart_count;
-                        badge.style.display = 'flex';
-                    } else {
-                        badge.style.display = 'none';
-                    }
-                });
+            if (typeof refreshCartBadge === 'function') {
+                refreshCartBadge();
+            }
         } else {
             showNotification('Error adding product to cart', 'error');
         }
@@ -46,3 +38,11 @@ function addToCart(productId) {
 
     xhr.send(formData);
 }
+
+// Delegate clicks on elements with .add-to-cart to the addToCart function
+$(document).on('click', '.add-to-cart', function(e){
+    e.preventDefault();
+    const productId = $(this).data('product-id') || $(this).attr('data-product-id');
+    if (!productId) return;
+    addToCart(productId);
+});

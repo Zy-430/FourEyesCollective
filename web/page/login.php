@@ -68,7 +68,7 @@ if (is_post()) {
                     if ($user->role === 'Member') {
                         login($user, '/page/homepage.php');
                     } elseif ($user->role === 'Admin') {
-                        login($user, '/page/admin_dashboard.php');
+                        login($user, '/page/Admin/admin_dashboard.php');
                     } else {
                         login($user, '/homepage.php');
                     }

@@ -16,22 +16,6 @@ function getProductSoldCount($product_id) {
     return $result->total_sold ?? 0;
 }
 
-// Function to check if product is in user's wishlist
-function isInWishlist($user_id, $product_id) {
-    global $_db;
-    
-    if (!$user_id) return false;
-    
-    $sql = "SELECT COUNT(*) as count FROM wishlist 
-            WHERE user_id = ? AND product_id = ? AND active = 1";
-    
-    $stm = $_db->prepare($sql);
-    $stm->execute([$user_id, $product_id]);
-    $result = $stm->fetch();
-    
-    return $result->count > 0;
-}
-
 // Function to get top selling products
 function getTopSellingProducts($limit = 5) {
     global $_db;

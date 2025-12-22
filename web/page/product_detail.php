@@ -2,6 +2,7 @@
 require '../_base.php';
 require '../lib/db.php';
 require '../lib/category.php';
+require '../lib/product_stats.php';
 
 $id = get('id');
 $stm = $_db->prepare("SELECT * FROM product WHERE product_id = ?");
@@ -17,7 +18,9 @@ $stm_reviews = $_db->prepare("
     FROM order_item oi
     JOIN `order` o ON oi.order_id = o.order_id
     JOIN users u ON o.user_id = u.user_id
-    WHERE oi.product_id = ? AND oi.user_rating IS NOT NULL
+    WHERE oi.product_id = ? 
+    AND oi.user_rating IS NOT NULL
+    AND oi.review_status = 'visible'
     ORDER BY oi.rated_at DESC
 ");
 $stm_reviews->execute([$id]);
@@ -41,30 +44,90 @@ include '../_head.php';
 
     <!-- LEFT: IMAGE CAROUSEL -->
     <div style="width:400px;">
-        <div id="mainImageContainer" style="position:relative; width:400px; height:400px; overflow:hidden; border:1px solid #ccc; border-radius:8px;">
-            <img id="mainImage" src="/images/product/<?= $folder ?>/<?= trim($images[0]) ?>" style="width:100%; height:100%; object-fit:cover;">
-            <button id="prevImageBtn" class="carousel-btn left" style="position:absolute; top:50%; left:10px; transform:translateY(-50%); background:black; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; opacity:0.7;">❮</button>
-            <button id="nextImageBtn" class="carousel-btn right" style="position:absolute; top:50%; right:10px; transform:translateY(-50%); background:black; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; opacity:0.7;">❯</button>
+        <!-- MAIN BIG IMAGE -->
+        <div style="position:relative; width:400px; height:400px; overflow:hidden; border:1px solid #ccc; border-radius:8px;">
+            <img id="mainImage"
+                src="/images/product/<?= $folder ?>/<?= trim($images[0]) ?>"
+                style="width:100%; height:100%; object-fit:cover;">
+
+            <!-- BUTTONS -->
+            <button class="carousel-prev"
+                style="position:absolute; top:50%; left:10px; transform:translateY(-50%); 
+                       background:black; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; opacity:0.7;">
+                ❮
+            </button>
+
+            <button class="carousel-next"
+                style="position:absolute; top:50%; right:10px; transform:translateY(-50%); 
+                       background:black; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer; opacity:0.7;">
+                ❯
+            </button>
         </div>
 
-        <div id="thumbnails" style="display:flex; gap:10px; margin-top:10px;">
+        <!-- THUMBNAILS -->
+        <div style="display:flex; gap:10px; margin-top:10px;">
             <?php foreach ($images as $index => $img): ?>
                 <?php $img = trim($img); ?>
-                <img class="thumbnail" data-index="<?= $index ?>" src="/images/product/<?= $folder ?>/<?= encode($img) ?>" style="width:70px; height:70px; object-fit:cover; border:2px solid #ccc; border-radius:6px; cursor:pointer;">
+                <img class="thumb" data-index="<?= $index ?>"
+                    src="/images/product/<?= $folder ?>/<?= encode($img) ?>"
+                    style="width:70px; height:70px; object-fit:cover; border:2px solid #ccc; border-radius:6px; cursor:pointer;"
+                    id="thumb<?= $index ?>">
             <?php endforeach; ?>
         </div>
+
     </div>
 
     <!-- RIGHT: PRODUCT INFO -->
     <div style="flex:1;">
-        <p style="font-size:16px;"><?= nl2br(encode($p->product_description)) ?></p>
-        <p><strong>Price:</strong>
-            <span style="font-size:22px; color:#2c3e50; font-weight:bold;">RM <?= number_format($p->product_price, 2) ?></span>
+        <p style="font-size:16px; line-height:1.6; margin-bottom:20px;">
+            <?= nl2br(encode($p->product_description)) ?>
         </p>
-        <p><strong>Quantity in Stock:</strong> <?= number_format($p->product_stock) ?> left</p>
 
-        <?php $is_logged_in = isset($_SESSION['user']); ?>
-        <a href="javascript:void(0)" id="addToCartBtn" data-product-id="<?= $p->product_id ?>" class="add-to-cart" style="padding:12px 25px; background:#2c3e50; color:white; border-radius:5px; text-decoration:none; display:inline-block; font-size:16px; margin-top:15px;">Add to Cart</a>
+        <!-- Price -->
+        <p style="margin-bottom: 30px;">
+            <strong style="font-size: 18px;">Price:</strong>
+            <span style="font-size:32px; color:#2c3e50; font-weight:bold;">
+                RM <?= number_format($p->product_price, 2) ?>
+            </span>
+        </p>
+
+        <!-- Quantity in Stock -->
+        <p style="margin-bottom: 30px; font-size: 16px;">
+            <strong>Quantity in Stock:</strong>
+            <span style="color: <?= $p->product_stock > 10 ? '#27ae60' : '#e74c3c' ?>; font-weight:bold;">
+                <?= number_format($p->product_stock) ?> left
+            </span>
+            <?php if ($p->product_stock <= 10): ?>
+                <span style="color: #e74c3c; font-weight:bold;">(Selling Fast!)</span>
+            <?php endif; ?>
+        </p>
+
+        <!-- Sold Count (if available) -->
+        <?php
+        $soldCount = getProductSoldCount($id);
+        if ($soldCount > 0): ?>
+            <p style="margin-bottom: 30px; font-size: 16px;">
+                <strong>Total Sold:</strong>
+                <span style="color: #2c3e50; font-weight:bold;">
+                    <?= number_format($soldCount) ?> units
+                </span>
+            </p>
+        <?php endif; ?>
+
+        <!-- Action Buttons -->
+        <div class="product-actions">
+            <button type="button" class="action-btn btn-add-to-cart add-to-cart"
+                data-product-id="<?= $p->product_id ?>">
+                <i class="fas fa-shopping-cart"></i>
+                Add to Cart
+            </button>
+
+            <button type="button" class="action-btn btn-add-to-wishlist wishlist-btn"
+                data-product-id="<?= $p->product_id ?>">
+                <i class="far fa-heart"></i>
+                Add to Wishlist
+            </button>
+        </div>
     </div>
 
 </div>
@@ -102,7 +165,14 @@ include '../_head.php';
                         $photos = array_filter(array_map('trim', explode(',', $clean)));
                     }
                 }
-                $videos = !empty($review['rating_video']) ? array_filter(array_map('trim', explode(',', $review['rating_video']))) : [];
+                $videos = [];
+                if (!empty($review['rating_video'])) {
+                    $decoded = json_decode($review['rating_video'], true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                        $videos = array_filter(array_map('trim', $decoded));
+                    }
+                }
+
             ?>
                 <div class="review-item" style="background:white; padding:20px; border-radius:8px; border-left:4px solid #f39c12;">
                     <div style="display:flex; align-items:center; margin-bottom:15px;">
@@ -158,80 +228,97 @@ include '../_head.php';
     </div>
 </div>
 
+<!-- CAROUSEL SCRIPT -->
 <script>
-    $(document).ready(function() {
+    (function($) {
         let images = <?= json_encode(array_map('trim', $images)) ?>;
         let folder = "<?= $folder ?>";
-        let index = 0;
+        let idx = 0;
 
         function showImage(i) {
-            index = i;
-            $('#mainImage').attr('src', '/images/product/' + folder + '/' + images[index]);
+            idx = i;
+            $('#mainImage').attr('src', '/images/product/' + folder + '/' + images[idx]);
         }
 
-        $('#nextImageBtn').click(function() {
-            showImage((index + 1) % images.length);
-        });
-        $('#prevImageBtn').click(function() {
-            showImage((index - 1 + images.length) % images.length);
-        });
-
-        setInterval(function() {
-            showImage((index + 1) % images.length);
-        }, 3000);
-
-        $('.thumbnail').click(function() {
-            showImage($(this).data('index'));
-        });
-
-        function openModal(src) {
-            $('#modalImage').hide().attr('src', src).show();
-            $('#modalVideo').hide();
-            $('#mediaModal').fadeIn();
+        function nextImage() {
+            idx = (idx + 1) % images.length;
+            showImage(idx);
         }
 
-        function playVideo(src) {
-            $('#modalImage').hide();
-            $('#modalVideo').attr('src', src).show();
-            $('#mediaModal').fadeIn();
+        function prevImage() {
+            idx = (idx - 1 + images.length) % images.length;
+            showImage(idx);
         }
 
-        $('#closeModalBtn,#mediaModal').click(function() {
-            $('#modalVideo')[0].pause();
-            $('#mediaModal').fadeOut();
+        // DOM bindings
+        $(function() {
+            $(document).on('click', '.carousel-prev', function(e) {
+                e.preventDefault();
+                prevImage();
+            });
+            $(document).on('click', '.carousel-next', function(e) {
+                e.preventDefault();
+                nextImage();
+            });
+            $(document).on('click', '.thumb', function(e) {
+                e.preventDefault();
+                showImage(Number($(this).data('index')));
+            });
+
+            // Auto slideshow every 3 seconds
+            setInterval(nextImage, 3000);
+        });
+    })(jQuery);
+</script>
+
+<script>
+    $(function() {
+        const $modal = $('#mediaModal');
+        const $modalImage = $('#modalImage');
+        const $modalVideo = $('#modalVideo');
+
+        // Photo click
+        $(document).on('click', '.media-photo', function() {
+            const src = $(this).data('src');
+
+            $modalVideo.hide().attr('src', '');
+            $modalImage.attr('src', src).show();
+
+            $modal.fadeIn().css('display', 'flex');
         });
 
-        $('.media-photo').click(function() {
-            openModal($(this).data('src'));
-        });
-        $('.media-video').click(function() {
-            playVideo($(this).data('src'));
+        // Video click
+        $(document).on('click', '.media-video', function() {
+            const src = $(this).data('src');
+
+            $modalImage.hide().attr('src', '');
+            $modalVideo.attr('src', src).show()[0].play();
+
+            $modal.fadeIn().css('display', 'flex');
         });
 
-        $('#addToCartBtn').click(function() {
-            let productId = $(this).data('product-id');
-            <?php if (!$is_logged_in): ?>
-                if (confirm('You need to login to add items to cart. Go to login page?')) {
-                    window.location.href = '/page/login.php?redirect=' + encodeURIComponent(window.location.href);
-                }
-            <?php else: ?>
-                $.ajax({
-                    url: 'cart.php',
-                    type: 'POST',
-                    data: {
-                        action: 'add',
-                        product_id: productId
-                    },
-                    success: function() {
-                        showNotification('Product added to cart successfully!', 'success');
-                    },
-                    error: function() {
-                        showNotification('Error adding product to cart', 'error');
-                    }
-                });
-            <?php endif; ?>
+        // Close modal
+        $('#closeModalBtn').on('click', function() {
+            closeModal();
         });
+
+        // Click outside content to close
+        $modal.on('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        function closeModal() {
+            $modal.fadeOut();
+            $modalImage.hide().attr('src', '');
+            $modalVideo.hide().attr('src', '').each(function() {
+                this.pause();
+            });
+        }
     });
 </script>
 
+<script src="/js/notifications.js"></script>
+<script src="/js/wishlist.js"></script>
 <?php include '../_foot.php'; ?>

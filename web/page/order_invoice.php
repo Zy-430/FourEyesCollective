@@ -3,7 +3,7 @@ require '../_base.php';
 require '../lib/db.php';
 require('../lib/fpdf/fpdf.php');
 
-auth('Admin', 'Member');
+auth();
 
 $order_id = $_GET['order_id'] ?? $_POST['order_id'] ?? null;
 $type = $_GET['type'] ?? $_POST['type'] ?? 'pdf';

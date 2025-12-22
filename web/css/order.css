@@ -26,7 +26,6 @@
     border-radius: 20px;
 }
 
-/* Status colors with pastel background */
 .order-status.pending {
     background-color: #fde3b0;
     /* pastel orange */
@@ -54,12 +53,11 @@
 
 .order-status.default {
     background-color: #d3d3d3;
-    /* pastel grey */
     color: #7f8c8d;
 }
 
 .order-date {
-    color: #b0b0b0; /* light grey */
+    color: #b0b0b0; 
     font-size: 14px;
 }
 
@@ -71,25 +69,23 @@
     border-radius: 12px;
     text-decoration: none;
     font-weight: 600;
-    color: #2c3e50;             /* inactive text color */
-    background: #ecf0f1;        /* inactive background pastel */
+    color: #2c3e50;             
+    background: #ecf0f1;        
     transition: all 0.3s ease;
 }
 
 /* Active tab */
 .order-tabs .tab-button.active {
-    color: #fff;                /* active text color */
-    background: #34495e;        /* dark pastel background */
+    color: #fff;                
+    background: #34495e;        
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-/* Optional hover effect for inactive tabs */
+/* Hover effect for inactive tabs */
 .order-tabs .tab-button:not(.active):hover {
-    background: #dcdde1;         /* slightly darker pastel */
+    background: #dcdde1;        
     color: #2c3e50;
 }
-
-
 
 /* Timeline container */
 .timeline {

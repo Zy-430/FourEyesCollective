@@ -98,7 +98,7 @@ include '../_head.php';
                     <a href="profile_change_password.php" class="btn btn-danger">Change Password</a>
 
                     <?php if ($_user->role === 'Member'): ?>
-                        <a href="profile_address_list.php" class="btn btn-gray">My Address</a>
+                        <a href="Member/profile_address_list.php" class="btn btn-gray">My Address</a>
                     <?php endif; ?>
                 </div>
 
