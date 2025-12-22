@@ -14,9 +14,28 @@ if (!$order_item_id || $user_rating < 1 || $user_rating > 5) {
     exit;
 }
 
+// SECURITY: Verify item belongs to this user AND not rated yet
+$verify = $_db->prepare("
+    SELECT oi.order_item_id
+    FROM order_item oi
+    JOIN `order` o ON oi.order_id = o.order_id
+    WHERE oi.order_item_id = ?
+      AND o.user_id = ?
+      AND oi.user_rating IS NULL
+");
+$verify->execute([$order_item_id, $_user->user_id]);
+
+if (!$verify->fetch()) {
+    echo json_encode([
+        'status'  => 'error',
+        'message' => 'Unauthorized or already rated'
+    ]);
+    exit;
+}
+
 /* ---------------------------
    Handle photo & video uploads
-   Max 5 files each
+   Max 5 files each item
 ---------------------------- */
 $photos = [];
 $videos = [];
@@ -28,15 +47,22 @@ if (!empty($_FILES['rating_media']['name'][0])) {
     foreach ($_FILES['rating_media']['tmp_name'] as $i => $tmpName) {
         if (!is_uploaded_file($tmpName)) continue;
 
-        $originalName = basename($_FILES['rating_media']['name'][$i]);
+        $originalName = $_FILES['rating_media']['name'][$i];
+        $fileSize     = $_FILES['rating_media']['size'][$i];
         $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
 
-        $allowedImage = ['jpg','jpeg','png','gif'];
-        $allowedVideo = ['mp4','mov','webm'];
+        $allowedImage = ['jpg', 'jpeg', 'png', 'gif'];
+        $allowedVideo = ['mp4', 'mov', 'webm'];
 
+        // Extension check
         if (!in_array($ext, array_merge($allowedImage, $allowedVideo))) continue;
 
-        $filename = uniqid('rev_') . '_' . $originalName;
+        // File size check 
+        if (in_array($ext, $allowedImage) && $fileSize > 5 * 1024 * 1024) continue;
+        if (in_array($ext, $allowedVideo) && $fileSize > 5 * 1024 * 1024) continue;
+
+        // Save file, prevent same file name overwrite
+        $filename = uniqid('rev_', true) . '.' . $ext;
         move_uploaded_file($tmpName, $uploadDir . $filename);
 
         if (in_array($ext, $allowedImage) && count($photos) < 5) {
