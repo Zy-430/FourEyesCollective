@@ -1,3 +1,7 @@
+
+// ---------------------------------------------------------------------------
+// Notifications
+// ---------------------------------------------------------------------------
 function showNotification(message, type = 'success') {
     // Remove any existing notifications first
     const existingNotifications = document.querySelectorAll('.custom-notification');

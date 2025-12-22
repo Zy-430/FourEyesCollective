@@ -58,7 +58,6 @@ include '../_head.php';
 ?>
 
 <div class="page-container">
-
     <!-- Order Info Card -->
     <div class="card order-card">
         <span class="order-status-badge" style="background:<?= statusColor($order['status']) ?>;">

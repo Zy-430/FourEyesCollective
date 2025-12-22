@@ -50,12 +50,11 @@ if ($_user) {
             $imgArray = explode(',', $item->product_image);
             $firstImage = trim($imgArray[0]);
             $imgPath = "/images/product/$folder/$firstImage";
-            
+
             // Get sold count for product
             $soldCount = getProductSoldCount($item->product_id);
             ?>
-            
-            <a href="product_detail.php?id=<?= $item->product_id ?>" class="product-card">
+            <a href="product_detail.php?id=<?= $item->product_id ?>&return_url=/page/wishlist.php" class="product-card">
                 <!-- Image Container -->
                 <div class="product-image-container">
                     <img src="<?= $imgPath ?>" alt="<?= encode($item->product_name) ?>">
@@ -95,6 +94,4 @@ if ($_user) {
         <?php endforeach; ?>
     </div>
 <?php endif; ?>
-<script src="/js/wishlist.js"></script>
-<script src="/js/notifications.js"></script>
 <?php include '../_foot.php'; ?>

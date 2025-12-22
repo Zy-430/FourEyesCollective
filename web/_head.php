@@ -17,7 +17,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="/js/app.js"></script>
     <script src="/js/notifications.js"></script>
-    <script src="/js/addToCart.js"></script>
 </head>
 
 <body data-logged-in="<?= $_user ? '1' : '0' ?>">

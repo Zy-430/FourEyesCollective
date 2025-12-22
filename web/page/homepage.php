@@ -45,7 +45,7 @@ $is_logged_in = isset($_SESSION['user']);
                 ?>
 
                 <div class="top5-product">
-                    <a href="product_detail.php?id=<?= $product->product_id ?>" class="product-card">
+                    <a href="product_detail.php?id=<?= $product->product_id ?>&return_url=/page/homepage.php" class="product-card">
                         <!-- Image Container -->
                         <div class="product-image-container">
                             <img class="product-image" src="<?= $imgPath ?>" alt="<?= encode($product->product_name) ?>">
@@ -55,12 +55,6 @@ $is_logged_in = isset($_SESSION['user']);
                                 <i class="far fa-heart"></i>
                             </button>
 
-                            <!-- Mobile badge for top 3 -->
-                            <?php if ($index < 3): ?>
-                                <div class="mobile-badge">
-                                    #<?= $index + 1 ?>
-                                </div>
-                            <?php endif; ?>
                             <div class="product-sold"><span class="sold-count"><?= number_format($soldCount) ?></span> sold</div>
 
                         </div>
@@ -96,7 +90,6 @@ $is_logged_in = isset($_SESSION['user']);
 <section class="categories-section">
     <div class="container">
         <h2>Browse by Category</h2>
-
         <div class="categories-grid">
             <a href="/page/shoppage.php?cat=CA0001" class="category-card">
                 <div class="category-icon">
@@ -132,6 +125,11 @@ $is_logged_in = isset($_SESSION['user']);
 <!-- Premium Features -->
 <section class="premium-features">
     <div class="container">
+
+        <div class="collection-header">
+            <h2>Why Choose Four Eyes Collective?</h2>
+            <p class="features-sub">Experience the difference with our exceptional eyewear and services</p>
+        </div>
         <div class="features-grid">
             <div class="feature-card">
                 <div class="feature-icon feature-icon-blue">✓</div>
@@ -167,8 +165,6 @@ $is_logged_in = isset($_SESSION['user']);
         </div>
     </section>
 <?php endif; ?>
-
-<script src="/js/homepage.js"></script>
 
 <?php
 include '../_foot.php';

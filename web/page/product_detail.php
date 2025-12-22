@@ -12,6 +12,21 @@ $p = $stm->fetch();
 $folder = $categoryFolders[$p->category_id] ?? 'others';
 $images = explode(',', $p->product_image);
 
+$return_url = get('return_url', '/page/homepage.php');
+$return_url = trim($return_url);
+
+// Normalize path and strip query/fragment
+$path = parse_url($return_url, PHP_URL_PATH) ?: $return_url;
+
+// Validate return URL to prevent open redirects
+$allowed_returns = ['/page/homepage.php', '/page/shoppage.php', '/page/wishlist.php'];
+if (!in_array($path, $allowed_returns)) {
+    $return_url = '/page/homepage.php';
+} else {
+    // Use the full validated path
+    $return_url = $path;
+}
+
 // Fetch reviews
 $stm_reviews = $_db->prepare("
     SELECT oi.*, o.user_id, u.name, u.photo
@@ -36,6 +51,30 @@ $_title = $p->product_name;
 include '../_head.php';
 ?>
 
+<!-- BACK BUTTON -->
+<div style="margin-bottom: 20px;">
+    <a href="<?= encode($return_url) ?>" style="text-decoration: none; color: #2c3e50; font-size: 16px; display: inline-flex; align-items: center; gap: 8px;">
+        <i class="fa fa-long-arrow-left"></i>
+        <span>Back to 
+            <?php 
+            switch($return_url) {
+                case '/page/homepage.php':
+                    echo 'Homepage';
+                    break;
+                case '/page/shoppage.php':
+                    echo 'Shop';
+                    break;
+                case '/page/wishlist.php':
+                    echo 'Wishlist';
+                    break;
+                default:
+                    echo 'Homepage';
+            }
+            ?>
+        </span>
+    </a>
+</div>
+
 <h1 style="margin-bottom:20px;"><?= encode($p->product_name) ?></h1>
 
 <div style="display:flex; gap:30px;">
@@ -43,7 +82,7 @@ include '../_head.php';
     <!-- LEFT: IMAGE CAROUSEL -->
     <div style="width:400px;">
         <!-- MAIN BIG IMAGE -->
-        <div style="position:relative; width:400px; height:400px; overflow:hidden; border:1px solid #ccc; border-radius:8px;">
+        <div id="productCarousel" data-images='<?= htmlspecialchars(json_encode(array_map("trim", $images)), ENT_QUOTES) ?>' data-folder="<?= htmlspecialchars($folder, ENT_QUOTES) ?>" style="position:relative; width:400px; height:400px; overflow:hidden; border:1px solid #ccc; border-radius:8px;">
             <img id="mainImage"
                 src="/images/product/<?= $folder ?>/<?= trim($images[0]) ?>"
                 style="width:100%; height:100%; object-fit:cover;">
@@ -218,49 +257,4 @@ include '../_head.php';
         <video id="modalVideo" style="max-width:100%; max-height:100%; display:none; border-radius:8px;" controls></video>
     </div>
 </div>
-
-<!-- CAROUSEL SCRIPT -->
-<script>
-    (function($) {
-        let images = <?= json_encode(array_map('trim', $images)) ?>;
-        let folder = "<?= $folder ?>";
-        let idx = 0;
-
-        function showImage(i) {
-            idx = i;
-            $('#mainImage').attr('src', '/images/product/' + folder + '/' + images[idx]);
-        }
-
-        function nextImage() {
-            idx = (idx + 1) % images.length;
-            showImage(idx);
-        }
-
-        function prevImage() {
-            idx = (idx - 1 + images.length) % images.length;
-            showImage(idx);
-        }
-
-        // DOM bindings
-        $(function() {
-            $(document).on('click', '.carousel-prev', function(e) {
-                e.preventDefault();
-                prevImage();
-            });
-            $(document).on('click', '.carousel-next', function(e) {
-                e.preventDefault();
-                nextImage();
-            });
-            $(document).on('click', '.thumb', function(e) {
-                e.preventDefault();
-                showImage(Number($(this).data('index')));
-            });
-
-            // Auto slideshow every 3 seconds
-            setInterval(nextImage, 3000);
-        });
-    })(jQuery);
-</script>
-<script src="/js/notifications.js"></script>
-<script src="/js/wishlist.js"></script>
 <?php include '../_foot.php'; ?>

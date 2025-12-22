@@ -64,7 +64,7 @@ foreach ($cart_items as $item) {
     $total_amount += $item->product_price * $item->product_qty;
 }
 
-// Delivery fee: RM20 if cart amount < 500, free when subtotal >= 500
+// Calculate delivery fee
 $delivery_fee = ($total_amount >= 500) ? 0 : 20;
 $total_with_delivery = $total_amount + $delivery_fee;
 
@@ -76,7 +76,7 @@ $addresses = $stm->fetchAll(PDO::FETCH_OBJ);
 // Handle form submission - RESTORED THE ORIGINAL LOGIC
 if (is_post()) {
     $address_id = post('address_id');
-    $action = post('action'); // RESTORED THIS LINE
+    $action = post('action');
 
     if (!$address_id) {
         echo json_encode(['success' => false, 'message' => 'Please select an address.']);
@@ -148,7 +148,7 @@ if (is_post()) {
             ")->execute([$i->product_qty, $i->product_id]);
         }
 
-        // Stripe Line Items - RESTORED ORIGINAL STRUCTURE
+        // Stripe Line Items
         $lineItems = [];
         foreach ($cart_items as $i) {
             $lineItems[] = [
@@ -195,7 +195,7 @@ if (is_post()) {
             'metadata' => ['order_id' => $order_id, 'user_id' => $user_id]
         ]);
 
-        // Insert payment row - RESTORED ORIGINAL
+        // Insert payment row 
         $stm = $_db->query("SELECT MAX(CAST(SUBSTRING(payment_id, 4) AS UNSIGNED)) AS maxid FROM payment");
         $maxPay = $stm->fetch()->maxid ?? 0;
         $payment_id = "PAY" . str_pad($maxPay + 1, 4, "0", STR_PAD_LEFT);
@@ -206,8 +206,8 @@ if (is_post()) {
         ")->execute([$payment_id, $order_id, $total_with_delivery, $session->id]);
 
         $_db->commit();
-
         echo json_encode(['success' => true, 'redirect' => $session->url]);
+
         exit;
     } catch (Exception $ex) {
         $_db->rollBack();
@@ -291,13 +291,13 @@ if (is_post()) {
                         <h2 class="section-title">Payment Information</h2>
                         <div>
                             <p style="color: #7f8c8d; margin-bottom: 15px;">
-                                You will be redirected to Stripe's secure payment page to complete your purchase.
+                                You will be redirected to payment page to complete your purchase.
                             </p>
                             <div class="security-note">
                                 <div class="security-icon">🔒</div>
                                 <div>
                                     <strong>Secure Payment</strong><br>
-                                    Your payment information is encrypted and secure. We never store your card details.
+                                    Your payment information is encrypted and secure.
                                 </div>
                             </div>
                         </div>
@@ -368,108 +368,7 @@ if (is_post()) {
         </form>
     </div>
 
-    <script>
-        // Address selection styling
-        document.querySelectorAll('.address-option').forEach(option => {
-            option.addEventListener('click', function() {
-                document.querySelectorAll('.address-option').forEach(opt => {
-                    opt.classList.remove('selected');
-                });
-                this.classList.add('selected');
-                const radio = this.querySelector('input[type="radio"]');
-                if (radio) radio.checked = true;
-                document.getElementById('addressError').style.display = 'none';
-            });
-        });
-
-        // Process payment - USING ORIGINAL LOGIC
-        async function processPayment() {
-            const submitBtn = document.getElementById('submitBtn');
-            const btnText = document.getElementById('btnText');
-            const btnLoading = document.getElementById('btnLoading');
-            const paymentError = document.getElementById('paymentError');
-            const paymentSuccess = document.getElementById('paymentSuccess');
-
-            // Reset messages
-            paymentError.style.display = 'none';
-            paymentSuccess.style.display = 'none';
-
-            // Validate address
-            const addressSelected = document.querySelector('input[name="address_id"]:checked');
-            if (!addressSelected) {
-                showNotification('Please select a shipping address', 'error');
-                return;
-            }
-
-            // Show processing notification
-            showNotification('Payment processing...', 'info');
-
-            // Show loading
-            submitBtn.disabled = true;
-            btnText.style.display = 'none';
-            btnLoading.style.display = 'inline-block';
-
-            try {
-                const formData = new FormData();
-                formData.append('address_id', addressSelected.value);
-                formData.append('action', 'checkout');
-
-                const response = await fetch('checkout.php', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    // Success - redirect to Stripe
-                    paymentSuccess.style.display = 'block';
-
-                    setTimeout(() => {
-                        window.location.href = result.redirect;
-                    }, 1000);
-                } else {
-                    // Payment failed - show error
-                    paymentError.textContent = result.message || 'Payment failed. Please try again.';
-                    paymentError.style.display = 'block';
-
-                    // Enable button for retry
-                    submitBtn.disabled = false;
-                    btnText.style.display = 'inline';
-                    btnLoading.style.display = 'none';
-                }
-
-            } catch (error) {
-                // Network or server error
-                paymentError.textContent = 'Network error. Please check your connection and try again.';
-                paymentError.style.display = 'block';
-
-                submitBtn.disabled = false;
-                btnText.style.display = 'inline';
-                btnLoading.style.display = 'none';
-
-                console.error('Payment error:', error);
-            }
-        }
-
-        // Bind the payment button using jQuery to avoid inline handlers
-        $(function(){
-            $(document).on('click', '#submitBtn', function(e){
-                e.preventDefault();
-                processPayment();
-            });
-        });
-
-        // Auto-scroll to error if any
-        window.onload = function() {
-            const error = document.querySelector('.error-message[style*="display: block"]');
-            if (error) {
-                error.scrollIntoView({
-                    behavior: 'smooth'
-                });
-            }
-        };
-    </script>
+    <script src="/js/checkout_flow.js"></script>
 </body>
 
 </html>

@@ -6,6 +6,24 @@ auth('Member');
 
 $user_id = $_user->user_id;
 
+// get return URL with fallbacks
+$return_url = get('return', 'profile_address_list.php');
+$return_url = trim($return_url);
+
+// Normalize path and strip query/fragment
+$path = parse_url($return_url, PHP_URL_PATH) ?: $return_url;
+$base = basename($path);
+
+// Validate return URL to prevent open redirects
+$allowed_returns = ['checkout.php', 'profile_address_list.php', 'profile_page.php', 'cart.php'];
+if (!in_array($base, $allowed_returns)) {
+    $return_url = 'profile_address_list.php';
+} else {
+    // Keep just the base filename (no query strings)
+    $return_url = $base;
+} 
+
+// Count current addresses
 $stmt = $_db->prepare("SELECT * FROM address WHERE user_id = ?");
 $stmt->execute([$user_id]);
 $addresses = $stmt->fetchAll();
@@ -64,7 +82,7 @@ if (is_post()){
     ]);
 
     $_SESSION['success'] = "Address added successfully.";
-    redirect("profile_address_list.php");
+    redirect("$return_url");
 }
 
 $_title = "Add New Address | Four Eyes Collective";
@@ -79,6 +97,7 @@ include '../../_head.php';
     <h1 class="centered-title">Add New Address</h1>
 
     <form method="post">
+        <input type="hidden" name="return" value="<?= htmlspecialchars($return_url) ?>">
 
         <div class="form-group">
             <label>Address Line 1 *</label>
@@ -129,6 +148,16 @@ include '../../_head.php';
             <button class="cta-button full-width" type="submit">
                 Add Address
             </button>
+
+            <?php if ($return_url === 'checkout.php'): ?>
+                <a href="checkout.php" class="cta-button secondary full-width" style="margin-top:10px; text-align:center;">
+                    Back to Checkout
+                </a>
+            <?php else: ?>
+                <a href="profile_address_list.php" class="cta-button secondary full-width" style="margin-top:10px;text-align:center;">
+                    Back to Address List
+                </a>
+            <?php endif; ?>
         </div>
 
     </form>
