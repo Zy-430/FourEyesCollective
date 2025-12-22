@@ -102,10 +102,10 @@ $_title = "Admin Review Management | Four Eyes Collective";
 
             if ($currentSort === $column) {
                 if ($currentDir === 'asc') {
-                    $class = 'asc';   // ▲
+                    $class = 'asc';  
                     $dir = 'desc';
                 } else {
-                    $class = 'desc';  // ▼
+                    $class = 'desc'; 
                     $dir = 'asc';
                 }
             }
