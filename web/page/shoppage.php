@@ -292,7 +292,11 @@ $filterQuery = http_build_query($currentParams);
                     $folder = $categoryFolders[$p->category_id] ?? 'others';
                     $imgArray = explode(',', $p->product_image);
                     $firstImage = trim($imgArray[0]);
-                    $imgPath = "/images/product/$folder/$firstImage";
+                    if (!$firstImage || $firstImage === "") {
+                        $imgPath = "/images/product/no-image.png";
+                    } else {
+                        $imgPath = "/images/product/$folder/$firstImage";
+                    }
 
                     // Get sold count for product
                     $soldCount = getProductSoldCount($p->product_id);

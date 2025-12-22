@@ -10,7 +10,14 @@ $stm->execute([$id]);
 $p = $stm->fetch();
 
 $folder = $categoryFolders[$p->category_id] ?? 'others';
-$images = explode(',', $p->product_image);
+$rawImages = array_filter(array_map('trim', explode(',', $p->product_image)));
+$images = $rawImages;
+
+// If no images → fallback to placeholder
+if (empty($images)) {
+    $images = ['no-image.png'];
+    $folder = ''; // no folder needed for fallback
+}
 
 // Fetch reviews
 $stm_reviews = $_db->prepare("

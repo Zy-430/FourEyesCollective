@@ -91,10 +91,11 @@ if (get('msg') == 'added') {
                                     </a>
 
                                     <a href="delete_category.php?id=<?= $c->category_id ?>"
-                                        onclick="return confirm('Are you sure you want to delete category (<?= $c->category_id ?>) ?');"
+                                        onclick="return confirm('⚠ WARNING ⚠\n\nAre you VERY sure you want to delete this category?\n\nCategory: <?= $c->category_id ?>\nFolder will be deleted ONLY if empty.\n\nThis action cannot be undone!');"
                                         class="btn-default delete-btn">
+
                                         <i class="fas fa-trash"></i>
-                                    </a>
+                                    </a>`
                                 </div>
                             </td>
 

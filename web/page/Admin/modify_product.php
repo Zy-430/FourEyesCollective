@@ -203,7 +203,10 @@ if (is_post()) {
                                     ×
                                 </a>
 
-                               <img src="/images/product/<?= $folder ?>/<?= $img ?>"
+                                <?php
+                                    $imgPath = $img ? "/images/product/$folder/$img" : "/images/product/no-image.png";
+                                ?>
+                                <img src="<?= $imgPath ?>"
                                     style="width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid #ccc;">
                             </div>
                         <?php endforeach; ?>

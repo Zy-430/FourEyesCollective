@@ -240,9 +240,10 @@ if (get('msg') == 'added') {
                 <?php foreach ($normalStock as $p): ?>
                     <?php $folder = $categoryFolders[$p->category_id] ?? 'others';
                     $imgArr = explode(",", $p->product_image);
-                    $img = trim($imgArr[0]); ?>
+                    $img = trim($imgArr[0]); 
+                    $imgPath = $img ? "/images/product/$folder/$img" : "/images/no-image.png";?>
                     <div class="product-card" style="border:1px solid #ddd; padding:15px; border-radius:8px; background:white;">
-                        <img src="/images/product/<?= $folder ?>/<?= $img ?>" style="width:100%; height:170px; object-fit:cover; border-radius:6px; margin-bottom:10px;">
+                        <img src="<?= $imgPath ?>" style="width:100%; height:170px; object-fit:cover; border-radius:6px; margin-bottom:10px;">
                         <h3><?= encode($p->product_name) ?></h3>
                         <p>RM <?= number_format($p->product_price, 2) ?></p>
                         <p>Stock: <strong><?= $p->product_stock ?></strong></p>
