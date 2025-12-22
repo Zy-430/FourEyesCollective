@@ -14,8 +14,8 @@ $check->execute([$id]);
 $count = $check->fetchColumn();
 
 if ($count > 0) {
-    // Category in use → block delete
-    header('Location: view_category.php?msg=error');
+    // Category in use will block delete
+    header('Location: view_category.php?msg=error&cat_id=' . $id);
     exit;
 }
 
@@ -23,7 +23,11 @@ if ($count > 0) {
 $del = $_db->prepare(
     "DELETE FROM category WHERE category_id = ?"
 );
-$del->execute([$id]);
-
-header('Location: view_category.php?msg=deleted');
+if ($del->execute([$id])) {
+    // Success
+    header('Location: view_category.php?msg=deleted&cat_id=' . $id);
+} else {
+    // Error occurred
+    header('Location: view_category.php?msg=error&cat_id=' . $id);
+}
 exit;

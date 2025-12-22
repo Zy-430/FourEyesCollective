@@ -70,7 +70,8 @@ if (is_post()) {
     ]);
 
     // Redirect after successful insert
-    header("Location: view_product.php?msg=added");
+    header("Location: view_product.php?msg=added&product_id=$product_id");
+
     exit;
 }
 ?>

@@ -26,7 +26,7 @@ if (is_post()) {
     $folder = strtolower(preg_replace('/\s+/', '', $category_name));
 
     // create image folder
-    $dir = "../images/product/$folder";
+    $dir = "../../images/product/$folder";
     if (!is_dir($dir)) {
         mkdir($dir, 0777, true);
     }
@@ -37,7 +37,7 @@ if (is_post()) {
     );
     $stm->execute([$category_id, $category_name, $folder]);
 
-    header('Location: view_category.php?msg=added');
+    header('Location: view_category.php?msg=added&cat_id=' . $category_id);
     exit;
 }
 

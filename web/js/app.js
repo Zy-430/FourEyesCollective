@@ -90,6 +90,8 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+
+
 // Admin sidebar 
 function toggleSidebar() {
     const sidebar = document.querySelector('.admin-sidebar');
@@ -105,29 +107,6 @@ function toggleSidebar() {
         icon.className = 'fas fa-chevron-left';
     }
 }
-
-
-
-// Toggle filter dropdown (guarded)
-const _filterBtn = document.getElementById('filterDropdown');
-if (_filterBtn) {
-    _filterBtn.addEventListener('click', function (e) {
-        e.stopPropagation();
-        const dropdown = document.getElementById('filterForm');
-        if (!dropdown) return;
-        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-    });
-}
-
-// Close filter dropdown 
-document.addEventListener('click', function (e) {
-    const dropdown = document.getElementById('filterForm');
-    const button = document.getElementById('filterDropdown');
-
-    if (!button.contains(e.target) && !dropdown.contains(e.target)) {
-        dropdown.style.display = 'none';
-    }
-});
 
 // User photo preview
 function openPhotoModal(src) {
@@ -176,6 +155,8 @@ function refreshCartBadge() {
             updateCartCount(data.cart_count || 0);
         }).catch(() => {});
 }
+
+
 
 
 

@@ -35,20 +35,27 @@ $sql = "SELECT
 $stmt = $_db->prepare($sql);
 $stmt->execute();
 $categories = $stmt->fetchAll();
+
+// Store notification messages
+$notification_message = '';
+$notification_type = 'success';
+$category_id = get('cat_id');
+
+if (get('msg') == 'added') {
+    $notification_message = 'Category (' . $category_id . ') added successfully!';
+} elseif (get('msg') == 'updated') {
+    $notification_message = 'Category (' . $category_id . ') updated successfully!';
+} elseif (get('msg') == 'deleted') {
+    $notification_message = 'Category (' . $category_id . ') deleted successfully!';
+} elseif (get('msg') == 'error') {
+    $notification_message = 'Cannot delete category (' . $category_id . ') because it contains products!';
+    $notification_type = 'error';
+}
 ?>
 
 <div class="admin-content">
     <div class="content-header">
         <h1 class="dashboard-title">Manage Categories</h1>
-
-        <!-- SUCCESS MESSAGE -->
-        <?php if (get('msg')): ?>
-            <div class="flash-msg" style="padding:10px; background:#d4f8d4; border:1px solid #8acb8a; margin-bottom:15px;">
-                <?= get('msg') === 'added' ? 'Category added successfully!' : '' ?>
-                <?= get('msg') === 'updated' ? 'Category updated successfully!' : '' ?>
-                <?= get('msg') === 'deleted' ? 'Category deleted successfully!' : '' ?>
-            </div>
-        <?php endif; ?>
         <div class="header-actions small">
             <!-- ADD CATEGORY BUTTON -->
             <button class="btn-default btn-add" onclick="location.href='add_category.php'">
@@ -84,7 +91,7 @@ $categories = $stmt->fetchAll();
                                     </a>
 
                                     <a href="delete_category.php?id=<?= $c->category_id ?>"
-                                        onclick="return confirm('Are you sure you want to delete this category?');"
+                                        onclick="return confirm('Are you sure you want to delete category (<?= $c->category_id ?>) ?');"
                                         class="btn-default delete-btn">
                                         <i class="fas fa-trash"></i>
                                     </a>
@@ -100,7 +107,7 @@ $categories = $stmt->fetchAll();
                             </td>
                             
                             
-                            <td style="text-align:center;">
+                            <td>
                                 <?php if ($c->active_count > 0): ?>
                                     <a href="view_product.php?cat=<?= $c->category_id ?>&status=active"
                                         style="color:black; text-decoration:none; font-weight:bold;"
@@ -112,7 +119,7 @@ $categories = $stmt->fetchAll();
                                 <?php endif; ?>
                             </td>
                             
-                            <td style="text-align:center;">
+                            <td>
                                 <?php if ($c->inactive_count > 0): ?>
                                     <a href="view_product.php?cat=<?= $c->category_id ?>&status=inactive"
                                         style="color:black; text-decoration:none; font-weight:bold;"
@@ -124,7 +131,7 @@ $categories = $stmt->fetchAll();
                                 <?php endif; ?>
                             </td>
 
-                            <td style="text-align:center;">
+                            <td>
                                 <?php if ($c->total_count > 0): ?>
                                     <a href="view_product.php?cat=<?= $c->category_id ?>"
                                         style="color:black; text-decoration:none; font-weight:bold;"
@@ -144,3 +151,11 @@ $categories = $stmt->fetchAll();
         </table>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    <?php if ($notification_message): ?>
+        showNotification('<?= addslashes($notification_message) ?>', '<?= $notification_type ?>');
+    <?php endif; ?>
+});
+</script>

@@ -16,6 +16,7 @@ $current_url = $_SERVER['REQUEST_URI'];
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="/js/app.js"></script>
+    <script src="/js/notifications.js"></script>
 </head>
 
 <body>

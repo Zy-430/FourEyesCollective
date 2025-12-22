@@ -118,7 +118,7 @@ if (is_post()) {
     ]);
 
     // Redirect after successful update
-    header("Location: view_product.php?msg=updated");
+    header("Location: view_product.php?msg=updated&product_id=$id");
     exit;
 }
 ?>

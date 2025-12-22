@@ -24,7 +24,7 @@ if (is_post()) {
     );
     $update->execute([$category_name, $id]);
 
-    header('Location: view_category.php?msg=updated');
+    header('Location: view_category.php?msg=updated&cat_id=' . $id);
     exit;
 }
 ?>

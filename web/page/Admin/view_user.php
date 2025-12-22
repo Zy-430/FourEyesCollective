@@ -107,44 +107,41 @@ $query_params[] = "sort=$sort";
 $query_params[] = "dir=$dir";
 
 $query_string = implode('&', $query_params);
+
+// Store notification message 
+$notification_message = '';
+$notification_type = 'success';
+
+if (get('msg') == 'added') {
+    $notification_message = $role . ' (' . $user_id . ') added successfully!';
+} elseif (get('msg') == 'updated') {
+    $notification_message = $role . ' (' . $user_id . ') updated successfully!';
+} elseif (get('msg') == 'deleted') {
+    $notification_message = $role . ' (' . $user_id . ') blocked successfully!';
+} elseif (get('msg') == 'restored') {
+    $notification_message = $role . ' (' . $user_id . ') unblocked successfully!';
+} elseif (get('msg') == 'added_no_email') {
+    $notification_message = $role . ' (' . $user_id . ') added but email sending failed!';
+    $notification_type = 'error';
+} elseif (get('error') == 'last_admin') {
+    $notification_message = 'Cannot block the last active admin!';
+    $notification_type = 'error';
+} elseif (get('error') == 'user_not_found') {
+    $notification_message = 'User not found!';
+    $notification_type = 'error';
+}
 ?>
 
 <div class="admin-content">
     <div class="content-header">
         <h1 class="dashboard-title"><?= $role ?> Management </h1>
-
-        <?php if (get('msg') == 'added'): ?>
-            <div class="flash-msg" style="padding:10px; background:#d4f8d4; border:1px solid #8acb8a; margin-bottom:15px;">
-                <?= $role ?> (<?= $user_id ?>) added successfully!
-            </div>
-        <?php endif; ?>
-
-        <?php if (get('msg') == 'updated'): ?>
-            <div class="flash-msg" style="padding:10px; background:#d4f8d4; border:1px solid #8acb8a; margin-bottom:15px;">
-                <?= $role ?> (<?= $user_id ?>) updated successfully!
-            </div>
-        <?php endif; ?>
-
-        <?php if (get('msg') == 'deleted'): ?>
-            <div class="flash-msg" style="padding:10px; background:#d4f8d4; border:1px solid #8acb8a; margin-bottom:15px;">
-                <?= $role ?> (<?= $user_id ?>) blocked successfully!
-            </div>
-        <?php endif; ?>
-
-        <?php if (get('msg') == 'restored'): ?>
-            <div class="flash-msg" style="padding:10px; background:#d4f8d4; border:1px solid #8acb8a; margin-bottom:15px;">
-                <?= $role ?> (<?= $user_id ?>) unblocked successfully!
-            </div>
-        <?php endif; ?>
-
-
         <div class="header-actions small" style="margin-top:10px;">
             <form method="GET" style="display:flex; gap:10px; align-items:center;">
 
-                <!-- Preserve role -->
+                <!-- Preserve role so admin and member can use same folder -->
                 <input type="hidden" name="role" value="<?= $role ?>">
 
-                <!-- Search (ENTER to submit) -->
+                <!-- Search -->
                 <input type="text"
                     name="search"
                     value="<?= htmlspecialchars($search) ?>"
@@ -289,7 +286,13 @@ $query_string = implode('&', $query_params);
         </div>
     <?php endif; ?>
 </div>
-
+<script>
+    // Show notification on page load if there's a message
+    document.addEventListener('DOMContentLoaded', function() {
+        <?php if ($notification_message): ?>
+            showNotification('<?= addslashes($notification_message) ?>', '<?= $notification_type ?>');
+        <?php endif; ?>
+    });
+</script>
 </body>
-
 </html>

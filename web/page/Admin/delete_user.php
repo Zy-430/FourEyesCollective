@@ -18,7 +18,7 @@ if (!$target) {
     exit;
 }
 
-// Prevent delete last admin
+// Prevent delete (block) last admin
 if ($target->role === 'Admin' && $action === 'delete') {
     $count = $_db->query("SELECT COUNT(*) FROM users WHERE role='Admin' AND status='Active'")->fetchColumn();
     if ($count <= 1) {
