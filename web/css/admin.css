@@ -505,9 +505,14 @@ i {
     color: #166534;
 }
 
-.status-inactive {
+.status-blocked {
     background: #fee2e2;
     color: #991b1b;
+}
+
+.status-pending {
+    background:  #fff3cd;
+    color: #856404;
 }
 
 /* Action row for update and delete */

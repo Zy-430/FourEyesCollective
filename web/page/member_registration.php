@@ -135,9 +135,9 @@ if (is_post()) {
         }
 
         // Member registration only for member
-        // Default status for new members is inactive (wait for email verification)
+        // Default status for new members is pending (wait for email verification)
         $role = 'Member';
-        $status = 'Inactive';
+        $status = 'Pending';
 
         // Get current date for registration_date 
         if (empty($registration_date)) {

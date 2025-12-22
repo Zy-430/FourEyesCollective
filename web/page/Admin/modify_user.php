@@ -55,7 +55,7 @@ if (is_post()) {
         $_err['gender'] = 'Invalid value';
     }
 
-     // Validate photo (optional : user can upload / use default image)
+    // Validate photo (optional : user can upload / use default image)
     $photo_filename = 'default_user.png'; // Default filename
 
     if ($photo && $photo['error'] == 0 && $photo['size'] > 0) {
@@ -120,7 +120,7 @@ if (is_post()) {
                 $photo_filename = $user->photo;
             }
         } else {
-            $photo_filename = $user ->photo;
+            $photo_filename = $user->photo;
         }
 
         $stm = $_db->prepare('
@@ -269,7 +269,7 @@ if (is_post()) {
                         <label class="photo-upload-label" for="photo" tabindex="0">
                             <div class="photo-preview">
                                 <img id="photoPreview"
-                                    src="/images/users/<?= encode($user->photo) ?>" >
+                                    src="/images/users/<?= encode($user->photo) ?>">
                             </div>
 
                             <input type="file" id="photo" name="photo" accept="image/*" style="display: none;">
@@ -302,9 +302,16 @@ if (is_post()) {
                             <label for="status_active" style="text-transform:none;">Active</label>
                         </div>
                         <div class="radio-option">
-                            <input type="radio" id="status_inactive" name="status" value="Inactive"
-                                <?= $user->status == 'Inactive' ? 'checked' : '' ?>>
-                            <label for="status_inactive" style="text-transform:none;">Inactive</label>
+                            <input type="radio" id="status_blocked" name="status" value="Blocked"
+                                <?= $user->status == 'Blocked' ? 'checked' : '' ?>>
+                            <label for="status_blocked" style="text-transform:none;">Blocked</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="status_pending" name="status" value="Pending"
+                                <?= $user->status == 'Pending' ? 'checked' : '' ?>
+                                disabled
+                                onclick="return false;">
+                            <label for="status_pending" style="text-transform:none; color: #888;">Pending</label>
                         </div>
                     </div>
                     <?= err('status') ?>

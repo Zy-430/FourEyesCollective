@@ -28,8 +28,8 @@ function generateDefaultPassword($length = 8)
 
 $password = generateDefaultPassword();
 
-// All status is inactive (wait for email verification)
-$status = 'Inactive';
+// All status is pending (wait for email verification)
+$status = 'Pending';
 $registration_date = date('Y-m-d');
 
 

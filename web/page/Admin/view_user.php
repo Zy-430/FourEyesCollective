@@ -38,7 +38,8 @@ $genders = [
 $statuses = [
     '' => 'All Status',
     'Active' => 'Active',
-    'Inactive' => 'Inactive'
+    'Pending' => 'Pending Verification',
+    'Blocked' => 'Blocked'
 ];
 
 // Sorting
@@ -116,9 +117,9 @@ if (get('msg') == 'added') {
     $notification_message = $role . ' (' . $user_id . ') added successfully!';
 } elseif (get('msg') == 'updated') {
     $notification_message = $role . ' (' . $user_id . ') updated successfully!';
-} elseif (get('msg') == 'deleted') {
+} elseif (get('msg') == 'blocked') {
     $notification_message = $role . ' (' . $user_id . ') blocked successfully!';
-} elseif (get('msg') == 'restored') {
+} elseif (get('msg') == 'unblocked') {
     $notification_message = $role . ' (' . $user_id . ') unblocked successfully!';
 } elseif (get('msg') == 'added_no_email') {
     $notification_message = $role . ' (' . $user_id . ') added but email sending failed!';
@@ -219,11 +220,11 @@ if (get('msg') == 'added') {
                             <a href="modify_user.php?user_id=<?= $u->user_id ?>" class="btn-default edit-btn">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <!-- Display button based on status (Active: delete ; Inactive: restore) -->
+                            <!-- Display button based on status (Active: block button ; Blocked: unblocked button) -->
                             <?php if ($u->status == "Active"): ?>
                                 <form method="post" action="delete_user.php" style="display:inline">
                                     <input type="hidden" name="user_id" value="<?= $u->user_id ?>">
-                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="action" value="block">
                                     <input type="hidden" name="role" value="<?= $role ?>">
                                     <button type="submit"
                                         onclick="return confirm('Are you sure you want to block <?= $role ?> (<?= $u->user_id ?>) ?');"
@@ -235,7 +236,7 @@ if (get('msg') == 'added') {
                                 <form method="post" action="delete_user.php" style="display:inline">
                                     <input type="hidden" name="user_id" value="<?= $u->user_id ?>">
                                     <input type="hidden" name="role" value="<?= $role ?>">
-                                    <input type="hidden" name="action" value="restore">
+                                    <input type="hidden" name="action" value="unblock">
 
                                     <button type="submit"
                                         onclick="return confirm('Are you sure you want to unblock <?= $role ?> (<?= $u->user_id ?>) ?');"
@@ -261,7 +262,14 @@ if (get('msg') == 'added') {
                     <!-- Badge to show user status -->
                     <td>
                         <span class="status-badge status-<?= strtolower($u->status) ?>">
-                            <?= $u->status ?>
+                            <?php
+                            $statusLabels = [
+                                'Active' => 'Active',
+                                'Pending' => 'Pending',
+                                'Blocked' => 'Blocked'
+                            ];
+                            echo $statusLabels[$u->status] ?? $u->status;
+                            ?>
                         </span>
                     </td>
                 </tr>
@@ -295,4 +303,5 @@ if (get('msg') == 'added') {
     });
 </script>
 </body>
+
 </html>

@@ -22,8 +22,8 @@ function sendEmailAction(string $email, string $type)
     // If user not found then return
     if (!$user) return;
 
-    // Verification requires user with "inactive" status
-    if ($type === 'verification' && $user->status !== 'Inactive') return;
+    // Verification requires user with "pending" status
+    if ($type === 'verification' && $user->status !== 'Pending') return;
 
     // Remove previous tokens
     $stm = $_db->prepare("DELETE FROM token WHERE user_id = ? AND type = ?");

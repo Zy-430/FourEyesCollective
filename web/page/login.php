@@ -57,12 +57,13 @@ if (is_post()) {
                     WHERE user_id = ?
                 ")->execute([$user->user_id]);
 
-                // Check active status (if inactive then ask to activated account)
-                if ($user->status === 'Inactive') {
+                // Check active status (if pending then ask to activated account)
+                if ($user->status === 'Pending') {
                     $_err['email'] = 'Your account is not activated ! <br> Please check your email for the verification link or
                          <a href="resend_verification.php" style="color: #1580ebff; font-size: 13px;">Resend verification email</a>';
+                } elseif ($user->status === 'Blocked') {
+                    $_err['email'] = 'Your account has been blocked by administrator. <br> Please contact support at <a href="mailto:support@foureyes.com" style="color: #1580ebff; font-size: 13px;">support@foureyes.com</a> for assistance.';
                 } else {
-
                     temp('info', 'Login successfully!');
                     // Redirect by role
                     if ($user->role === 'Member') {

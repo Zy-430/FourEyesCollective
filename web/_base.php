@@ -273,6 +273,11 @@ for ($i = $current_year; $i >= $current_year - 100; $i--) {
     $_years[$i] = $i;
 }
 
+$_user_statuses = [
+    'Pending' => 'Pending Verification',
+    'Active' => 'Active',
+    'Blocked' => 'Blocked'
+];
 
 // ============================================================================
 // Security
