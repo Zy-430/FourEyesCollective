@@ -55,8 +55,7 @@ $is_logged_in = isset($_SESSION['user']);
                                 <i class="far fa-heart"></i>
                             </button>
 
-                            <div class="product-sold"><span class="sold-count"><?= number_format($soldCount) ?></span> sold</div>
-
+                            <div class="top-product-sold"><span class="sold-count"><?= number_format($soldCount) ?></span> sold</div>
                         </div>
 
                         <!-- Product Info -->

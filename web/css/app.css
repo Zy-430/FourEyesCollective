@@ -466,6 +466,37 @@ footer {
     transition: all 0.4s ease;
 }
 
+.top-product-sold {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(58, 88, 140, 0.5);
+    color: white;
+    padding: 10px 0;
+    font-size: 16px;
+    text-align: center;
+    border-radius: 0 0 8px 8px;
+    z-index: 2;
+    box-sizing: border-box;
+}
+
+.top-product-sold .sold-count {
+    font-weight: 700;
+    color: #ffd700;
+    margin-right: 4px;
+}
+
+.top5-product .product-image-container {
+    position: relative;
+    padding-bottom: 40px; 
+}
+
+.top5-product:hover .top-product-sold {
+    opacity: 1;
+    background: rgba(58, 88, 140, 1);
+}
+
 .top5-product:nth-child(1) {
     transform: scale(1.05);
     z-index: 2;
@@ -1604,6 +1635,10 @@ footer {
     
     .wishlist-page .product-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+    .top-product-sold {
+        font-size: 14px;
+        padding: 8px 0;
     }
 }
 
