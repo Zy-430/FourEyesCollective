@@ -2,6 +2,7 @@
 require '../_base.php';
 require '../lib/db.php';
 require '../lib/category.php';
+require '../lib/product_stats.php';
 
 $_title = 'My Wishlist';
 include '../_head.php';
@@ -41,59 +42,59 @@ if ($_user) {
         </a>
     </div>
 <?php else: ?>
-    <div class="products-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:20px; margin-top:20px;">
+    <div class="product-grid" style="grid-template-columns: repeat(4, 1fr);
+">
         <?php foreach ($wishlistItems as $item): ?>
             <?php
             $folder = $categoryFolders[$item->category_id] ?? 'others';
             $imgArray = explode(',', $item->product_image);
             $firstImage = trim($imgArray[0]);
             $imgPath = "/images/product/$folder/$firstImage";
+            
+            // Get sold count for product
+            $soldCount = getProductSoldCount($item->product_id);
             ?>
             
-            <div class="product-card" style="border:1px solid #eee; padding:20px; border-radius:8px; background:white; height:450px; display:flex; flex-direction:column;">
-                
-                <!-- WISHLIST BUTTON (Remove from wishlist) -->
-                <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
-                    <button class="wishlist-btn" data-product-id="<?= $item->product_id ?>" data-wishlist-id="<?= $item->wishlist_id ?>"
-                            style="background:none; border:none; cursor:pointer; font-size:20px; color:#e74c3c;">
-                        <i class="fas fa-heart"></i> <!-- Solid heart for items already in wishlist -->
+            <a href="product_detail.php?id=<?= $item->product_id ?>" class="product-card">
+                <!-- Image Container -->
+                <div class="product-image-container">
+                    <img src="<?= $imgPath ?>" alt="<?= encode($item->product_name) ?>">
+
+
+                    <button class="product-heart-btn wishlist-btn"
+                        data-product-id="<?= $item->product_id ?>"
+                        onclick="event.preventDefault(); event.stopPropagation(); toggleWishlist('<?= $item->product_id ?>', this);"
+                        style="opacity: 1; color: black; border: none;">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
-                
-                <!-- IMAGE -->
-                <img src="<?= $imgPath ?>" 
-                     style="width:100%; height:180px; object-fit:cover; border-radius:6px; margin-bottom:10px;">
-                
-                <!-- NAME -->
-                <div style="height:51px; overflow:hidden; margin-bottom:10px;">
-                    <h3 style="font-size:17px; margin:0;"><?= encode($item->product_name) ?></h3>
+
+                <!-- Product Info -->
+                <div class="product-info">
+                    <!-- Category -->
+                    <div class="product-category">
+                        <?= encode($item->category_name) ?>
+                    </div>
+
+                    <!-- Product Name -->
+                    <h3 class="product-name">
+                        <?= encode($item->product_name) ?>
+                    </h3>
+
+                    <!-- Price & Sold -->
+                    <div class="product-footer">
+                        <div class="product-price">
+                            RM <?= number_format($item->product_price, 2) ?>
+                        </div>
+                        <div class="product-sold">
+                            <span class="number"><?= number_format($soldCount) ?></span> sold
+                        </div>
+                    </div>
                 </div>
-                
-                <!-- PRICE -->
-                <div style="font-weight:bold; margin-bottom:10px; font-size:18px;">
-                    RM <?= number_format($item->product_price, 2) ?>
-                </div>
-                
-                <!-- STOCK -->
-                <div style="margin-bottom: 10px; font-size: 14px;">
-                    <?php if ($item->product_stock <= 10): ?>
-                        <span style="color: #c0392b; font-weight:bold;">
-                            Stock: <?= number_format($item->product_stock) ?> (Selling Fast!)
-                        </span>
-                    <?php else: ?>
-                        <span style="color: #666;">
-                            Stock: <?= number_format($item->product_stock) ?>
-                        </span>
-                    <?php endif; ?>
-                </div>
-                
-            </div>
+            </a>
         <?php endforeach; ?>
     </div>
 <?php endif; ?>
-
-<!-- Include FontAwesome for heart icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="/js/wishlist.js"></script>
 <script src="/js/notifications.js"></script>
 <?php include '../_foot.php'; ?>

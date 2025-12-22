@@ -180,7 +180,7 @@ if (is_post()) {
 
         $baseURL = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://{$_SERVER['HTTP_HOST']}";
 
-        // Create Stripe session - RESTORED ORIGINAL CONFIGURATION
+        // Create Stripe session
         $session = \Stripe\Checkout\Session::create([
             'payment_method_types' => [
                 'card',
