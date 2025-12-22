@@ -15,7 +15,7 @@ function addToCart(productId) {
     formData.append('action', 'add');
     formData.append('product_id', productId);
 
-    xhr.open('POST', '/page/AJAX/cart_ajax.php');
+    xhr.open('POST', '/page/ajax/cart_ajax.php');
     // Mark as AJAX request
     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 

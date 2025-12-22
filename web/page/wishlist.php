@@ -87,18 +87,6 @@ if ($_user) {
                     <?php endif; ?>
                 </div>
                 
-                <!-- BUTTONS -->
-                <div style="margin-top:auto;">
-                    <a href="/page/product_detail.php?id=<?= $item->product_id ?>" 
-                       style="display:inline-block; margin-bottom:8px; padding:8px 15px; background:#888; color:white; border-radius:5px; text-decoration:none;">
-                        View Details
-                    </a>
-                    
-                    <a href="#" class="add-to-cart" data-product-id="<?= $item->product_id ?>" 
-                       style="display:inline-block; padding:10px 20px; background:#2c3e50; color:white; border-radius:5px; text-decoration:none; cursor:pointer;">
-                        Add to Cart
-                    </a>
-                </div>
             </div>
         <?php endforeach; ?>
     </div>

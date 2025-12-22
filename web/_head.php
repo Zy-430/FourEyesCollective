@@ -7,6 +7,12 @@
     <title><?= $_title ?? 'Four Eyes Collective' ?></title>
     <link rel="shortcut icon" href="/images/WIS_logo_white.png">
     <link rel="stylesheet" href="/css/app.css">
+    <!-- Page-specific CSS -->
+    <?php if (!empty($_css)): ?>
+        <?php foreach ($_css as $css): ?>
+            <link rel="stylesheet" href="/css/<?= $css ?>">
+        <?php endforeach; ?>
+    <?php endif; ?>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="/js/app.js"></script>
@@ -28,6 +34,10 @@
                 <a href="/">Home</a>
                 <a href="/page/shoppage.php">Shop</a>
                 <a href="/page/about_us.php">About Us</a>
+                <?php if ($_user): ?>
+                    <a href="/page/Member/profile_recent_order.php">My Order</a>
+                    <a href="/page/Member/order_all_rating.php">My Rating</a>
+                <?php endif ?>
             </div>
 
             <div id="right-sidebar">
@@ -71,7 +81,7 @@
                     }
                     ?>
 
-                    <a href="/page/cart.php" style="position: relative;" id="cart-link">
+                    <a href="/page/Member/cart.php" style="position: relative;" id="cart-link">
                         <img src="/images/shopping-bag.png" alt="Shopping Cart">
                         <span id="cart-badge" style="display: <?= $cart_count > 0 ? 'flex' : 'none'; ?>;">
                             <?= $cart_count > 0 ? $cart_count : '' ?>

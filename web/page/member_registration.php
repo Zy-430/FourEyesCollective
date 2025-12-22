@@ -1,28 +1,14 @@
 <?php
 require '../_base.php';
 require '../lib/db.php';
+require '../lib/email_action.php';
 
+// Registration is only for member ; admin will be add manually through admin mode
 
-// Registration is only for member ; staff will be add manually through admin mode
-// Auto-generate user ID (only for member)
-function generateMemberID($db)
-{
-    $last = $db->query("SELECT user_id FROM users WHERE role='Member'ORDER BY user_id DESC LIMIT 1")->fetchColumn();
-
-    // If no member exists, start with ME0001
-    if (!$last) return "ME0001";
-
-    // Else get the last member id  and extract numeric part, increment, and pad with zeros
-    $num = intval(substr($last, 2)) + 1;
-    return "ME" . str_pad($num, 4, "0", STR_PAD_LEFT);
-}
-
-$user_id = generateMemberID($_db);
-
-//Form submit
+// Form submit
 if (is_post()) {
 
-    //Input
+    // Input
     $email              = req('email');
     $name               = req('name');
     $password           = req('password');
@@ -34,16 +20,13 @@ if (is_post()) {
     $date               = req('date');
     $month              = req('month');
     $year               = req('year');
-    $photo              = get_file('photo');
+    $photo              = $_FILES['photo'] ?? null;
 
-
-    //Combine date of birth
+    // Combine date of birth
     $date_of_birth = "$year-$month-$date";
 
-    //Validate email
-    if ($email == '') {
-        $_err['email'] = 'Required';
-    } else if (strlen($email) > 100) {
+    // Validate email
+    if (strlen($email) > 100) {
         $_err['email'] = 'Maximum 100 characters';
     } else if (!is_email($email)) {
         $_err['email'] = 'Invalid email format';
@@ -51,63 +34,52 @@ if (is_post()) {
         $_err['email'] = 'Duplicated email';
     }
 
-    //Validate name
-    if ($name == '') {
-        $_err['name'] = 'Required';
-    } else if (strlen($name) > 100) {
+    // Validate name
+    if (strlen($name) > 100) {
         $_err['name'] = 'Maximum length 100';
     }
 
-    //Validate password
-    if ($password == '') {
-        $_err['password'] = 'Required';
-    } else {
-        $password = trim($password);
+    // Validate password
+    $password = trim($password);
 
-        //Password format
-        // Min length 8 charcater
-        if (strlen($password) < 8) {
-            $_err['password'] = 'Password must be at least 8 characters';
-        }
-
-        // Max length 15 character
-        else if (strlen($password) > 15) {
-            $_err['password'] = 'Password maximum length is 15 characters';
-        }
+    if (!is_strong_password($password)) {
+        $_err['password'] =
+            'Password must be at least 8 characters and include uppercase, lowercase, number and symbol';
     }
 
-    //Validate Confirm password 
-    if ($confirm_password == '') {
-        $_err['confirm_password'] = 'Required';
-    } else if ($password !== $confirm_password) {
+    // Validate Confirm password 
+    if ($password !== $confirm_password) {
         $_err['confirm_password'] = 'Passwords do not match. Please try again!';
     }
 
-    //Validate gender
-    if ($gender == '') {
-        $_err['gender'] = 'Required';
-    } else if (!array_key_exists($gender, $_genders)) {
+    // Validate gender
+    if (!array_key_exists($gender, $_genders)) {
         $_err['gender'] = 'Invalid value';
     }
 
-    // Validate photo (optional : user can uplaod / use default image)
-    if ($photo && $photo->size > 0) {
+    // Validate photo (optional : user can upload / use default image)
+    $photo_filename = 'user_default.jpg'; // Default filename
+    
+    if ($photo && $photo['error'] == 0 && $photo['size'] > 0) {
         // Only validate if a photo was uploaded
-        if (!str_starts_with($photo->type, 'image/')) {
+        $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+        $ext = strtolower(pathinfo($photo['name'], PATHINFO_EXTENSION));
+        
+        if (!str_starts_with($photo['type'], 'image/')) {
             $_err['photo'] = 'Must be an image';
-        } else if ($photo->size > 1 * 1024 * 1024) {
+        } else if (!in_array($ext, $allowed)) {
+            $_err['photo'] = 'Only JPG, PNG, GIF files are allowed';
+        } else if ($photo['size'] > 1 * 1024 * 1024) {
             $_err['photo'] = 'Maximum 1MB';
         }
     }
 
-    //Validate phone number
-    if ($phone == '') {
-        $_err['phone'] = 'Required';
-    } else if (!preg_match('/^[1-9][0-9]{7,9}$/', $phone)) {
+    // Validate phone number
+    if (!preg_match('/^[1-9][0-9]{7,9}$/', $phone)) {
         $_err['phone'] = 'Phone number must be in format 0XXXXXXXXX';
     }
 
-    //Validate day , month , year (later combine for date of borth)
+    // Validate day , month , year (later combine for date of birth)
     if ($date == '' || $month == '' || $year == '') {
         $_err['date_of_birth'] = 'Date of birth is required';
     } else {
@@ -119,7 +91,7 @@ if (is_post()) {
         } else if (!checkdate($month, $date, $year)) {
             $_err['date_of_birth'] = 'Invalid date of birth';
         } else {
-            //Age restriction (member must be at least 12 years old)
+            // Age restriction (member must be at least 12 years old)
             $current_year = date('Y');
             $age = $current_year - $year;
             if ($age < 12) {
@@ -132,12 +104,31 @@ if (is_post()) {
 
     $registration_date = date('Y-m-d');
 
+    // Auto-generate user ID (only for member)
+    $user_id = generateMemberID($_db);
+
+    // Password hashing
+    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
     // Insert into database
     if (!$_err) {
-
-        if ($photo && $photo->size > 0) {
-            $photo_filename = save_photo($photo, '../images/users');
+        // Handle photo upload
+        if ($photo && $photo['error'] == 0 && $photo['size'] > 0 && !isset($_err['photo'])) {
+            $upload_dir = __DIR__ . '/../images/users/';
+            if (!is_dir($upload_dir)) {
+                mkdir($upload_dir, 0755, true);
+            }
+            
+            $ext = strtolower(pathinfo($photo['name'], PATHINFO_EXTENSION));
+            $photo_filename = 'user_' . $user_id . '.' . $ext;
+            $file_path = $upload_dir . $photo_filename;
+            
+            if (move_uploaded_file($photo['tmp_name'], $file_path)) {
+                // Photo uploaded successfully
+            } else {
+                // If upload fails, use default
+                $photo_filename = 'default_user.png';
+            }
         } else {
             // Use default photo
             $photo_filename = 'default_user.png';
@@ -157,21 +148,21 @@ if (is_post()) {
         $_db->beginTransaction();
 
         $stm = $_db->prepare('
-        INSERT INTO users (user_id, role, email, password, name, gender, phone, date_of_birth, photo, registration_date, status)
-        VALUES (?, ?, ?, SHA1(?), ?, ?, ?, ?, ?, ?, ?)
-    ');
+            INSERT INTO users 
+            (user_id, role, email, password, name, gender, phone, date_of_birth, photo, registration_date, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)
+        ');
 
         $stm->execute([
             $user_id,
             $role,
             $email,
-            $password,
+            $hashed_password,
             $name,
             $gender,
             $phone,
             $date_of_birth,
             $photo_filename,
-            $registration_date,
             $status
         ]);
 
@@ -187,70 +178,10 @@ if (is_post()) {
 
         $_db->commit();
 
-        // Send verification email
-        $verification_url = base("page/activate_account.php?token_id=$verification_token");
+        sendEmailAction($email, 'verification');
 
-        $m = get_mail();
-        $m->addAddress($email, $name);
-        $m->isHTML(true);
-        $m->Subject = 'Verify Your Account - Four Eyes Collective';
-
-        $m->Body =  "
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                .header { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-                .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
-                .button { display: inline-block; background: #2c3e50; color: #ddd; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 15px 0; }
-                .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #777; font-size: 12px; }
-                .warning {padding-top: 10px; padding-bottom:10px; color:red; font-style:italic;}
-            </style>
-        </head>
-        <body>
-            <div class='container'>
-                <div class='header'>
-                    <h2>Four Eyes Collective</h2>
-                    <h3>Account Verification</h3>
-                </div>
-                <div class='content'>
-                    <p>Hello " . htmlspecialchars($name) . ",</p>
-                    
-                    <p>Thank you for registering with Four Eyes Collective!</p>
-                    
-                    <p>To activate your account, please click the button below:</p>
-                    
-                    <p style='text-align: center;'>
-                        <a href='$verification_url' class='button'>Verify Account</a>
-                    </p>
-                    
-                    <p>Or copy and paste this link into your browser:</p>
-                    <p><code>$verification_url</code></p>
-                    
-                    <div class='warning'>
-                        <p>* This link will expire in 24 hours. If you didn't create an account with us, please ignore this email.</p>
-                    </div>
-                    
-                    <p>Best regards,<br>
-                    <strong>The Four Eyes Collective Team</strong></p>
-                </div>
-                <div class='footer'>
-                    <p>This is an automated message, please do not reply to this email.</p>
-                    <p>&copy; " . date('Y') . " Four Eyes Collective. All rights reserved.</p>
-                </div>
-            </div>
-        </body>
-        </html>
-        ";
-
-        if ($m->send()) {
-            temp('success', 'Registration successful! Please check your email to verify your account.');
-            redirect('login.php');
-        } else {
-            throw new Exception('Failed to send verification email');
-        }
+        temp('success', 'Registration successful! Please check your email to verify your account.');
+        redirect('login.php');
     }
 }
 
@@ -267,6 +198,36 @@ $_title = 'Member Registration';
     <link rel="shortcut icon" href="/images/WIS_logo_1.png">
     <link rel="stylesheet" href="/css/app.css">
     <link rel="stylesheet" href="/css/user.css">
+    <style>
+        .photo-upload-container.dragover {
+            border-color: #27ae60 !important;
+            background-color: rgba(39, 174, 96, 0.1) !important;
+        }
+
+        .photo-upload-label.dragover {
+            border-color: #27ae60 !important;
+        }
+
+        .drag-text {
+            display: none;
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .photo-upload-container:hover .drag-text {
+            display: block;
+        }
+        
+        /* Error styling for photo upload */
+        .photo-error {
+            color: #e74c3c;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: block;
+        }
+    </style>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 
@@ -291,7 +252,7 @@ $_title = 'Member Registration';
                     <label for="email">Email *</label>
                     <input type="email" id="email" name="email" class="form-control"
                         placeholder="your@email.com" maxlength="100"
-                        value="<?= encode($GLOBALS['email'] ?? '') ?>">
+                        value="<?= encode($GLOBALS['email'] ?? '') ?>" required>
                     <?= err('email') ?>
                 </div>
 
@@ -300,7 +261,7 @@ $_title = 'Member Registration';
                     <label for="name">Name *</label>
                     <input type="text" id="name" name="name" class="form-control"
                         placeholder="Your full name" maxlength="100"
-                        value="<?= encode($GLOBALS['name'] ?? '') ?>">
+                        value="<?= encode($GLOBALS['name'] ?? '') ?>" required>
                     <?= err('name') ?>
                 </div>
             </div>
@@ -310,7 +271,7 @@ $_title = 'Member Registration';
                 <div class="form-group">
                     <label for="password">Password *</label>
                     <input type="password" id="password" name="password" class="form-control"
-                        placeholder="Create a password (8-15 characters)" maxlength="15">
+                        placeholder="Create a password (8-15 characters)" maxlength="15" required>
                     <?= err('password') ?>
                 </div>
 
@@ -318,7 +279,7 @@ $_title = 'Member Registration';
                 <div class="form-group">
                     <label for="confirm_password">Confirm Password *</label>
                     <input type="password" id="confirm_password" name="confirm_password" class="form-control"
-                        placeholder="Re-enter your password" maxlength="15">
+                        placeholder="Re-enter your password" maxlength="15" required>
                     <?= err('confirm_password') ?>
                 </div>
             </div>
@@ -331,7 +292,7 @@ $_title = 'Member Registration';
                         <?php foreach ($_genders as $id => $text): ?>
                             <div class="radio-option">
                                 <input type="radio" id="gender_<?= $id ?>" name="gender" value="<?= $id ?>"
-                                    <?= ($GLOBALS['gender'] ?? '') == $id ? 'checked' : '' ?>>
+                                    <?= ($GLOBALS['gender'] ?? '') == $id ? 'checked' : '' ?> required>
                                 <label for="gender_<?= $id ?>"><?= $text ?></label>
                             </div>
                         <?php endforeach; ?>
@@ -342,12 +303,12 @@ $_title = 'Member Registration';
                 <!-- Phone Number -->
                 <div class="form-group">
                     <label for="phone">Phone Number *</label>
-                    <span class="phone-prefix">+60 &nbsp;</span>
+                    <span class="phone-prefix" style="font-size: 13px;">+60 &nbsp;</span>
                     <input type="text" id="phone" name="phone" class="form-control-phone"
                         placeholder="123456789"
                         pattern="[1-9][0-9]{7,9}"
                         maxlength="9"
-                        value="<?= encode($GLOBALS['phone'] ?? '') ?>">
+                        value="<?= encode($GLOBALS['phone'] ?? '') ?>" required>
                     <?= err('phone') ?>
                 </div>
             </div>
@@ -356,12 +317,11 @@ $_title = 'Member Registration';
             <div class="form-row">
                 <div class="form-group">
                     <label>Profile Photo </label>
-                    <div class="photo-upload-container">
+                    <div class="photo-upload-container" id="photoDropZone">
                         <label class="photo-upload-label" for="photo" tabindex="0">
                             <div class="photo-preview">
                                 <img id="photoPreview" src="/images/upload.png">
                             </div>
-
                             <input type="file" id="photo" name="photo" accept="image/*" style="display: none;">
                         </label>
                         <div class="upload-instructions">
@@ -370,13 +330,14 @@ $_title = 'Member Registration';
                             <p>• Optional - you can add later</p>
                         </div>
                     </div>
+                    <span class="photo-error"><?= $_err['photo'] ?? '' ?></span>
                 </div>
 
                 <div class="form-group">
                     <label>Date of Birth *</label>
                     <div class="dob-group">
                         <div class="dob-selectors">
-                            <select id="date" name="date" class="dob-select">
+                            <select id="date" name="date" class="dob-select" required>
                                 <option value="">Day</option>
                                 <?php foreach ($_days as $id => $text): ?>
                                     <option value="<?= $id ?>" <?= ($GLOBALS['date'] ?? '') == $id ? 'selected' : '' ?>>
@@ -385,7 +346,7 @@ $_title = 'Member Registration';
                                 <?php endforeach; ?>
                             </select>
 
-                            <select id="month" name="month" class="dob-select">
+                            <select id="month" name="month" class="dob-select" required>
                                 <option value="">Month</option>
                                 <?php foreach ($_months as $id => $text): ?>
                                     <option value="<?= $id ?>" <?= ($GLOBALS['month'] ?? '') == $id ? 'selected' : '' ?>>
@@ -394,7 +355,7 @@ $_title = 'Member Registration';
                                 <?php endforeach; ?>
                             </select>
 
-                            <select id="year" name="year" class="dob-select">
+                            <select id="year" name="year" class="dob-select" required>
                                 <option value="">Year</option>
                                 <?php foreach ($_years as $id => $text): ?>
                                     <option value="<?= $id ?>" <?= ($GLOBALS['year'] ?? '') == $id ? 'selected' : '' ?>>
@@ -438,6 +399,90 @@ $_title = 'Member Registration';
                 reader.readAsDataURL(file);
             }
         });
+        // Get elements
+        const dropZone = document.getElementById('photoDropZone');
+        const photoInput = document.getElementById('photo');
+        const photoPreview = document.getElementById('photoPreview');
+        const photoLabel = document.querySelector('.photo-upload-label');
+
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // Highlight drop zone when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+            photoLabel.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+            photoLabel.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropZone.classList.add('dragover');
+            photoLabel.classList.add('dragover');
+        }
+
+        function unhighlight() {
+            dropZone.classList.remove('dragover');
+            photoLabel.classList.remove('dragover');
+        }
+
+        // Handle dropped files
+        dropZone.addEventListener('drop', handleDrop, false);
+        photoLabel.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0) {
+                // Only process the first file
+                const file = files[0];
+
+                // Validate file type
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+                if (!validTypes.includes(file.type)) {
+                    alert('Please select a valid image file (JPG, PNG, GIF)');
+                    return;
+                }
+
+                // Validate file size (1MB = 1048576 bytes)
+                if (file.size > 1048576) {
+                    alert('File is too large. Maximum size is 1MB.');
+                    return;
+                }
+
+                // Set the file to the input
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                photoInput.files = dataTransfer.files;
+
+                // Trigger change event to update preview
+                const event = new Event('change', {
+                    bubbles: true
+                });
+                photoInput.dispatchEvent(event);
+
+                // Update preview immediately
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    photoPreview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+       
     </script>
 </body>
 

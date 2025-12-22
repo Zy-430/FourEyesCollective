@@ -30,24 +30,19 @@ if ($id) {
             $confirm_password = req('confirm_password');
 
             // Validate new password
-            if ($password == '') {
-                $_err['password'] = 'Required';
-            } else {
-                $password = trim($password);
-
-                if (strlen($password) < 8) {
-                    $_err['password'] = 'Password must be at least 8 characters';
-                } else if (strlen($password) > 15) {
-                    $_err['password'] = 'Password maximum length is 15 characters';
-                }
+            $password = trim($password);
+            if (!is_strong_password($password)) {
+                $_err['password'] =
+                    'Password must be at least 8 characters and include uppercase, lowercase, number and symbol';
             }
 
             // Validate confirm password
-            if ($confirm_password == '') {
-                $_err['confirm_password'] = 'Required';
-            } else if ($password !== $confirm_password) {
+            if ($password !== $confirm_password) {
                 $_err['confirm_password'] = 'Passwords do not match. Please try again!';
             }
+
+            // Password hashing
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
             if (!$_err) {
                 try {
@@ -93,7 +88,7 @@ $_title = 'Reset Password';
     <title><?= $_title ?? 'Four Eyes Collective' ?></title>
     <link rel="shortcut icon" href="/images/WIS_logo_1.png">
     <link rel="stylesheet" href="/css/app.css">
-    <link rel="stylesheet" href="/css/login.css">
+    <link rel="stylesheet" href="/css/user.css">
     <style>
         .alert-message {
             padding: 15px;
@@ -178,17 +173,12 @@ $_title = 'Reset Password';
             <?php if ($error): ?>
                 <!-- Error Message -->
                 <div class="alert-message alert-error">
-                    <strong>Error!!! </strong> <?= encode($error) ?>
+                    <strong>Invalid Reset Link </strong><br> <?= encode($error) ?>
                 </div>
 
-                <div class="links-container">
-                    <div class="forgot-link">
-                        <a href="forgot_password.php">Request New Reset Link</a>
-                    </div>
-
-                    <div class="back-link">
-                        <a href="login.php">Back to Login</a>
-                    </div>
+                <div class="button-row" style="padding-top: 20px;">
+                    <button class="btn btn-black"><a href="forgot_password.php" style="color: white; text-decoration:none">Request New Reset Link</a></button>
+                    <button class="btn btn-white"><a href="login.php" style="color: #2c3e50; text-decoration:none">Go to Login</a></button>
                 </div>
 
             <?php elseif ($success): ?>

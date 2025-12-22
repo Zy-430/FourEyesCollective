@@ -1,0 +1,168 @@
+.review-container {
+    max-width: 1000px;
+    margin: 40px auto;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 0 12px;
+}
+
+.page-title {
+    margin: 0 0 8px 0;
+    font-size: 1.6rem;
+    color: #2c3e50;
+}
+
+.empty-note {
+    color: #7f8c8d;
+}
+
+/* Card */
+.review-card {
+    display: flex;
+    gap: 20px;
+    padding: 18px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    background: #fff;
+    align-items: flex-start;
+}
+
+/* Product image */
+.product-image {
+    width: 280px;
+    height: 280px;
+    border-radius: 6px;
+    flex-shrink: 0;
+}
+
+/* Details */
+.review-details {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.review-main {
+    display: block;
+    min-width: 0;       
+    overflow: hidden;
+}
+
+.product-name {
+    margin: 0;
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: #2c3e50;
+}
+
+.rating-stars {
+    margin: 6px 0;
+    color: #f39c12;
+    font-size: 1.05rem;
+}
+
+.review-comment {
+    margin: 6px 0;
+    color: #7f8c8d;
+}
+
+/* Meta row */
+.review-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9rem;
+    color: #95a5a6;
+}
+
+.view-order-link {
+    margin-left: 10px;
+    color: #8e44ad;
+    text-decoration: none;
+}
+
+.view-order-link:hover {
+    text-decoration: underline;
+}
+
+/* Button */
+.view-btn {
+    margin-left: 10px;
+    cursor: pointer;
+    background: #8e44ad;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 0.9rem;
+}
+
+/* Modal */
+.review-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-box {
+    background: #fff;
+    border-radius: 10px;
+    padding: 18px;
+    max-width: 640px;
+    width: 92%;
+    max-height: 82%;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* Modal elements */
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    cursor: pointer;
+    font-size: 20px;
+    background: transparent;
+    border: none;
+    color: #2c3e50;
+}
+
+.modal-title {
+    margin-top: 0;
+    color: #2c3e50;
+}
+
+.modal-content p {
+    color: #444;
+}
+
+.modal-photo {
+    width: 120px;
+    height: 120px;
+    object-fit: cover;
+    margin: 6px 6px 6px 0;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.modal-video {
+    width: 100%;
+    max-height: 360px;
+    object-fit: contain;
+}
+
+/* Accessibility helper: show via JS by setting display:flex */
+.review-modal[aria-hidden="false"] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

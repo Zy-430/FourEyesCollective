@@ -10,8 +10,27 @@ $stm->execute([$id]);
 $p = $stm->fetch();
 
 $folder = $categoryFolders[$p->category_id] ?? 'others';
-
 $images = explode(',', $p->product_image);
+
+// Fetch reviews
+$stm_reviews = $_db->prepare("
+    SELECT oi.*, o.user_id, u.name, u.photo
+    FROM order_item oi
+    JOIN `order` o ON oi.order_id = o.order_id
+    JOIN users u ON o.user_id = u.user_id
+    WHERE oi.product_id = ? AND oi.user_rating IS NOT NULL
+    ORDER BY oi.rated_at DESC
+");
+$stm_reviews->execute([$id]);
+$reviews = $stm_reviews->fetchAll(PDO::FETCH_ASSOC);
+
+// Calculate average rating
+$avg_rating = 0;
+$total_reviews = count($reviews);
+if ($total_reviews > 0) {
+    $total_rating = array_sum(array_column($reviews, 'user_rating'));
+    $avg_rating = round($total_rating / $total_reviews, 1);
+}
 
 $_title = $p->product_name;
 include '../_head.php';
@@ -23,7 +42,6 @@ include '../_head.php';
 
     <!-- LEFT: IMAGE CAROUSEL -->
     <div style="width:400px;">
-
         <!-- MAIN BIG IMAGE -->
         <div style="position:relative; width:400px; height:400px; overflow:hidden; border:1px solid #ccc; border-radius:8px;">
             <img id="mainImage"
@@ -107,51 +125,142 @@ include '../_head.php';
                 <i class="far fa-heart"></i>
                 Add to Wishlist
             </button>
-        </div>"
+        </div>
     </div>
 
-    <!-- CAROUSEL SCRIPT -->
-    <script>
-        (function($) {
-            let images = <?= json_encode(array_map('trim', $images)) ?>;
-            let folder = "<?= $folder ?>";
-            let idx = 0;
+</div>
 
-            function showImage(i) {
-                idx = i;
-                $('#mainImage').attr('src', '/images/product/' + folder + '/' + images[idx]);
-            }
+<!-- REVIEWS SECTION -->
+<div style="margin-top:50px; padding:30px; background:#f8f9fa; border-radius:10px;">
+    <h2 style="margin-bottom:20px; font-size:24px; color:#2c3e50;">Customer Reviews</h2>
 
-            function nextImage() {
-                idx = (idx + 1) % images.length;
-                showImage(idx);
-            }
+    <?php if ($total_reviews > 0): ?>
+        <div style="display:flex; align-items:center; margin-bottom:30px; padding:15px; background:white; border-radius:8px;">
+            <div style="text-align:center; margin-right:30px;">
+                <div style="font-size:48px; font-weight:bold; color:#f39c12;"><?= $avg_rating ?></div>
+                <div style="color:#7f8c8d; margin-bottom:8px;">
+                    <?php for ($i = 0; $i < 5; $i++): ?>
+                        <span style="color:<?= $i < floor($avg_rating) ? '#f39c12' : '#ddd'; ?> ;font-size:18px;">★</span>
+                    <?php endfor; ?>
+                </div>
+                <div style="color:#666; font-size:14px;">Based on <?= $total_reviews ?> review<?= $total_reviews !== 1 ? 's' : '' ?></div>
+            </div>
+        </div>
+    <?php endif; ?>
 
-            function prevImage() {
-                idx = (idx - 1 + images.length) % images.length;
-                showImage(idx);
-            }
+    <?php if ($total_reviews > 0): ?>
+        <div id="reviewsList" style="display:flex; flex-direction:column; gap:15px;">
+            <?php foreach ($reviews as $review):
+                $photos = [];
+                if (!empty($review['rating_photo'])) {
+                    $decoded = json_decode($review['rating_photo'], true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                        $photos = array_filter(array_map('trim', $decoded));
+                    } else {
+                        $clean = trim($review['rating_photo']);
+                        $clean = preg_replace('/^\[+|\]+$/', '', $clean);
+                        $clean = str_replace(['"', "'"], '', $clean);
+                        $photos = array_filter(array_map('trim', explode(',', $clean)));
+                    }
+                }
+                $videos = !empty($review['rating_video']) ? array_filter(array_map('trim', explode(',', $review['rating_video']))) : [];
+            ?>
+                <div class="review-item" style="background:white; padding:20px; border-radius:8px; border-left:4px solid #f39c12;">
+                    <div style="display:flex; align-items:center; margin-bottom:15px;">
+                        <img src="<?= !empty($review['photo']) ? '/images/users/' . encode($review['photo']) : '/images/default-avatar.jpg' ?>" style="width:40px; height:40px; border-radius:50%; object-fit:cover; margin-right:10px;">
+                        <div>
+                            <div style="font-weight:bold; color:#2c3e50;"><?= encode($review['name']) ?></div>
+                            <div style="font-size:12px; color:#7f8c8d;"><?= date('d M Y', strtotime($review['rated_at'])) ?></div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:12px;">
+                        <?php for ($i = 1; $i <= 5; $i++): ?>
+                            <?php if ($i <= $review['user_rating']): ?>
+                                <span style="color:#f39c12;">★</span>
+                            <?php else: ?>
+                                <span style="color:#ccc;">☆</span>
+                            <?php endif; ?>
+                        <?php endfor; ?>
 
-            // DOM bindings
-            $(function() {
-                $(document).on('click', '.carousel-prev', function(e) {
-                    e.preventDefault();
-                    prevImage();
-                });
-                $(document).on('click', '.carousel-next', function(e) {
-                    e.preventDefault();
-                    nextImage();
-                });
-                $(document).on('click', '.thumb', function(e) {
-                    e.preventDefault();
-                    showImage(Number($(this).data('index')));
-                });
+                    </div>
+                    <div style="color:#333; line-height:1.6; margin-bottom:15px;"><?= nl2br(encode($review['user_comment'])) ?></div>
+                    <div class="review-media" style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+                        <?php foreach ($photos as $photo):
+                            $photoPath = '/images/review/' . encode($photo); ?>
+                            <div class="media-photo" data-src="<?= $photoPath ?>" style="position:relative; width:80px; height:80px; border-radius:6px; overflow:hidden; cursor:pointer;">
+                                <img src="<?= $photoPath ?>" style="width:100%; height:100%; object-fit:cover;">
+                            </div>
+                        <?php endforeach; ?>
+                        <?php foreach ($videos as $video):
+                            $videoPath = '/images/review/' . encode($video); ?>
+                            <div class="media-video" data-src="<?= $videoPath ?>" style="position:relative; width:80px; height:80px; border-radius:6px; overflow:hidden; background:#000; cursor:pointer;">
+                                <video style="width:100%; height:100%; object-fit:cover;">
+                                    <source src="<?= $videoPath ?>" type="video/mp4">
+                                </video>
+                                <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:24px; color:white;">▶</div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php else: ?>
+        <div style="text-align:center; padding:30px; color:#7f8c8d;">
+            <p>No reviews yet. Be the first to review this product!</p>
+        </div>
+    <?php endif; ?>
+</div>
 
-                // Auto slideshow every 3 seconds
-                setInterval(nextImage, 3000);
+<div id="mediaModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center;">
+    <div style="position:relative; max-width:90%; max-height:90%;">
+        <button id="closeModalBtn" style="position:absolute; top:-40px; right:0; background:white; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:20px;">✕</button>
+        <img id="modalImage" style="max-width:100%; max-height:100%; display:none; border-radius:8px;">
+        <video id="modalVideo" style="max-width:100%; max-height:100%; display:none; border-radius:8px;" controls></video>
+    </div>
+</div>
+
+<!-- CAROUSEL SCRIPT -->
+<script>
+    (function($) {
+        let images = <?= json_encode(array_map('trim', $images)) ?>;
+        let folder = "<?= $folder ?>";
+        let idx = 0;
+
+        function showImage(i) {
+            idx = i;
+            $('#mainImage').attr('src', '/images/product/' + folder + '/' + images[idx]);
+        }
+
+        function nextImage() {
+            idx = (idx + 1) % images.length;
+            showImage(idx);
+        }
+
+        function prevImage() {
+            idx = (idx - 1 + images.length) % images.length;
+            showImage(idx);
+        }
+
+        // DOM bindings
+        $(function() {
+            $(document).on('click', '.carousel-prev', function(e) {
+                e.preventDefault();
+                prevImage();
             });
-        })(jQuery);
-    </script>
-    <script src="/js/notifications.js"></script>
-    <script src="/js/wishlist.js"></script>
-    <?php include '../_foot.php'; ?>
+            $(document).on('click', '.carousel-next', function(e) {
+                e.preventDefault();
+                nextImage();
+            });
+            $(document).on('click', '.thumb', function(e) {
+                e.preventDefault();
+                showImage(Number($(this).data('index')));
+            });
+
+            // Auto slideshow every 3 seconds
+            setInterval(nextImage, 3000);
+        });
+    })(jQuery);
+</script>
+<script src="/js/notifications.js"></script>
+<script src="/js/wishlist.js"></script>
+<?php include '../_foot.php'; ?>

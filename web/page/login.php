@@ -2,6 +2,8 @@
 require '../_base.php';
 require '../lib/db.php';
 
+
+// Login attempts
 define('MAX_ATTEMPTS', 3);
 define('LOCK_MINUTES', 15);
 
@@ -11,7 +13,6 @@ if (is_post()) {
 
     $email    = req('email');
     $password = req('password');
-
 
     if (!is_email($email)) {
         $_err['email'] = 'Invalid email';
@@ -25,18 +26,31 @@ if (is_post()) {
 
         if ($user) {
 
-            /* Check temporary lock */
+            /* First check if lock has expired (if yes then reset the attempt) */
+            if ($user->lock_until && strtotime($user->lock_until) <= time()) {
+                $_db->prepare("
+                    UPDATE users 
+                    SET failed_attempts = 0, lock_until = NULL 
+                    WHERE user_id = ?
+            ")->execute([$user->user_id]);
+
+                // Then reset values
+                $user->failed_attempts = 0;
+                $user->lock_until = null;
+            }
+
+            /* Then check whether the account is currectly lock (mean the lock time haven't expired) */
             if ($user->lock_until && strtotime($user->lock_until) > time()) {
+
+                /* Calculate the remaining lock time to show to user */
                 $remainingSeconds = strtotime($user->lock_until) - time();
                 $remainingMinutes = ceil($remainingSeconds / 60);
 
                 $_err['email'] =
-                    'Too many failed attempts. Please try again in ' .
-                    $remainingMinutes . ' minute(s).';
-            }/* Correct password */ 
-            elseif ($user->password === sha1($password)) {
+                    'Too many failed attempts. Please try again in ' . $remainingMinutes . ' minute(s).';
+            } /* Else verify to email and password match or not */ elseif (password_verify($password, $user->password)) {
 
-                // Then will reset attempts
+                // Login successfully then reset attempts
                 $_db->prepare("
                     UPDATE users 
                     SET failed_attempts = 0, lock_until = NULL 
@@ -45,22 +59,21 @@ if (is_post()) {
 
                 // Check active status (if inactive then ask to activated account)
                 if ($user->status === 'Inactive') {
-                    $_err['email'] = 'Your account is not activated!';
+                    $_err['email'] = 'Your account is not activated ! <br> Please check your email for the verification link or
+                         <a href="resend_verification.php" style="color: #1580ebff; font-size: 13px;">Resend verification email</a>';
                 } else {
 
                     temp('info', 'Login successfully!');
-
                     // Redirect by role
                     if ($user->role === 'Member') {
                         login($user, '/page/homepage.php');
                     } elseif ($user->role === 'Admin') {
-                        login($user, '/page/admin_dashboard.php');
+                        login($user, '/page/Admin/admin_dashboard.php');
                     } else {
                         login($user, '/homepage.php');
                     }
                 }
-            }/* Wrong password - attempt keep increasing (max = 3 , then will lock for 15 minutes)*/ 
-            else {
+            }/* If wrong password then the attempt will keep increasing (max attempts = 3 and will lock for 15 minutes)*/ else {
                 $attempts = $user->failed_attempts + 1;
 
                 if ($attempts >= MAX_ATTEMPTS) {
@@ -114,11 +127,11 @@ $_title = 'Login';
 
 <body class="login-page">
 
+    <!-- Use to show register successfully message -->
     <?php if ($temp_message): ?>
-        <div class="temp-message" style="position: fixed; top: 100px; left: 50%; transform: translateX(-50%); background: #11c35bff; color: white; padding: 15px 30px; border-radius: 4px; z-index: 1000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); animation:fadeInDrop 0.5s ease-out forwards">
+        <div class="temp-message">
             <?= encode($temp_message) ?>
         </div>
-
         <script>
             // Disappear after 6 seconds
             setTimeout(function() {

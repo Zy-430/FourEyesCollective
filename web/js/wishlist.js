@@ -1,5 +1,9 @@
-function toggleWishlist(productId, buttonElement = null) {
-    // Check login state
+/**
+ * Toggle wishlist (add / remove)
+ */
+function toggleWishlist(productId, buttonElement) {
+
+    // Check login state from <body data-logged-in="1">
     const isLoggedIn = document.body.dataset.loggedIn === "1";
 
     if (!isLoggedIn) {
@@ -10,91 +14,122 @@ function toggleWishlist(productId, buttonElement = null) {
         return;
     }
 
-    // Send AJAX request to toggle wishlist
-    $.post('/page/AJAX/wishlist_ajax.php', { 
-        action: 'toggle', 
-        product_id: productId 
-    }, function(response) {
-        if (response && response.success) {
-            // Update heart icon
-            if (buttonElement) {
-                const icon = $(buttonElement).find('i');
-                if (response.is_in_wishlist) {
-                    icon.removeClass('far').addClass('fas').css('color', '#e74c3c');
-                } else {
-                    icon.removeClass('fas').addClass('far').css('color', '#333');
-                }
-                
-                // If on wishlist page, remove the item from view when removed
-                if (window.location.pathname.includes('wishlist.php') && !response.is_in_wishlist) {
-                    $(buttonElement).closest('.product-card').fadeOut(300, function() {
-                        $(this).remove();
-                        
-                        // Check if wishlist is now empty
-                        const remainingItems = $('.product-card').length;
-                        if (remainingItems === 0) {
-                            location.reload(); // Reload to show empty message
-                        }
-                    });
-                }
-            }
-            
-            // Show notification
-            const message = response.is_in_wishlist ? 
-                'Added to wishlist!' : 
-                'Removed from wishlist';
-            showNotification(message, 'success');
-            
-        } else {
-            showNotification((response && response.message) || 'Error updating wishlist', 'error');
+    $.post('/page/ajax/wishlist_ajax.php', {
+        action: 'toggle',
+        product_id: productId
+    }, function (response) {
+
+        if (!response || !response.success) {
+            showNotification(
+                (response && response.message) || 'Error updating wishlist',
+                'error'
+            );
+            return;
         }
-    }, 'json').fail(function() {
+
+        // Update heart icon
+        const icon = $(buttonElement).find('i');
+
+        if (response.is_in_wishlist) {
+            icon.removeClass('far').addClass('fas').css('color', '#e74c3c');
+            showNotification('Added to wishlist!', 'success');
+        } else {
+            icon.removeClass('fas').addClass('far').css('color', '#333');
+            showNotification('Removed from wishlist', 'success');
+        }
+
+        // If on wishlist page, remove card when item removed
+        if (
+            window.location.pathname.includes('wishlist.php') &&
+            !response.is_in_wishlist
+        ) {
+            $(buttonElement).closest('.product-card').fadeOut(300, function () {
+                $(this).remove();
+
+                if ($('.product-card').length === 0) {
+                    location.reload();
+                }
+            });
+        }
+
+    }, 'json').fail(function () {
         showNotification('Network error. Please try again.', 'error');
     });
 }
 
-// Initialize wishlist button states on page load
-$(document).ready(function() {
-    // If we have user, check wishlist status for each product on page
+/**
+ * On page load:
+ * - Check wishlist status
+ * - Update heart icons
+ * - Attach click handler
+ */
+$(document).ready(function () {
+
     const isLoggedIn = document.body.dataset.loggedIn === "1";
-    
+
     if (isLoggedIn) {
-        // Get all product IDs on the page
+
         const productIds = [];
-        $('[data-product-id]').each(function() {
+
+        $('.wishlist-btn[data-product-id]').each(function () {
             productIds.push($(this).data('product-id'));
         });
-        
+
         if (productIds.length > 0) {
-            // Fetch wishlist status for all products
-            $.post('/page/AJAX/wishlist_ajax.php', { 
-                action: 'check_status', 
-                product_ids: productIds 
-            }, function(response) {
-                if (response && response.success) {
-                    // Update heart icons based on status
-                    Object.keys(response.wishlist_status).forEach(productId => {
-                        const isInWishlist = response.wishlist_status[productId];
-                        const wishlistBtn = $(`.wishlist-btn[data-product-id="${productId}"]`);
-                        
-                        if (wishlistBtn.length) {
-                            const icon = wishlistBtn.find('i');
-                            if (isInWishlist) {
-                                icon.removeClass('far').addClass('fas').css('color', '#e74c3c');
-                            } else {
-                                icon.removeClass('fas').addClass('far').css('color', '#333');
-                            }
-                        }
-                    });
-                }
+            $.post('/page/ajax/wishlist_ajax.php', {
+                action: 'check_status',
+                product_ids: productIds
+            }, function (response) {
+
+                if (!response || !response.success) return;
+
+                Object.keys(response.wishlist_status).forEach(productId => {
+
+                    const isInWishlist = response.wishlist_status[productId];
+                    const btn = $(`.wishlist-btn[data-product-id="${productId}"]`);
+                    const icon = btn.find('i');
+
+                    if (isInWishlist) {
+                        icon.removeClass('far').addClass('fas').css('color', '#e74c3c');
+                    } else {
+                        icon.removeClass('fas').addClass('far').css('color', '#333');
+                    }
+                });
+
             }, 'json');
         }
     }
 
-    // Attach click handler for wishlist buttons (delegated)
-    $(document).on('click', '.wishlist-btn', function(e){
+    // Click handler (delegated)
+    $(document).on('click', '.wishlist-btn', function (e) {
         e.preventDefault();
-        const productId = $(this).data('product-id');
-        toggleWishlist(productId, this);
+        toggleWishlist($(this).data('product-id'), this);
     });
 });
+
+/**
+ * Simple toast notification (only define if not already present)
+ */
+if (typeof window.showNotification !== 'function') {
+    window.showNotification = function (message, type = 'success') {
+
+        let container = document.getElementById('notification-container');
+
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'notification-container';
+            document.body.appendChild(container);
+        }
+
+        const note = document.createElement('div');
+        note.className = 'notification' + (type === 'error' ? ' error' : '');
+        note.textContent = message;
+
+        container.appendChild(note);
+
+        setTimeout(() => {
+            note.style.opacity = '0';
+            setTimeout(() => note.remove(), 300);
+        }, 2500);
+    };
+}

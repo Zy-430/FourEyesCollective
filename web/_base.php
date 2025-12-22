@@ -1,3 +1,4 @@
+
 <?php
 
 // ============================================================================
@@ -73,15 +74,66 @@ function is_unique($value, $table, $field)
     return $stm->fetchColumn() == 0;
 }
 
+// Use for update (so it will check unique by excluding the currect detail)
+function is_unique_except($value, $table, $field, $same_field, $same_value)
+{
+    global $_db;
+    $stm = $_db->prepare("SELECT COUNT(*) FROM $table WHERE $field = ? AND $same_field != ?");
+    $stm->execute([$value, $same_value]);
+    return $stm->fetchColumn() == 0;
+}
+
 // Is email?
 function is_email($value)
 {
     return filter_var($value, FILTER_VALIDATE_EMAIL) !== false;
 }
 
+// Return base url (host + port)
+function base($path = '')
+{
+    return "http://$_SERVER[SERVER_NAME]:$_SERVER[SERVER_PORT]/$path";
+}
+
+// Is exists?
+function is_exists($value, $table, $field)
+{
+    global $_db;
+    $stm = $_db->prepare("SELECT COUNT(*) FROM $table WHERE $field = ?");
+    $stm->execute([$value]);
+    return $stm->fetchColumn() > 0;
+}
+
+// Is strong password
+function is_strong_password($password)
+{
+
+    return
+        strlen($password) >= 8 && // Minimum 8 characters
+        preg_match('/[A-Z]/', $password) && // Contain uppercase
+        preg_match('/[a-z]/', $password) && // Contain lowercase
+        preg_match('/[0-9]/', $password) && // Contain digit
+        preg_match('/[_\W]/', $password); // Contain symbol
+}
+
 // ============================================================================
 // HTML Helpers
 // ============================================================================
+function table_headers($fields, $sort, $dir, $href = '')
+{
+    foreach ($fields as $k => $v) {
+        $d = 'asc'; // Default direction
+        $c = '';    // Default class
+
+        // Alternative direction , set css class
+        if ($k == $sort) {
+            $d = $dir == 'asc' ? 'desc' : 'asc';
+            $c = $dir;
+        }
+
+        echo "<th><a href='?sort=$k&dir=$d&$href' class='$c'>$v</a></th>";
+    }
+}
 
 
 // Encode HTML special characters
@@ -258,4 +310,82 @@ function auth(...$roles)
     }
 
     redirect('/page/login.php');
+}
+
+// ============================================================================
+// Email Function
+// ============================================================================
+
+function get_mail()
+{
+    require_once 'lib/PHPMailer.php';
+    require_once 'lib/SMTP.php';
+
+    $m = new PHPMailer(true);
+    $m->isSMTP();
+    $m->SMTPAuth = true;
+    $m->Host = 'smtp.gmail.com';
+    $m->Port = 587;
+    $m->Username = 'foureyecollective2025@gmail.com';
+    $m->Password = 'tzah szfn nkip rmtu';
+    $m->CharSet = 'utf-8';
+    $m->setFrom($m->Username, 'Four Eyes Collective');
+
+    return $m;
+}
+
+
+// ============================================================================
+// Generate ID
+// ============================================================================
+
+function generateHistoryID($db)
+{
+    // Get the last history_id
+    $last = $db->query("SELECT history_id FROM order_history ORDER BY history_id DESC LIMIT 1")->fetchColumn();
+
+    if (!$last) {
+        return "HIS0001";
+    }
+
+    // Extract numeric part and increment
+    $num = intval(substr($last, 3)) + 1; // skip 'HIS'
+    return "HIS" . str_pad($num, 4, "0", STR_PAD_LEFT);
+}
+
+function statusColor($status)
+{
+    return match ($status) {
+        'pending' => '#f39c12',
+        'shipped' => '#3498db',
+        'delivered', 'completed' => '#27ae60',
+        'cancelled' => '#e74c3c',
+        'return_requested' => '#bdc3c7',
+        'returned' => '#95a5a6 ',
+        default => '#7f8c8d',
+    };
+}
+
+function generateMemberID($db)
+{
+    $last = $db->query("SELECT user_id FROM users WHERE role='Member'ORDER BY user_id DESC LIMIT 1")->fetchColumn();
+
+    // If no member exists, start with ME0001
+    if (!$last) return "ME0001";
+
+    // Else get the last member id  and extract numeric part, increment, and pad with zeros
+    $num = intval(substr($last, 2)) + 1;
+    return "ME" . str_pad($num, 4, "0", STR_PAD_LEFT);
+}
+
+function generateAdminID($db)
+{
+    $last = $db->query("SELECT user_id FROM users WHERE role='Admin'ORDER BY user_id DESC LIMIT 1")->fetchColumn();
+
+    // If no admin exists, start with ME0001
+    if (!$last) return "AD0001";
+
+    // Else get the last admin id  and extract numeric part, increment, and pad with zeros
+    $num = intval(substr($last, 2)) + 1;
+    return "AD" . str_pad($num, 4, "0", STR_PAD_LEFT);
 }

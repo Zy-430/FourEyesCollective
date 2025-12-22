@@ -211,10 +211,6 @@ $filterQuery = http_build_query($currentParams);
                                 style="width: 80px; padding: 6px; border: 1px solid #ccc; border-radius: 4px;">
                         </div>
                     </div>
-                    <button type="submit" name="apply_custom_price" value="1"
-                        style="padding: 8px 16px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        Apply Custom Price
-                    </button>
                 </div>
             </div>
 

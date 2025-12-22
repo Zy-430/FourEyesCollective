@@ -1,7 +1,14 @@
 <?php
 require '../_base.php';
+require '../lib/db.php';
 
-$_title = 'About Us - Four Eyes Collective';
+
+
+// Fetch category folder mapping dynamically
+$stm_cat = $_db->query("SELECT category_id, folder FROM category");
+$categories = $stm_cat->fetchAll(PDO::FETCH_KEY_PAIR);
+
+$_title = "About Us";
 include '../_head.php';
 ?>
 
