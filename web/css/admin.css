@@ -69,6 +69,23 @@ body.product {
     margin: 4px 0;
     transition: all 0.2s ease;
     border-left: 3px solid transparent;
+    gap: 12px;
+}
+
+.admin-menu a i {
+    font-size: 18px;
+    width: 24px;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.85);
+    transition: all 0.2s ease;
+}
+
+.admin-menu a:hover i {
+    color: white;
+}
+
+.admin-menu a.active i {
+    color: #60a5fa;
 }
 
 .admin-menu a:hover {
@@ -182,7 +199,10 @@ i {
 
 .admin-sidebar.collapsed .logo,
 .admin-sidebar.collapsed .admin-menu,
-.admin-sidebar.collapsed .admin-account {
+.admin-sidebar.collapsed .admin-account,
+.admin-sidebar.collapsed .admin-menu a span,
+.admin-sidebar.collapsed .admin-menu a,
+.admin-sidebar.collapsed .admin-menu a i {
     opacity: 0;
     visibility: hidden;
 }
@@ -271,29 +291,59 @@ i {
     margin-bottom: 30px;
 }
 
+.dashboard-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    margin-top: 20px;
+}
+
+
+.admin-cards-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-chart-column {
+    display: flex;
+    flex-direction: column;
+}
+
 /* Cards container */
 .admin-card-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 1rem;
-    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    width: 70%;
 }
 
 /* Card to show statistic*/
 .admin-card {
     background: linear-gradient(135deg, #ffffff, #f8fafc);
-    padding: 2rem;
+    padding: 1.5rem;
     border-radius: 16px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     border-left: 6px solid #162b65;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
     position: relative;
-    width: 80%;
+    width: 100%;
+    height: auto;
+    min-height: 90px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
+.admin-cards-column i{
+    color: #162b65;
+    padding-right: 10px;
+}
 .admin-card:hover {
     transform: translateY(-6px);
     box-shadow: 0 14px 32px rgba(0, 0, 0, 0.12);
+}
+
+.chart-card .card-icon {
+    margin-bottom: 15px;
 }
 
 .card-title {
@@ -301,15 +351,49 @@ i {
     color: #475569;
     text-transform: uppercase;
     letter-spacing: 0.8px;
-    font-weight: 800;
-    margin-bottom: 14px;
+    font-weight: 900;
+    margin-bottom: 10px;
+    padding-left: 5%;
 }
 
 .card-value {
-    font-size: 36px;
+    font-size: 25px;
     font-weight: 800;
     color: #162b65;
+    padding-left: 5%;
 }
+
+/* Chart card */
+.chart-card {
+    background: linear-gradient(135deg, #ffffff, #f8fafc);
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0);
+    border-left: 6px solid #162b65;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    height: 400px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+}
+
+.chart-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.12);
+}
+
+.chart-card .card-title {
+    margin-bottom: 1.5rem;
+}
+
+/* Chart canvas */
+#salesChart {
+    flex: 1;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+
 
 /* Content Header */
 .content-header {
@@ -513,6 +597,16 @@ i {
 .status-pending {
     background:  #fff3cd;
     color: #856404;
+}
+
+.status-visible {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-hidden {
+    background: #fee2e2;
+    color: #991b1b;
 }
 
 /* Action row for update and delete */
@@ -1432,33 +1526,25 @@ i {
     margin: 20px 0px;
 }
 
-/* Message alerts */
-.admin-content div[style*="background:#d4f8d4"] {
-    padding: 12px 20px !important;
-    background: #dcfce7 !important;
-    border: 1px solid #86efac !important;
-    border-radius: 8px;
-    margin-bottom: 20px !important;
-    color: #166534;
-    font-weight: 500;
-}
-
 /* Review */
-
 .toggle-review-btn {
-    padding: 6px 14px;
-    font-size: 0.85rem;
-    border-radius: 6px;
+    padding: 0.4rem 0.7rem !important;
+    margin-left: 12%;
+    text-align: center;
+    font-size: 5px;
+    border-radius: 50%;
     border: none;
     cursor: pointer;
-    font-weight: 500;
     transition: background 0.2s ease, transform 0.1s ease;
-    min-width: 80px;
+}
+
+.toggle-review-btn i{
+    font-size: 1rem;
 }
 
 /* Hide (visible → hidden) */
 .toggle-review-btn[data-status="visible"] {
-    background-color: #e74c3c;
+    background: #b42323;
     color: #fff;
 }
 
@@ -1468,7 +1554,7 @@ i {
 
 /* Unhide (hidden → visible) */
 .toggle-review-btn[data-status="hidden"] {
-    background-color: #27ae60;
+    background: #23b46e;
     color: #fff;
 }
 

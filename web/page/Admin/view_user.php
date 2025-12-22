@@ -200,20 +200,45 @@ if (get('msg') == 'added') {
     <div class="table-container">
         <table class="table table-small">
             <tr>
-                <th>Actions</th>
                 <?= table_headers($fields, $sort, $dir, "role=$role&page=$page") ?>
+                <th>Actions</th>
             </tr>
 
             <?php foreach ($member as $u): ?>
 
                 <?php
                 // First image
-                $imgArr = explode(",", $u->photo);
-                $firstImage = trim($imgArr[0]);
+                $firstImage = trim($u->photo);
                 $imgPath = "/images/users/$firstImage";
                 ?>
 
                 <tr>
+                    
+                    <td><?= $u->user_id ?></td>
+                    <!-- Show user name and profile photo (click the photo can enlarge it) -->
+                    <td class="name-container">
+                        <img src="/images/users/<?= htmlspecialchars($firstImage) ?>" alt="<?= htmlspecialchars($u->photo) ?>"
+                            class="member-avatar clickable-photo" onclick="openPhotoModal(this.src)">
+                        <?= $u->name ?>
+                    </td>
+                    <td style="max-width: 150px;"><?= $u->email ?></td>
+                    <td><?= $u->gender ?></td>
+                    <td>0<?= $u->phone ?></td>
+                    <td><?= $u->date_of_birth ?></td>
+                    <td><?= $u->registration_date ?></td>
+                    <!-- Badge to show user status -->
+                    <td>
+                        <span class="status-badge status-<?= strtolower($u->status) ?>">
+                            <?php
+                            $statusLabels = [
+                                'Active' => 'Active',
+                                'Pending' => 'Pending',
+                                'Blocked' => 'Blocked'
+                            ];
+                            echo $statusLabels[$u->status] ?? $u->status;
+                            ?>
+                        </span>
+                    </td>
                     <td class="actions-row">
                         <div class="action-buttons">
                             <!-- Modify user button -->
@@ -246,31 +271,6 @@ if (get('msg') == 'added') {
                                 </form>
                             <?php endif ?>
                         </div>
-                    </td>
-                    <td><?= $u->user_id ?></td>
-                    <!-- Show user name and profile photo (click the photo can enlarge it) -->
-                    <td class="name-container">
-                        <img src="../../images/users/<?= $firstImage ?>" alt="<?= htmlspecialchars($u->name) ?>"
-                            class="member-avatar clickable-photo" onclick="openPhotoModal(this.src)">
-                        <?= $u->name ?>
-                    </td>
-                    <td style="max-width: 150px;"><?= $u->email ?></td>
-                    <td><?= $u->gender ?></td>
-                    <td><?= $u->phone ?></td>
-                    <td><?= $u->date_of_birth ?></td>
-                    <td><?= $u->registration_date ?></td>
-                    <!-- Badge to show user status -->
-                    <td>
-                        <span class="status-badge status-<?= strtolower($u->status) ?>">
-                            <?php
-                            $statusLabels = [
-                                'Active' => 'Active',
-                                'Pending' => 'Pending',
-                                'Blocked' => 'Blocked'
-                            ];
-                            echo $statusLabels[$u->status] ?? $u->status;
-                            ?>
-                        </span>
                     </td>
                 </tr>
             <?php endforeach ?>

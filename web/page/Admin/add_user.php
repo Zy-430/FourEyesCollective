@@ -70,7 +70,7 @@ if (is_post()) {
     }
 
     // Validate photo (optional : user can upload / use default image)
-    $photo_filename = 'default_user.png'; // Default filename
+    $photo_filename = 'user_default.jpg'; // Default filename
 
     if ($photo && $photo['error'] == 0 && $photo['size'] > 0) {
         // Only validate if a photo was uploaded
@@ -124,8 +124,22 @@ if (is_post()) {
             }
 
             $ext = strtolower(pathinfo($photo['name'], PATHINFO_EXTENSION));
-            $photo_filename = 'user_' . $user_id . '.' . $ext;
-            $file_path = $upload_dir . $photo_filename;
+            $ext = in_array($ext, ['jpg', 'jpeg', 'png', 'gif']) ? $ext : 'jpg';
+
+            // Create a sanitized username for filename
+            $sanitized_name = preg_replace('/[^a-zA-Z0-9]/', '', strtolower($name));
+            if (empty($sanitized_name)) {
+                $sanitized_name = 'user';
+            }
+
+            // Check if filename already exists , then find next available number
+            $counter = 1;
+            do {
+                // Filename format - steven15_01.jpg, steven15_02.jpg...
+                $photo_filename = $sanitized_name . sprintf('_%02d', $counter) . '.' . $ext;
+                $file_path = $upload_dir . $photo_filename;
+                $counter++;
+            } while (file_exists($file_path) && $counter <= 99);
 
             if (move_uploaded_file($photo['tmp_name'], $file_path)) {
                 // Photo uploaded successfully

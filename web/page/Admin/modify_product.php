@@ -5,6 +5,19 @@ include '../../_admin_head.php';
 require '../../lib/category.php';
 auth('Admin');
 
+// Use to ensure this page's body has the `product` class for page-specific styling
+?>
+<script>
+    (function(){
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function(){ document.body.classList.add('product'); });
+        } else {
+            document.body.classList.add('product');
+        }
+    })();
+</script>
+<?php
+
 $id = get('id');
 
 // Load product

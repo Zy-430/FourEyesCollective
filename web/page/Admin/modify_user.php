@@ -55,8 +55,7 @@ if (is_post()) {
         $_err['gender'] = 'Invalid value';
     }
 
-    // Validate photo (optional : user can upload / use default image)
-    $photo_filename = 'default_user.png'; // Default filename
+   $photo_filename = $user->photo; // keep current photo by default
 
     if ($photo && $photo['error'] == 0 && $photo['size'] > 0) {
         // Only validate if a photo was uploaded
@@ -110,18 +109,39 @@ if (is_post()) {
                 mkdir($upload_dir, 0755, true);
             }
 
-            $ext = strtolower(pathinfo($photo['name'], PATHINFO_EXTENSION));
-            $photo_filename = 'user_' . $user_id . '.' . $ext;
-            $file_path = $upload_dir . $photo_filename;
+            // Delete old photo if it's not the default user image
+            $old_photo_path = $upload_dir . $user->photo;
+            if ($user->photo !== 'user_default.jpg' &&  
+                file_exists($old_photo_path)) {
+                unlink($old_photo_path);
+            }
+
+             // Sanitize username for new filename
+            $sanitized_name = preg_replace('/[^a-zA-Z0-9]/', '', strtolower($name));
+            if (empty($sanitized_name)) {
+                $sanitized_name = 'user';
+            }
+
+            // Check if filename already exists , then find next available number
+            $counter = 1;
+            do {
+                // Filename format - steven15_01.jpg, steven15_02.jpg...
+                $photo_filename = $sanitized_name . sprintf('_%02d', $counter) . '.' . $ext;
+                $file_path = $upload_dir . $photo_filename;
+                $counter++;
+            } while (file_exists($file_path) && $counter <= 99);
 
             if (move_uploaded_file($photo['tmp_name'], $file_path)) {
                 // Photo uploaded successfully
             } else {
+                // If upload fails, use default
                 $photo_filename = $user->photo;
             }
         } else {
+            // Use default photo
             $photo_filename = $user->photo;
         }
+
 
         $stm = $_db->prepare('
         UPDATE users SET

@@ -98,19 +98,27 @@ $_title = "Admin Review Management | Four Eyes Collective";
         function sortLink($column, $label, $currentSort, $currentDir, $search, $status_filter)
         {
             $dir = 'asc';
-            $arrow = '';
+            $class = '';
+
             if ($currentSort === $column) {
                 if ($currentDir === 'asc') {
+                    $class = 'asc';   // ▲
                     $dir = 'desc';
-                    $arrow = ' ▲';
                 } else {
+                    $class = 'desc';  // ▼
                     $dir = 'asc';
-                    $arrow = ' ▼';
                 }
             }
-            $url = "?page=1&search=" . urlencode($search) . "&status=" . $status_filter . "&sort={$column}&dir={$dir}";
-            return "<a href='{$url}' style='text-decoration:none; color:inherit;'>{$label}{$arrow}</a>";
+
+            $url = "?page=1"
+                . "&search=" . urlencode($search)
+                . "&status=" . urlencode($status_filter)
+                . "&sort={$column}"
+                . "&dir={$dir}";
+
+            return "<a href='{$url}' class='{$class}'>{$label}</a>";
         }
+
         ?>
         <div class="header-actions small" style="margin-top:10px;">
             <form method="GET" style="display:flex; gap:10px; align-items:center;">
@@ -140,19 +148,16 @@ $_title = "Admin Review Management | Four Eyes Collective";
         <table class="table table-small">
             <thead>
                 <tr>
-                    <th><?= sortLink('order_item_id', 'Review ID', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
-                    <th><?= sortLink('user_name', 'User', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
-                    <th><?= sortLink('product_name', 'Product', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
-                    <th><?= sortLink('user_rating', 'Rating', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
-                    <th>Comment</th>
-                    <th>Photo</th>
-                    <th>Video</th>
-                    <th><?= sortLink('review_status', 'Status', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
-                    <th><?= sortLink('rated_at', 'Date', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
-
-                    
-                    
-                    <th>Actions</th>
+                    <th style="width: 12%;"><?= sortLink('order_item_id', 'Review ID', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
+                    <th style="width: 10%;"><?= sortLink('user_name', 'User', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
+                    <th style="width: 14%;"><?= sortLink('product_name', 'Product', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
+                    <th style="width: 10%;"><?= sortLink('user_rating', 'Rating', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
+                    <th style="width: 13%;">Comment</th>
+                    <th style="width: 7%;">Photo</th>
+                    <th style="width: 7%;">Video</th>
+                    <th style="width: 9%;"><?= sortLink('review_status', 'Status', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
+                    <th style="width: 9%;"><?= sortLink('rated_at', 'Date', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -211,18 +216,23 @@ $_title = "Admin Review Management | Four Eyes Collective";
                                 </video>
                             <?php endforeach; ?>
                         </td>
-                        <td><?= ucfirst($r['review_status']) ?></td>
+                        <td>
+                            <span class="status-badge status-<?= $r['review_status'] ?>">
+                                <?= ucfirst($r['review_status']) ?>
+                            </span>
+                        </td>
                         <td><?= $r['rated_at'] ?></td>
                         <td>
-                            <button class="toggle-review-btn"
+                            <button class="btn-default toggle-review-btn "
                                 data-id="<?= $r['order_item_id'] ?>"
                                 data-status="<?= $r['review_status'] ?>">
-                                <?= $r['review_status'] === 'visible' ? 'Hide' : 'Unhide' ?>
+                                <?= $r['review_status'] === 'visible' ? '<i class="fas fa-eye-slash">' : '<i class="fas fa-eye">' ?>
                             </button>
                         </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
+
         </table>
 
         <!-- Media Modal -->
