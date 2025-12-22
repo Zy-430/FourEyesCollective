@@ -161,19 +161,27 @@ $_title = "Admin Orders | Four Eyes Collective";
         function sortLink($column, $label, $currentSort, $currentDir, $search, $status_filter)
         {
             $dir = 'asc';
-            $arrow = '';
+            $class = '';
+
             if ($currentSort === $column) {
                 if ($currentDir === 'asc') {
+                    $class = 'asc';   
                     $dir = 'desc';
-                    $arrow = ' ▲';
                 } else {
+                    $class = 'desc';  
                     $dir = 'asc';
-                    $arrow = ' ▼';
                 }
             }
-            $url = "?page=1&search=" . urlencode($search) . "&status=" . $status_filter . "&sort={$column}&dir={$dir}";
-            return "<a href='{$url}' style='text-decoration:none; color:inherit;'>{$label}{$arrow}</a>";
+
+            $url = "?page=1"
+                . "&search=" . urlencode($search)
+                . "&status=" . urlencode($status_filter)
+                . "&sort={$column}"
+                . "&dir={$dir}";
+
+            return "<a href='{$url}' class='{$class}'>{$label}</a>";
         }
+
         ?>
 
         <?php if (!empty($success_msg)): ?>
