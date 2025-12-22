@@ -100,7 +100,7 @@ $categories = $stmt->fetchAll();
                             </td>
                             
                             
-                            <td style="text-align:center;">
+                            <td>
                                 <?php if ($c->active_count > 0): ?>
                                     <a href="view_product.php?cat=<?= $c->category_id ?>&status=active"
                                         style="color:black; text-decoration:none; font-weight:bold;"
@@ -112,7 +112,7 @@ $categories = $stmt->fetchAll();
                                 <?php endif; ?>
                             </td>
                             
-                            <td style="text-align:center;">
+                            <td>
                                 <?php if ($c->inactive_count > 0): ?>
                                     <a href="view_product.php?cat=<?= $c->category_id ?>&status=inactive"
                                         style="color:black; text-decoration:none; font-weight:bold;"
@@ -124,7 +124,7 @@ $categories = $stmt->fetchAll();
                                 <?php endif; ?>
                             </td>
 
-                            <td style="text-align:center;">
+                            <td>
                                 <?php if ($c->total_count > 0): ?>
                                     <a href="view_product.php?cat=<?= $c->category_id ?>"
                                         style="color:black; text-decoration:none; font-weight:bold;"
