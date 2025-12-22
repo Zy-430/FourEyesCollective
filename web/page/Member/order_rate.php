@@ -23,7 +23,7 @@ $categoryFolders = $stm_cat->fetchAll(PDO::FETCH_KEY_PAIR);
 $allRated = empty($items);
 
 $_title = "Rate Your Order | Four Eyes Collective";
-$_css = ['order.css', 'rate.css'];
+$_css = ['order.css', 'review.css'];
 include '../../_head.php';
 ?>
 
@@ -53,8 +53,10 @@ include '../../_head.php';
 
                         <textarea class="comment form-control" placeholder="Leave a comment..." rows="3"></textarea>
 
-                        <input type="file" class="rating-media" accept="image/*,video/*" multiple>
-                        <small>Max 5 photos & 5 videos per item. Images ≤ 5MB, Videos ≤ 50MB</small>
+                        <div class="file-upload-section">
+                            <input type="file" class="rating-media" accept="image/*,video/*" multiple>
+                            <small class="text-muted">Max 5 photos & videos per item. Images ≤ 5MB, Videos ≤ 5MB</small>
+                        </div>
 
                         <div class="file-preview"></div>
                     </div>
@@ -98,11 +100,21 @@ include '../../_head.php';
                     const isImage = ['jpg', 'jpeg', 'png', 'gif'].includes(ext);
                     const isVideo = ['mp4', 'mov', 'webm'].includes(ext);
 
-                    if (isImage && selectedFiles.filter(f => f.type === 'image').length >= 5) return;
-                    if (isVideo && selectedFiles.filter(f => f.type === 'video').length >= 5) return;
+                    if (!isImage && !isVideo) {
+                        showNotification('Invalid file type. Only images/videos allowed.', 'error');
+                        return;
+                    }
 
-                    if (isImage && f.size > 5 * 1024 * 1024) return;
-                    if (isVideo && f.size > 50 * 1024 * 1024) return;
+                    if (f.size > 5 * 1024 * 1024) {
+                        showNotification('File size must be less than 5MB', 'error');
+                        return;
+                    }
+
+                    // Total count limit (images + videos <= 5)
+                    if (selectedFiles.length >= 5) {
+                        showNotification('Maximum 5 files allowed per item.', 'error');
+                        return;
+                    }
 
                     selectedFiles.push({
                         file: f,
@@ -112,13 +124,16 @@ include '../../_head.php';
                 });
 
                 renderPreview();
-                $fileInput.val(''); // Clear input to allow adding more
+                $fileInput.val(''); // clear input to allow adding more
             });
+
 
             function renderPreview() {
                 $filePreview.empty();
                 selectedFiles.forEach((f, i) => {
-                    $filePreview.append('<div class="preview-item">' + f.name + ' <span class="remove-file" data-index="' + i + '">&times;</span></div>');
+                    const fileTypeIcon = f.type === 'image' ? '🖼️' : '🎬';
+                    $filePreview.append('<div class="preview-item">' + fileTypeIcon + ' ' + f.name +
+                        ' <span class="remove-file" data-index="' + i + '">&times;</span></div>');
                 });
 
                 // Remove file
@@ -167,13 +182,13 @@ include '../../_head.php';
                             showNotification(data.message || 'Something went wrong.', 'error');
                         }
                     },
-                    error: function() {
+                    error: function(xhr, status, error) {
                         $btn.prop('disabled', false).text('Submit');
-                        showNotification('Something went wrong.', 'error');
+                        console.error('AJAX Error:', error);
+                        showNotification('Something went wrong. Please try again.', 'error');
                     }
                 });
             });
-
         });
     });
 </script>

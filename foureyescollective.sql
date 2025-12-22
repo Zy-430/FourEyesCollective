@@ -359,7 +359,7 @@ INSERT INTO `order_item` (`order_item_id`, `order_id`, `product_id`, `product_qt
 ('OI0019', 'OR0018', 'PR0003', 1, 420, 420, 4, 'Happy with the purchase.', '2025-11-08 07:30:00', NULL, NULL, 'visible'),
 ('OI0020', 'OR0019', 'PR0003', 1, 420, 420, NULL, NULL, NULL, NULL, NULL, 'visible'),
 ('OI0021', 'OR0020', 'PR0001', 3, 210, 630, NULL, NULL, NULL, NULL, NULL, 'visible'),
-('OI0022', 'OR0021', 'PR0001', 2, 210, 420, 3, 'good', '2025-12-21 06:29:49', NULL, NULL, 'visible'),
+('OI0022', 'OR0021', 'PR0001', 2, 210, 420, NULL, NULL, NULL, NULL, NULL, 'visible'),
 ('OI0023', 'OR0022', 'PR0002', 3, 105, 315, NULL, NULL, NULL, NULL, NULL, 'visible'),
 ('OI0024', 'OR0023', 'PR0003', 1, 420, 420, NULL, NULL, NULL, NULL, NULL, 'visible');
 

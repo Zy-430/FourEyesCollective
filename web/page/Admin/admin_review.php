@@ -9,7 +9,7 @@ $admin_id = $_user->user_id;
 
 // --- Pagination settings ---
 $page = max(1, (int)($_GET['page'] ?? 1));
-$limit = 6;
+$limit = 5;
 $offset = ($page - 1) * $limit;
 
 // --- Search & Filter ---
@@ -56,6 +56,23 @@ $stm->execute($params);
 $totalRecords = $stm->fetchColumn();
 $totalPages = ceil($totalRecords / $limit);
 
+$currentSort = $_GET['sort'] ?? 'rated_at';
+$currentDir  = $_GET['dir'] ?? 'desc';
+
+$allowedSorts = [
+    'order_item_id' => 'oi.order_item_id',
+    'user_name'     => 'u.name',
+    'product_name'  => 'p.product_name',
+    'user_rating'   => 'oi.user_rating',
+    'review_status' => 'oi.review_status',
+    'rated_at'      => 'oi.rated_at'
+];
+
+if (!array_key_exists($currentSort, $allowedSorts)) $currentSort = 'rated_at';
+if (!in_array(strtolower($currentDir), ['asc', 'desc'])) $currentDir = 'desc';
+
+$orderBy = "ORDER BY {$allowedSorts[$currentSort]} $currentDir";
+
 // Fetch review data
 $dataSql = "
     SELECT oi.*, u.name AS user_name, p.product_name
@@ -64,7 +81,7 @@ $dataSql = "
     JOIN `order` o ON oi.order_id = o.order_id
     JOIN users u ON o.user_id = u.user_id
     $whereSql
-    ORDER BY oi.rated_at DESC
+    $orderBy
     LIMIT $limit OFFSET $offset
 ";
 $stm = $_db->prepare($dataSql);
@@ -77,6 +94,24 @@ $_title = "Admin Review Management | Four Eyes Collective";
 <div class="admin-content">
     <div class="content-header">
         <h1 class="dashboard-title">Review Management</h1>
+        <?php
+        function sortLink($column, $label, $currentSort, $currentDir, $search, $status_filter)
+        {
+            $dir = 'asc';
+            $arrow = '';
+            if ($currentSort === $column) {
+                if ($currentDir === 'asc') {
+                    $dir = 'desc';
+                    $arrow = ' ▲';
+                } else {
+                    $dir = 'asc';
+                    $arrow = ' ▼';
+                }
+            }
+            $url = "?page=1&search=" . urlencode($search) . "&status=" . $status_filter . "&sort={$column}&dir={$dir}";
+            return "<a href='{$url}' style='text-decoration:none; color:inherit;'>{$label}{$arrow}</a>";
+        }
+        ?>
         <div class="header-actions small" style="margin-top:10px;">
             <form method="GET" style="display:flex; gap:10px; align-items:center;">
                 <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Search by Product or Comment" style="padding:8px; width:300px; border-radius:5px; border:1px solid #ccc;">
@@ -105,15 +140,18 @@ $_title = "Admin Review Management | Four Eyes Collective";
         <table class="table table-small">
             <thead>
                 <tr>
-                    <th>Review ID</th>
-                    <th>User</th>
-                    <th>Product</th>
-                    <th>Rating</th>
+                    <th><?= sortLink('order_item_id', 'Review ID', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
+                    <th><?= sortLink('user_name', 'User', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
+                    <th><?= sortLink('product_name', 'Product', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
+                    <th><?= sortLink('user_rating', 'Rating', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
                     <th>Comment</th>
                     <th>Photo</th>
                     <th>Video</th>
-                    <th>Status</th>
-                    <th>Date</th>
+                    <th><?= sortLink('review_status', 'Status', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
+                    <th><?= sortLink('rated_at', 'Date', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
+
+                    
+                    
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -208,7 +246,7 @@ $_title = "Admin Review Management | Four Eyes Collective";
                 <div class="pagination">
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                         <a href="?page=<?= $i ?>&search=<?= urlencode($search) ?>&status=<?= $status_filter ?>&rating=<?= $rating_filter ?>"
-                             class="pagination"  style=" <?= $i == $page ? 'background:#2c3e50;color:white;' : 'background:#ecf0f1;color:#333;' ?>">
+                            class="pagination" style=" <?= $i == $page ? 'background:#2c3e50;color:white;' : 'background:#ecf0f1;color:#333;' ?>">
                             <?= $i ?>
                         </a>
                     <?php endfor; ?>
