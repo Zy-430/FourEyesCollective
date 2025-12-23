@@ -28,6 +28,9 @@ include '../../_head.php';
 ?>
 
 <div style="max-width:900px;margin:40px auto;">
+    <a href="javascript:history.back()" class="floating-back-arrow">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
     <div class="rate-page">
         <h2>Rate Your Order</h2>
         <p>Select an item and give your rating:</p>

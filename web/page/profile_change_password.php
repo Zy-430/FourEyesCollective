@@ -34,8 +34,8 @@ if (is_post()) {
         $_SESSION['error'] = "New password cannot be the same as your current password.";
     } else {
         $hashed = password_hash($new_password, PASSWORD_DEFAULT);
-       $_db->prepare("UPDATE users SET password = ?, force_password_change = 0 WHERE user_id = ?")
-    ->execute([$hashed, $user_id]);
+        $_db->prepare("UPDATE users SET password = ? WHERE user_id = ?")
+            ->execute([$hashed, $user_id]);
 
         $_SESSION['success'] = "Password changed successfully.";
         redirect('profile_page.php'); // redirect only on success
@@ -77,12 +77,11 @@ include '../_head.php';
                 Back to Profile
             </a>
         </div>
-
     </div>
 </section>
 
 <?php include '../_foot.php'; ?>
-<script src="/js/notifications.js"></script>
+<script src="../js/notifications.js"></script>
 
 <script>
 $(function() {

@@ -88,14 +88,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// --- Pagination, search, table code remains unchanged ---
-$page = max(1, (int)($_GET['page'] ?? 1));
-$limit = 5;
-$offset = ($page - 1) * $limit;
-
+// --- SimplePager Implementation ---
 $search = trim($_GET['search'] ?? '');
 $status_filter = $_GET['status'] ?? 'all';
 
+// Sorting
+$currentSort = $_GET['sort'] ?? 'order_date';
+$currentDir  = $_GET['dir'] ?? 'desc';
+
+$allowedSorts = [
+    'order_id'      => 'o.order_id',
+    'customer_name' => 'u.name',
+    'customer_email' => 'u.email',
+    'order_date'    => 'o.order_date',
+    'total_amount'  => 'o.total_amount',
+    'status'        => 'o.status'
+];
+
+if (!array_key_exists($currentSort, $allowedSorts)) $currentSort = 'order_date';
+if (!in_array(strtolower($currentDir), ['asc', 'desc'])) $currentDir = 'desc';
+
+$orderBy = "ORDER BY {$allowedSorts[$currentSort]} $currentDir";
+
+// Build base query
 $where = [];
 $params = [];
 
@@ -114,41 +129,34 @@ if ($search !== '') {
 
 $whereSql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
 
-$countSql = "SELECT COUNT(*) FROM `order` o JOIN users u ON o.user_id = u.user_id $whereSql";
-$stm = $_db->prepare($countSql);
-$stm->execute($params);
-$totalRecords = $stm->fetchColumn();
-$totalPages = ceil($totalRecords / $limit);
-
-$currentSort = $_GET['sort'] ?? 'order_date';
-$currentDir  = $_GET['dir'] ?? 'desc';
-
-$allowedSorts = [
-    'order_id'      => 'o.order_id',
-    'customer_name' => 'u.name',
-    'customer_email' => 'u.email',
-    'order_date'    => 'o.order_date',
-    'total_amount'  => 'o.total_amount',
-    'status'        => 'o.status'
-];
-
-if (!array_key_exists($currentSort, $allowedSorts)) $currentSort = 'order_date';
-if (!in_array(strtolower($currentDir), ['asc', 'desc'])) $currentDir = 'desc';
-
-$orderBy = "ORDER BY {$allowedSorts[$currentSort]} $currentDir";
-
-$dataSql = "
+$baseSql = "
     SELECT o.*, u.name AS customer_name, u.email AS customer_email
     FROM `order` o
     JOIN users u ON o.user_id = u.user_id
     $whereSql
     $orderBy
-    LIMIT $limit OFFSET $offset
 ";
 
-$stm = $_db->prepare($dataSql);
-$stm->execute($params);
-$orders = $stm->fetchAll(PDO::FETCH_ASSOC);
+// Initialize SimplePager
+$page = max(1, (int)($_GET['page'] ?? 1));
+$p = new SimplePager($baseSql, $params, 4, $page); // 4 orders per page
+$orders = $p->result;
+
+// Build query string for pagination links
+$query_params = [];
+
+if ($search !== '') {
+    $query_params[] = "search=" . urlencode($search);
+}
+
+if ($status_filter !== 'all') {
+    $query_params[] = "status=" . urlencode($status_filter);
+}
+
+$query_params[] = "sort=" . urlencode($currentSort);
+$query_params[] = "dir=" . urlencode($currentDir);
+
+$query_string = implode('&', $query_params);
 
 $_title = "Admin Orders | Four Eyes Collective";
 ?>
@@ -197,6 +205,11 @@ $_title = "Admin Orders | Four Eyes Collective";
         <?php endif; ?>
         <div class="header-actions small">
             <form method="GET" style="margin-top:10px; display:flex; gap:10px; align-items:center;">
+                <!-- Preserve sorting and page -->
+                <input type="hidden" name="sort" value="<?= htmlspecialchars($currentSort) ?>">
+                <input type="hidden" name="dir" value="<?= htmlspecialchars($currentDir) ?>">
+                <input type="hidden" name="page" value="1">
+                
                 <!-- Search input -->
                 <input type="text"
                     name="search"
@@ -236,38 +249,37 @@ $_title = "Admin Orders | Four Eyes Collective";
             <table class="table table-small">
                 <thead>
                     <tr>
-                        <th style="width: 11%;"><?= sortLink('order_id', 'Order ID', $currentSort, $currentDir, $search, $status_filter) ?></th>
-                        <th style="width:13%;"><?= sortLink('customer_name', 'Customer', $currentSort, $currentDir, $search, $status_filter) ?></th>
-                        <th style="width:17%;"><?= sortLink('customer_email', 'Email', $currentSort, $currentDir, $search, $status_filter) ?></th>
-                        <th style="width: 14%;"><?= sortLink('order_date', 'Date', $currentSort, $currentDir, $search, $status_filter) ?></th>
-                        <th style="width: 12%;"><?= sortLink('total_amount', 'Total', $currentSort, $currentDir, $search, $status_filter) ?></th>
-                        <th style="width: 10%;"><?= sortLink('status', 'Status', $currentSort, $currentDir, $search, $status_filter) ?></th>
+                        <th><?= sortLink('order_id', 'Order ID', $currentSort, $currentDir, $search, $status_filter) ?></th>
+                        <th><?= sortLink('customer_name', 'Customer', $currentSort, $currentDir, $search, $status_filter) ?></th>
+                        <th><?= sortLink('customer_email', 'Email', $currentSort, $currentDir, $search, $status_filter) ?></th>
+                        <th><?= sortLink('order_date', 'Date', $currentSort, $currentDir, $search, $status_filter) ?></th>
+                        <th><?= sortLink('total_amount', 'Total', $currentSort, $currentDir, $search, $status_filter) ?></th>
+                        <th><?= sortLink('status', 'Status', $currentSort, $currentDir, $search, $status_filter) ?></th>
                         <th style="text-align:center;">Actions</th>
-
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($orders as $o): ?>
                         <tr style="border-bottom:1px solid #ddd; height:80px;">
-                            <td style="padding:10px;"><?= $o['order_id'] ?></td>
-                            <td style="padding:10px;"><?= htmlspecialchars($o['customer_name']) ?></td>
-                            <td style="padding:10px;"><?= htmlspecialchars($o['customer_email']) ?></td>
-                            <td style="padding:10px;"><?= date('d M Y H:i', strtotime($o['order_date'])) ?></td>
-                            <td style="padding:10px;">RM <?= number_format($o['total_amount'], 2) ?></td>
-                            <td style="padding:10px; font-weight:bold; color:#e67e22;"><?= ucfirst($o['status']) ?></td>
+                            <td style="padding:10px;"><?= $o->order_id ?></td>
+                            <td style="padding:10px;"><?= htmlspecialchars($o->customer_name) ?></td>
+                            <td style="padding:10px;"><?= htmlspecialchars($o->customer_email) ?></td>
+                            <td style="padding:10px;"><?= date('d M Y H:i', strtotime($o->order_date)) ?></td>
+                            <td style="padding:10px;">RM <?= number_format($o->total_amount, 2) ?></td>
+                            <td style="padding:10px; font-weight:bold; color:#e67e22;"><?= ucfirst($o->status) ?></td>
                             <td style="padding:10px; text-align:center; display:flex; gap:5px; justify-content:center;">
                                 <!-- View Details Button -->
                                 <form method="GET" action="../order_details.php" style="display:inline;">
-                                    <input type="hidden" name="order_id" value="<?= $o['order_id'] ?>">
+                                    <input type="hidden" name="order_id" value="<?= $o->order_id ?>">
                                     <button type="submit" style="background:none; border:none; cursor:pointer;">
                                         <img src="../../images/icons/view.png" alt="View" style="width:22px;">
                                     </button>
                                 </form>
 
-                                <?php if ($o['status'] === 'return_requested'): ?>
+                                <?php if ($o->status === 'return_requested'): ?>
                                     <!-- Return Approval Dropdown -->
                                     <form method="POST" class="return-approval-form" style="display:flex; flex-direction:column; gap:6px; width:150px;">
-                                        <input type="hidden" name="order_id" value="<?= $o['order_id'] ?>">
+                                        <input type="hidden" name="order_id" value="<?= $o->order_id ?>">
                                         <select name="new_status" class="return-status-select" style="padding:6px; font-size:13px; border-radius:5px;">
                                             <option value="">-- Select Action --</option>
                                             <option value="returned">Approve Return</option>
@@ -276,16 +288,16 @@ $_title = "Admin Orders | Four Eyes Collective";
                                         <input type="text" name="message" placeholder="Optional note" style="padding:6px; font-size:13px; border-radius:5px;">
                                         <button type="submit" style="padding:6px; background:#3498db; color:white; border:none; border-radius:5px; cursor:pointer;">Submit</button>
                                     </form>
-                                <?php elseif (!in_array($o['status'], ['completed', 'cancelled', 'delivered', 'returned', 'return_rejected'])): ?>
+                                <?php elseif (!in_array($o->status, ['completed', 'cancelled', 'delivered', 'returned', 'return_rejected'])): ?>
                                     <!-- Regular Status Change -->
                                     <form method="POST" class="status-update-form" style="display:flex; flex-direction:column; gap:6px; width:150px;">
-                                        <input type="hidden" name="order_id" value="<?= $o['order_id'] ?>">
+                                        <input type="hidden" name="order_id" value="<?= $o->order_id ?>">
                                         <select name="new_status" class="status-select" style="padding:6px; font-size:13px; border-radius:5px;">
-                                            <option value="<?= $o['status'] ?>" selected>No Change</option>
-                                            <?php if ($o['status'] == 'pending'): ?>
+                                            <option value="<?= $o->status ?>" selected>No Change</option>
+                                            <?php if ($o->status == 'pending'): ?>
                                                 <option value="shipped">Shipped</option>
                                                 <option value="cancelled">Cancel</option>
-                                            <?php elseif ($o['status'] == 'shipped'): ?>
+                                            <?php elseif ($o->status == 'shipped'): ?>
                                                 <option value="delivered">Delivered</option>
                                             <?php endif; ?>
                                         </select>
@@ -295,44 +307,31 @@ $_title = "Admin Orders | Four Eyes Collective";
                                 <?php endif; ?>
 
                                 <!-- Show Invoice only if status is completed -->
-                                <?php if ($o['status'] === 'completed'): ?>
+                                <?php if ($o->status === 'completed'): ?>
                                     <form method="GET" action="../order_invoice.php" style="display:inline;">
-                                        <input type="hidden" name="order_id" value="<?= $o['order_id'] ?>">
+                                        <input type="hidden" name="order_id" value="<?= $o->order_id ?>">
                                         <button type="submit" style="background:none; border:none; cursor:pointer;">
                                             <img src="../../images/icons/invoice.png" alt="Invoice" style="width:22px;">
                                         </button>
                                     </form>
                                 <?php endif; ?>
                             </td>
-
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
 
-        <?php if ($totalPages > 1): ?>
+        <?php if ($p->page_count > 1): ?>
             <div class="pagination-container">
                 <div class="pagination-info">
-                    Showing <?= (($page - 1) * $limit) + 1 ?> - <?= min($page * $limit, $totalRecords) ?> of <?= $totalRecords ?> orders
+                    Showing <?= (($page - 1) * 5) + 1 ?> - <?= min($page * 5, $p->item_count) ?> of <?= $p->item_count ?> orders
                 </div>
                 <div class="pagination">
-                    <?php for ($i = 1; $i <= $totalPages; $i++):
-                        $bg = $i == $page ? '#2c3e50' : '#ecf0f1';
-                        $color = $i == $page ? 'white' : '#333';
-                        $pageUrl = "?page={$i}&search=" . urlencode($search) . "&status={$status_filter}&sort={$currentSort}&dir={$currentDir}";
-                    ?>
-                        <a href="<?= $pageUrl ?>"
-                            style="padding:6px 12px; border-radius:4px; text-decoration:none; font-size:14px; background:<?= $bg ?>; color:<?= $color ?>;">
-                            <?= $i ?>
-                        </a>
-                    <?php endfor; ?>
-
-
+                    <?= $p->html($query_string) ?>
                 </div>
-            <?php endif; ?>
-
             </div>
+        <?php endif; ?>
     </div>
 
     <script>

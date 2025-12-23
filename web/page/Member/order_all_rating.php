@@ -69,7 +69,7 @@ $reviews = $stm_reviews->fetchAll(PDO::FETCH_ASSOC);
 $stm_cat = $_db->query("SELECT category_id, folder FROM category");
 $categories = $stm_cat->fetchAll(PDO::FETCH_KEY_PAIR);
 
-$_title = "My Reviews | Four Eyes Collective";
+$_title = "My Rating | Four Eyes Collective";
 $_css = ['review.css'];
 include '../../_head.php';
 ?>

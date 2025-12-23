@@ -156,7 +156,7 @@ header nav {
     background: white;
     border: 1px solid #ddd;
     border-radius: 6px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     min-width: 180px;
     z-index: 999;
     padding: 10px 0;
@@ -349,8 +349,8 @@ footer {
 
 /* Hero Section */
 .hero-section {
-    background: linear-gradient(135deg, rgba(44, 62, 80, 0.5), rgba(52, 73, 94, 0.5)), 
-                url('/images/homepage_hero_bg.png') center/cover;
+    background: linear-gradient(135deg, rgba(44, 62, 80, 0.5), rgba(52, 73, 94, 0.5)),
+        url('/images/homepage_hero_bg.png') center/cover;
     color: white;
     padding: 150px 20px;
     text-align: center;
@@ -498,7 +498,7 @@ footer {
 
 .top5-product .product-image-container {
     position: relative;
-    padding-bottom: 40px; 
+    padding-bottom: 40px;
 }
 
 .top5-product:hover .top-product-sold {
@@ -765,7 +765,8 @@ footer {
 .membership-cta::before {
     content: '';
     display: block;
-    padding-top: 52.29%; /* 732/1400 * 100 = 66.64% */
+    padding-top: 52.29%;
+    /* 732/1400 * 100 = 66.64% */
 }
 
 .membership-content {
@@ -1370,8 +1371,8 @@ footer {
    ABOUT US PAGE STYLES
    ============================================ */
 .about-hero {
-    background: linear-gradient(135deg, rgba(44, 62, 80, 0.5), rgba(52, 73, 94, 0.5)), 
-                url('/images/about-hero-bg.png') center/cover;
+    background: linear-gradient(135deg, rgba(44, 62, 80, 0.5), rgba(52, 73, 94, 0.5)),
+        url('/images/about-hero-bg.png') center/cover;
     color: white;
     padding: 100px 20px;
     text-align: center;
@@ -1534,7 +1535,7 @@ footer {
     .membership-cta {
         max-width: 1200px;
     }
-    
+
     .membership-content h2 {
         font-size: 2.8em;
     }
@@ -1544,20 +1545,20 @@ footer {
     .top5-grid {
         grid-template-columns: repeat(3, 1fr);
     }
-    
+
     .top5-product:nth-child(1) {
         grid-column: 1 / -1;
     }
-    
+
     .features-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     .about-story-section {
         grid-template-columns: 1fr;
         gap: 40px;
     }
-    
+
     .story-image {
         order: -1;
     }
@@ -1566,11 +1567,11 @@ footer {
         max-width: 1000px;
         margin: 60px auto 30px;
     }
-    
+
     .membership-content h2 {
         font-size: 2.5em;
     }
-    
+
     .membership-content p {
         font-size: 1.1em;
     }
@@ -1580,27 +1581,27 @@ footer {
     .membership-cta {
         max-width: 800px;
     }
-    
+
     .membership-content h2 {
         font-size: 2.2em;
     }
-    
+
     .membership-content p {
         font-size: 1.1em;
         margin-bottom: 25px;
     }
-    
+
     .btn-hover {
         padding: 14px 30px;
         min-width: 160px;
         font-size: 0.95em;
     }
-    
+
     .features-grid {
         grid-template-columns: 1fr;
         gap: 30px;
     }
-    
+
     .values-grid {
         grid-template-columns: repeat(2, 1fr);
     }
@@ -1610,41 +1611,42 @@ footer {
     .top5-grid {
         grid-template-columns: repeat(2, 1fr);
     }
-    
+
     membership-cta {
         max-width: 600px;
         margin: 50px auto 30px;
     }
-    
+
     .membership-content h2 {
         font-size: 2em;
     }
-    
+
     .membership-content p {
         font-size: 1em;
         margin-bottom: 20px;
         padding: 0 10px;
     }
-    
+
     .membership-cta-actions {
         gap: 15px;
     }
-    
+
     .about-hero {
         padding: 60px 20px;
     }
-    
+
     .about-hero h1 {
         font-size: 2.5em;
     }
-    
+
     .values-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .wishlist-page .product-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+
     .top-product-sold {
         font-size: 14px;
         padding: 8px 0;
@@ -1655,20 +1657,20 @@ footer {
     .top5-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .membership-cta {
         margin: 40px 15px 20px;
         border-radius: 15px;
     }
-    
+
     .membership-content h2 {
         font-size: 1.8em;
     }
-    
+
     .membership-content p {
         font-size: 0.95em;
     }
-    
+
     .membership-cta-actions {
         flex-direction: column;
         align-items: center;
@@ -1676,25 +1678,25 @@ footer {
         width: 100%;
         max-width: 300px;
     }
-    
+
     .btn-hover {
         width: 100%;
         padding: 14px 20px;
         font-size: 0.9em;
     }
-    
+
     .about-hero h1 {
         font-size: 2em;
     }
-    
+
     .story-text h2 {
         font-size: 1.8em;
     }
-    
+
     .wishlist-page .product-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .team-grid {
         grid-template-columns: 1fr;
     }
@@ -2024,4 +2026,26 @@ footer {
 
 .top5-product:nth-child(5) {
     animation-delay: 0.5s;
+}
+
+.floating-back-arrow {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #2c3e50;
+    /* text color */
+    text-decoration: none;
+    z-index: 9999;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.floating-back-arrow:hover {
+    background-color: #ffffff;
+    transform: translateX(-3px);
 }

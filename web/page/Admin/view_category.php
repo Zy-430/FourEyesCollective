@@ -95,7 +95,7 @@ if (get('msg') == 'added') {
                                         class="btn-default delete-btn">
 
                                         <i class="fas fa-trash"></i>
-                                    </a>`
+                                    </a>
                                 </div>
                             </td>
 
