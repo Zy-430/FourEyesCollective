@@ -5,19 +5,6 @@ include '../../_admin_head.php';
 require '../../lib/category.php';
 auth('Admin');
 
-// Use to ensure this page's body has the `product` class for page-specific styling
-?>
-<script>
-    (function(){
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function(){ document.body.classList.add('product'); });
-        } else {
-            document.body.classList.add('product');
-        }
-    })();
-</script>
-<?php
-
 $id = get('id');
 
 // Load product
@@ -216,7 +203,10 @@ if (is_post()) {
                                     ×
                                 </a>
 
-                               <img src="/images/product/<?= $folder ?>/<?= $img ?>"
+                                <?php
+                                    $imgPath = $img ? "/images/product/$folder/$img" : "/images/product/no-image.png";
+                                ?>
+                                <img src="<?= $imgPath ?>"
                                     style="width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid #ccc;">
                             </div>
                         <?php endforeach; ?>

@@ -10,7 +10,31 @@ $stm->execute([$id]);
 $p = $stm->fetch();
 
 $folder = $categoryFolders[$p->category_id] ?? 'others';
-$images = explode(',', $p->product_image);
+$rawImages = array_filter(array_map('trim', explode(',', $p->product_image)));
+$images = $rawImages;
+
+// If no images → fallback to placeholder
+if (empty($images)) {
+    $images = ['no-image.png'];
+    $folder = ''; // no folder needed for fallback
+}
+
+
+$return_url = get('return_url', '/page/homepage.php');
+$return_url = trim($return_url);
+
+// Normalize path and strip query/fragment
+$path = parse_url($return_url, PHP_URL_PATH) ?: $return_url;
+
+// Validate return URL to prevent open redirects
+$allowed_returns = ['/page/homepage.php', '/page/shoppage.php', '/page/wishlist.php'];
+if (!in_array($path, $allowed_returns)) {
+    $return_url = '/page/homepage.php';
+} else {
+    // Use the full validated path
+    $return_url = $path;
+}
+
 
 // Fetch reviews
 $stm_reviews = $_db->prepare("
@@ -37,6 +61,29 @@ if ($total_reviews > 0) {
 $_title = $p->product_name;
 include '../_head.php';
 ?>
+<!-- BACK BUTTON -->
+<div style="margin-bottom: 20px;">
+    <a href="<?= encode($return_url) ?>" style="text-decoration: none; color: #2c3e50; font-size: 16px; display: inline-flex; align-items: center; gap: 8px;">
+        <i class="fa fa-long-arrow-left"></i>
+        <span>Back to 
+            <?php 
+            switch($return_url) {
+                case '/page/homepage.php':
+                    echo 'Homepage';
+                    break;
+                case '/page/shoppage.php':
+                    echo 'Shop';
+                    break;
+                case '/page/wishlist.php':
+                    echo 'Wishlist';
+                    break;
+                default:
+                    echo 'Homepage';
+            }
+            ?>
+        </span>
+    </a>
+</div>
 
 <h1 style="margin-bottom:20px;"><?= encode($p->product_name) ?></h1>
 

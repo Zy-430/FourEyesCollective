@@ -182,6 +182,14 @@ try {
         } else {
             $paymentLabel = ucfirst($methodType);
         }
+
+        // Display subtotal
+        if ($order->total_amount <= 500) {
+            $subtotal = $order->total_amount - 20;
+            $delivery_fee = 20;
+        } else {
+            $subtotal = $order->total_amount;
+        }
     ?>
         <!DOCTYPE html>
         <html lang="en">
@@ -282,11 +290,11 @@ try {
                         <div style="margin-bottom: 20px;">
                             <div class="total-row">
                                 <span>Subtotal</span>
-                                <span>RM <?= number_format($order->total_amount, 2) ?></span>
+                                <span>RM <?= number_format($subtotal, 2) ?></span>
                             </div>
                             <div class="total-row">
                                 <span>Shipping</span>
-                                <span>FREE</span>
+                                <span>RM <?= number_format($delivery_fee, 2) ?></span>
                             </div>
                             <div class="total-row">
                                 <span>Tax</span>
