@@ -178,7 +178,7 @@ include '../../_head.php';
 </section>
 
 <?php include '../../_foot.php'; ?>
-<script src="notification.js"></script>
+<script src="/js/notifications.js"></script>
 
 <script>
     $(function() {

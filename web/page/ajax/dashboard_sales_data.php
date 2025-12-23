@@ -5,12 +5,13 @@ auth('Admin');
 
 $sql = "
     SELECT 
-        DATE(order_date) AS sale_date,
-        SUM(total_amount) AS daily_total
-    FROM `order`
-    WHERE status = 'completed'
-      AND order_date >= CURDATE() - INTERVAL 6 DAY
-    GROUP BY DATE(order_date)
+        DATE(o.order_date) AS sale_date,
+        SUM(oi.subtotal) AS daily_total
+    FROM `order` o
+    JOIN order_item oi ON o.order_id = oi.order_id
+    WHERE o.status = 'completed'
+      AND o.order_date >= CURDATE() - INTERVAL 6 DAY
+    GROUP BY DATE(o.order_date)
     ORDER BY sale_date ASC
 ";
 

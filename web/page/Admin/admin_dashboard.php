@@ -6,6 +6,10 @@ include '../../_admin_head.php';
 auth('Admin');
 $user_id = $_user->user_id;
 
+if ($_user && $_user->force_password_change == 1) {
+    redirect('/page/force_password_change.php');
+}
+
 // Fetch data 
 $stmt = $_db->prepare("SELECT * FROM users WHERE user_id = ?");
 $stmt->execute([$user_id]);
@@ -18,8 +22,15 @@ if (!$user) {
 
 $member = $_db->query("SELECT COUNT(*) as total FROM users WHERE role = 'Member'")->fetch()->total;
 $orders = $_db->query("SELECT COUNT(*) AS total FROM `order`")->fetch()->total;
-$products = $_db->query("SELECT COUNT(*) as total FROM product")->fetch()->total;
-$totalSales = $_db->query("SELECT IFNULL(SUM(total_amount), 0) AS total FROM `order`WHERE status = 'completed'")->fetch()->total;
+$totalSales = $_db->query("SELECT IFNULL(SUM(oi.subtotal), 0) AS total FROM `order` o JOIN order_item oi ON o.order_id = oi.order_id WHERE status = 'completed'")->fetch()->total;
+
+// Get success message from temp() if it exists
+$notification_message = '';
+$notification_type = 'success';
+
+if (get('msg') == 'password_changed') {
+    $notification_message = 'Password changed successfully!';
+}
 ?>
 <!-- Show statistic cards -->
 <div class="admin-content">
@@ -59,8 +70,16 @@ $totalSales = $_db->query("SELECT IFNULL(SUM(total_amount), 0) AS total FROM `or
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="/js/notifications.js"></script>
 
 <script>
+    // Show notification on page load if there's a message
+    document.addEventListener('DOMContentLoaded', function() {
+        <?php if ($notification_message): ?>
+            showNotification('<?= addslashes($notification_message) ?>', 'success');
+        <?php endif; ?>
+    });
+
 $(function () {
 
     $.ajax({

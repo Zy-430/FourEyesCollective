@@ -12,6 +12,15 @@ $topProducts = getTopSellingProducts(5);
 
 // Check if user is logged in
 $is_logged_in = isset($_SESSION['user']);
+
+// Get success message from temp() if it exists
+$notification_message = '';
+$notification_type = 'success';
+
+if (get('msg') == 'password_changed') {
+    $notification_message = 'Password changed successfully!';
+}
+
 ?>
 
 <!-- Hero Section -->
@@ -465,8 +474,16 @@ $is_logged_in = isset($_SESSION['user']);
         </div>
     </section>
 <?php endif; ?>
+<script src="/js/notifications.js"></script>
 
 <script>
+    // Show notification on page load if there's a message
+    document.addEventListener('DOMContentLoaded', function() {
+        <?php if ($notification_message): ?>
+            showNotification('<?= addslashes($notification_message) ?>', 'success');
+        <?php endif; ?>
+    });
+
     document.addEventListener('DOMContentLoaded', function() {
         // Add hover effects to category cards without changing icon color
         const categoryCards = document.querySelectorAll('.category-card');
