@@ -3,7 +3,18 @@ require '../../_base.php';
 require '../../lib/db.php';
 include '../../_admin_head.php';
 require '../../lib/category.php';
-
+// Use to ensure this page's body has the `product` class for page-specific styling
+?>
+<script>
+    (function(){
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function(){ document.body.classList.add('product'); });
+        } else {
+            document.body.classList.add('product');
+        }
+    })();
+</script>
+<?php
 auth('Admin');
 
 $_title = 'Manage Products';
@@ -60,7 +71,6 @@ if ($minPrice || $maxPrice < 1000) {
 
 // Sorting
 $sql .= " ORDER BY $sort $dir";
-
 $stm = $_db->prepare($sql);
 $stm->execute($params);
 $products = $stm->fetchAll();
@@ -84,38 +94,30 @@ $priceRanges = [
     '250-400' => 'RM250 - RM400',
     '400-1000' => 'RM400+'
 ];
+
+// Store notification messages
+$notification_message = '';
+$notification_type = 'success';
+$product_id = get('product_id');
+
+if (get('msg') == 'added') {
+    $notification_message = 'Product (' . $product_id . ') added successfully!';
+} elseif (get('msg') == 'updated') {
+    $notification_message = 'Product (' . $product_id . ') updated successfully!';
+} elseif (get('msg') == 'deleted') {
+    $notification_message = 'Product (' . $product_id . ') deleted successfully!';
+} elseif (get('msg') == 'restored') {
+    $notification_message = 'Product (' . $product_id . ') restored successfully!';
+} 
 ?>
 
-<div class="admin-content ">
+<div class="admin-content">
     <div class="content-header">
         <h1 class="dashboard-title">Manage Products</h1>
-        <?php if (get('msg') == 'added'): ?>
-            <div class="success-message">
-                Product added successfully!
-            </div>
-        <?php endif; ?>
-
-        <?php if (get('msg') == 'updated'): ?>
-            <div class="success-message">
-                Product updated successfully!
-            </div>
-        <?php endif; ?>
-
-        <?php if (get('msg') == 'deleted'): ?>
-            <div class="success-message">
-                Product deleted successfully!
-            </div>
-        <?php endif; ?>
-
-        <?php if (get('msg') == 'restored'): ?>
-            <div class="success-message">
-                Product restored successfully!
-            </div>
-        <?php endif; ?>
         <div class="header-actions small">
             <!-- Add New Product Button -->
             <a href="add_product.php" class="btn-default btn-add" style="text-decoration: none; font-weight:bolder;">
-                <i class="fas fa-plus"></i> Add New Product
+                <i class="fas fa-plus"></i> Add
             </a>
         </div>
 
@@ -217,12 +219,12 @@ $priceRanges = [
                             <div style="margin-top:10px; display:flex; gap:10px;">
                                 <a href="modify_product.php?id=<?= $p->product_id ?>" style="flex:1; padding:8px; background:#2980b9; color:white; text-align:center; border-radius:5px; text-decoration:none;"><i class="fas fa-edit" style="font-size:14px;"></i> Modify</a>
                                 <?php if ($p->product_status == 1): ?>
-                                    <a href="delete_product.php?id=<?= $p->product_id ?>&action=delete" onclick="return confirm('Are you sure?');" style="flex:1; 
+                                    <a href="delete_product.php?id=<?= $p->product_id ?>&action=delete" onclick="return confirm('Are you sure you want to delete product (<?= $p->product_id ?>) ?');" style="flex:1; 
             padding:8px; background:#c0392b; color:white; text-align:center; border-radius:5px; text-decoration:none;">
                                         <i class="fas fa-trash" style="font-size:14px;padding-right:5px;"></i>Delete
                                     </a>
                                 <?php else: ?>
-                                    <a href="delete_product.php?id=<?= $p->product_id ?>&action=restore" onclick="return confirm('Are you sure?');" style="flex:1; 
+                                    <a href="delete_product.php?id=<?= $p->product_id ?>&action=restore" onclick="return confirm('Are you sure want to restore product (<?= $p->product_id ?>) ?');" style="flex:1; 
             padding:8px; background:#27ae60; color:white; text-align:center; border-radius:5px; text-decoration:none;">
                                         <i class="fas fa-redo" style="font-size:14px;padding-right:5px;"></i>Restore
                                     </a>
@@ -248,12 +250,12 @@ $priceRanges = [
                         <div style="margin-top:10px; display:flex; gap:10px;">
                             <a href="modify_product.php?id=<?= $p->product_id ?>" style="flex:1; padding:8px; background:#2980b9; color:white; text-align:center; border-radius:5px; text-decoration:none;"><i class="fas fa-edit" style="font-size:14px;"></i> Modify</a>
                             <?php if ($p->product_status == 1): ?>
-        <a href="delete_product.php?id=<?= $p->product_id ?>&action=delete" onclick="return confirm('Are you sure?');" style="flex:1; 
+        <a href="delete_product.php?id=<?= $p->product_id ?>&action=delete" onclick="return confirm('Are you sure you want to delete product (<?= $p->product_id ?>) ?');" style="flex:1; 
             padding:8px; background:#c0392b; color:white; text-align:center; border-radius:5px; text-decoration:none;">
             <i class="fas fa-trash" style="font-size:14px;padding-right:5px;"></i>Delete
         </a>
     <?php else: ?>
-        <a href="delete_product.php?id=<?= $p->product_id ?>&action=restore" onclick="return confirm('Are you sure?');" style="flex:1; 
+        <a href="delete_product.php?id=<?= $p->product_id ?>&action=restore" onclick="return confirm('Are you sure you want to restore product (<?= $p->product_id ?>) ?');" style="flex:1; 
             padding:8px; background:#27ae60; color:white; text-align:center; border-radius:5px; text-decoration:none;">
             <i class="fas fa-redo" style="font-size:14px;padding-right:5px;"></i>Restore
         </a>
@@ -265,3 +267,11 @@ $priceRanges = [
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    <?php if ($notification_message): ?>
+        showNotification('<?= addslashes($notification_message) ?>', '<?= $notification_type ?>');
+    <?php endif; ?>
+});
+</script>

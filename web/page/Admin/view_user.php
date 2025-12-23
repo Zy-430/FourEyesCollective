@@ -38,7 +38,8 @@ $genders = [
 $statuses = [
     '' => 'All Status',
     'Active' => 'Active',
-    'Inactive' => 'Inactive'
+    'Pending' => 'Pending Verification',
+    'Blocked' => 'Blocked'
 ];
 
 // Sorting
@@ -107,132 +108,91 @@ $query_params[] = "sort=$sort";
 $query_params[] = "dir=$dir";
 
 $query_string = implode('&', $query_params);
+
+// Store notification message 
+$notification_message = '';
+$notification_type = 'success';
+
+if (get('msg') == 'added') {
+    $notification_message = $role . ' (' . $user_id . ') added successfully!';
+} elseif (get('msg') == 'updated') {
+    $notification_message = $role . ' (' . $user_id . ') updated successfully!';
+} elseif (get('msg') == 'blocked') {
+    $notification_message = $role . ' (' . $user_id . ') blocked successfully!';
+} elseif (get('msg') == 'unblocked') {
+    $notification_message = $role . ' (' . $user_id . ') unblocked successfully!';
+} elseif (get('msg') == 'added_no_email') {
+    $notification_message = $role . ' (' . $user_id . ') added but email sending failed!';
+    $notification_type = 'error';
+} elseif (get('error') == 'last_admin') {
+    $notification_message = 'Cannot block the last active admin!';
+    $notification_type = 'error';
+} elseif (get('error') == 'user_not_found') {
+    $notification_message = 'User not found!';
+    $notification_type = 'error';
+}
 ?>
 
 <div class="admin-content">
     <div class="content-header">
         <h1 class="dashboard-title"><?= $role ?> Management </h1>
+        <div class="header-actions small" style="margin-top:10px;">
+            <form method="GET" style="display:flex; gap:10px; align-items:center;">
 
-        <?php if (get('msg') == 'added'): ?>
-            <div class="flash-msg" style="padding:10px; background:#d4f8d4; border:1px solid #8acb8a; margin-bottom:15px;">
-                <?= $role ?> (<?= $user_id ?>) added successfully!
-            </div>
-        <?php endif; ?>
+                <!-- Preserve role so admin and member can use same folder -->
+                <input type="hidden" name="role" value="<?= $role ?>">
 
-        <?php if (get('msg') == 'updated'): ?>
-            <div class="flash-msg" style="padding:10px; background:#d4f8d4; border:1px solid #8acb8a; margin-bottom:15px;">
-                <?= $role ?> (<?= $user_id ?>) updated successfully!
-            </div>
-        <?php endif; ?>
+                <!-- Search -->
+                <input type="text"
+                    name="search"
+                    value="<?= htmlspecialchars($search) ?>"
+                    placeholder="Search by ID, Name, Email"
+                    style="padding:8px; width:260px; border-radius:5px; border:1px solid #ccc;">
 
-        <?php if (get('msg') == 'deleted'): ?>
-            <div class="flash-msg" style="padding:10px; background:#d4f8d4; border:1px solid #8acb8a; margin-bottom:15px;">
-                <?= $role ?> (<?= $user_id ?>) blocked successfully!
-            </div>
-        <?php endif; ?>
+                <!-- Status filter -->
+                <select name="status"
+                    style="padding:8px; border-radius:5px; border:1px solid #ccc;">
+                    <?php foreach ($statuses as $value => $label): ?>
+                        <option value="<?= $value ?>" <?= $status === $value ? 'selected' : '' ?>>
+                            <?= $label ?>
+                        </option>
+                    <?php endforeach ?>
+                </select>
 
-        <?php if (get('msg') == 'restored'): ?>
-            <div class="flash-msg" style="padding:10px; background:#d4f8d4; border:1px solid #8acb8a; margin-bottom:15px;">
-                <?= $role ?> (<?= $user_id ?>) unblocked successfully!
-            </div>
-        <?php endif; ?>
+                <!-- Gender filter -->
+                <select name="gender"
+                    style="padding:8px; border-radius:5px; border:1px solid #ccc;">
+                    <?php foreach ($genders as $value => $label): ?>
+                        <option value="<?= $value ?>" <?= $gender === $value ? 'selected' : '' ?>>
+                            <?= $label ?>
+                        </option>
+                    <?php endforeach ?>
+                </select>
 
-        <!-- Show filter content (search , gender & status) -->
-        <?php if ($search || $gender !== '' || $status !== ''): ?>
-            <div class="filter-content">
-                <span>Filter Contents: </span>
-                <?php if ($search): ?>
-                    <span class="filter-tag">
-                        Search: <?= htmlspecialchars($search) ?>
-                        <a href="?<?= http_build_query(array_merge($_GET, ['search' => '', 'page' => 1])) ?>">&times;</a>
-                    </span>
-                <?php endif; ?>
-                <?php if ($gender !== ''): ?>
-                    <span class="filter-tag">
-                        Gender: <?= $genders[$gender] ?>
-                        <a href="?<?= http_build_query(array_merge($_GET, ['gender' => '', 'page' => 1])) ?>">&times;</a>
-                    </span>
-                <?php endif; ?>
-                <?php if ($status !== ''): ?>
-                    <span class="filter-tag">
-                        Status: <?= $statuses[$status] ?>
-                        <a href="?<?= http_build_query(array_merge($_GET, ['status' => '', 'page' => 1])) ?>">&times;</a>
-                    </span>
-                <?php endif; ?>
-            </div>
-        <?php endif; ?>
-        <div class="header-actions small">
-            <!-- Filter dropdown -->
-            <div class="dropdown">
-                <button class="btn-default btn-add" type="button" id="filterDropdown">
-                    <i class="fas fa-filter"></i> Filter
+                <!-- Preserve sorting -->
+                <input type="hidden" name="sort" value="<?= $sort ?>">
+                <input type="hidden" name="dir" value="<?= $dir ?>">
+                <input type="hidden" name="page" value="1">
+
+                <!-- Filter button -->
+                <button type="submit" class="btn-default btn-add">
+                    <i class="fas fa-filter"></i>Filter
                 </button>
-                <!-- Hidden filter form that appears on click -->
-                <div class="dropdown-content" id="filterForm">
-                    <form method="get" class="filter-dropdown-form">
-                        <input type="hidden" name="role" value="<?= $role ?>">
-                        <div class="filter-row">
-                            <div class="filter-group">
-                                <label>Gender:</label>
-                                <select name="gender" class="filter-select">
-                                    <?php foreach ($genders as $value => $label): ?>
-                                        <option value="<?= $value ?>" <?= $gender === $value ? 'selected' : '' ?>>
-                                            <?= $label ?>
-                                        </option>
-                                    <?php endforeach ?>
-                                </select>
-                            </div>
 
-                            <div class="filter-group">
-                                <label>Status:</label>
-                                <select name="status" class="filter-select">
-                                    <?php foreach ($statuses as $value => $label): ?>
-                                        <option value="<?= $value ?>" <?= $status === $value ? 'selected' : '' ?>>
-                                            <?= $label ?>
-                                        </option>
-                                    <?php endforeach ?>
-                                </select>
-                            </div>
-                        </div>
+                <!-- Clear button -->
+                <button type="button"
+                    class="btn-default btn-clear"
+                    onclick="location.href='?role=<?= $role ?>'">
+                    <i class="fas fa-eraser"></i>Clear
+                </button>
 
-                        <!-- Hidden fields for preserve sorting and pagination -->
-                        <input type="hidden" name="sort" value="<?= $sort ?>">
-                        <input type="hidden" name="dir" value="<?= $dir ?>">
-                        <input type="hidden" name="page" value="1"> <!-- Reset to page 1 when filter -->
+                <!-- Add button -->
+                <button type="button"
+                    class="btn-default btn-add"
+                    onclick="location.href='add_user.php?role=<?= $role ?>'">
+                    <i class="fas fa-plus"></i> Add
+                </button>
 
-                        <div class="filter-actions">
-                            <button type="submit" class="btn-default btn-filter-small">
-                                Apply
-                            </button>
-                            <button type="button" class="btn-default btn-reset-small" onclick="location.href='?role=<?= $role ?>'">
-                                Clear
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <button class="btn-default btn-add" onclick="location.href='add_user.php?role=<?= $role ?>'">
-                <i class="fas fa-plus"></i> Add New <?= $role ?>
-            </button>
-
-            <!-- Submit search form -->
-            <form method="get" class="search-form">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="hidden" name="role" value="<?= $role ?>">
-                    <input type="text"
-                        name="search"
-                        value="<?= htmlspecialchars($search) ?>"
-                        placeholder="Search members..."
-                        onchange="this.form.submit()">
-                    <!-- Preserve other parameters -->
-                    <input type="hidden" name="gender" value="<?= $gender ?>">
-                    <input type="hidden" name="status" value="<?= $status ?>">
-                    <input type="hidden" name="sort" value="<?= $sort ?>">
-                    <input type="hidden" name="dir" value="<?= $dir ?>">
-                    <input type="hidden" name="page" value="1">
-                </div>
             </form>
         </div>
     </div>
@@ -240,31 +200,56 @@ $query_string = implode('&', $query_params);
     <div class="table-container">
         <table class="table table-small">
             <tr>
-                <th></th>
                 <?= table_headers($fields, $sort, $dir, "role=$role&page=$page") ?>
+                <th>Actions</th>
             </tr>
 
             <?php foreach ($member as $u): ?>
 
                 <?php
                 // First image
-                $imgArr = explode(",", $u->photo);
-                $firstImage = trim($imgArr[0]);
+                $firstImage = trim($u->photo);
                 $imgPath = "/images/users/$firstImage";
                 ?>
 
                 <tr>
+                    
+                    <td><?= $u->user_id ?></td>
+                    <!-- Show user name and profile photo (click the photo can enlarge it) -->
+                    <td class="name-container">
+                        <img src="/images/users/<?= htmlspecialchars($firstImage) ?>" alt="<?= htmlspecialchars($u->photo) ?>"
+                            class="member-avatar clickable-photo" onclick="openPhotoModal(this.src)">
+                        <?= $u->name ?>
+                    </td>
+                    <td style="max-width: 150px;"><?= $u->email ?></td>
+                    <td><?= $u->gender ?></td>
+                    <td>0<?= $u->phone ?></td>
+                    <td><?= $u->date_of_birth ?></td>
+                    <td><?= $u->registration_date ?></td>
+                    <!-- Badge to show user status -->
+                    <td>
+                        <span class="status-badge status-<?= strtolower($u->status) ?>">
+                            <?php
+                            $statusLabels = [
+                                'Active' => 'Active',
+                                'Pending' => 'Pending',
+                                'Blocked' => 'Blocked'
+                            ];
+                            echo $statusLabels[$u->status] ?? $u->status;
+                            ?>
+                        </span>
+                    </td>
                     <td class="actions-row">
                         <div class="action-buttons">
                             <!-- Modify user button -->
                             <a href="modify_user.php?user_id=<?= $u->user_id ?>" class="btn-default edit-btn">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <!-- Display button based on status (Active: delete ; Inactive: restore) -->
+                            <!-- Display button based on status (Active: block button ; Blocked: unblocked button) -->
                             <?php if ($u->status == "Active"): ?>
                                 <form method="post" action="delete_user.php" style="display:inline">
                                     <input type="hidden" name="user_id" value="<?= $u->user_id ?>">
-                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="action" value="block">
                                     <input type="hidden" name="role" value="<?= $role ?>">
                                     <button type="submit"
                                         onclick="return confirm('Are you sure you want to block <?= $role ?> (<?= $u->user_id ?>) ?');"
@@ -276,7 +261,7 @@ $query_string = implode('&', $query_params);
                                 <form method="post" action="delete_user.php" style="display:inline">
                                     <input type="hidden" name="user_id" value="<?= $u->user_id ?>">
                                     <input type="hidden" name="role" value="<?= $role ?>">
-                                    <input type="hidden" name="action" value="restore">
+                                    <input type="hidden" name="action" value="unblock">
 
                                     <button type="submit"
                                         onclick="return confirm('Are you sure you want to unblock <?= $role ?> (<?= $u->user_id ?>) ?');"
@@ -286,24 +271,6 @@ $query_string = implode('&', $query_params);
                                 </form>
                             <?php endif ?>
                         </div>
-                    </td>
-                    <td><?= $u->user_id ?></td>
-                    <!-- Show user name and profile photo (click the photo can enlarge it) -->
-                    <td class="name-container">
-                        <img src="../../images/users/<?= $firstImage ?>" alt="<?= htmlspecialchars($u->name) ?>"
-                            class="member-avatar clickable-photo" onclick="openPhotoModal(this.src)">
-                        <?= $u->name ?>
-                    </td>
-                    <td style="max-width: 150px;"><?= $u->email ?></td>
-                    <td><?= $u->gender ?></td>
-                    <td><?= $u->phone ?></td>
-                    <td><?= $u->date_of_birth ?></td>
-                    <td><?= $u->registration_date ?></td>
-                    <!-- Badge to show user status -->
-                    <td>
-                        <span class="status-badge status-<?= strtolower($u->status) ?>">
-                            <?= $u->status ?>
-                        </span>
                     </td>
                 </tr>
             <?php endforeach ?>
@@ -327,7 +294,14 @@ $query_string = implode('&', $query_params);
         </div>
     <?php endif; ?>
 </div>
-
+<script>
+    // Show notification on page load if there's a message
+    document.addEventListener('DOMContentLoaded', function() {
+        <?php if ($notification_message): ?>
+            showNotification('<?= addslashes($notification_message) ?>', '<?= $notification_type ?>');
+        <?php endif; ?>
+    });
+</script>
 </body>
 
 </html>

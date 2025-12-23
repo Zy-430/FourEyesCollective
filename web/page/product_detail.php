@@ -10,7 +10,15 @@ $stm->execute([$id]);
 $p = $stm->fetch();
 
 $folder = $categoryFolders[$p->category_id] ?? 'others';
-$images = explode(',', $p->product_image);
+$rawImages = array_filter(array_map('trim', explode(',', $p->product_image)));
+$images = $rawImages;
+
+// If no images → fallback to placeholder
+if (empty($images)) {
+    $images = ['no-image.png'];
+    $folder = ''; // no folder needed for fallback
+}
+
 
 $return_url = get('return_url', '/page/homepage.php');
 $return_url = trim($return_url);
@@ -27,13 +35,16 @@ if (!in_array($path, $allowed_returns)) {
     $return_url = $path;
 }
 
+
 // Fetch reviews
 $stm_reviews = $_db->prepare("
     SELECT oi.*, o.user_id, u.name, u.photo
     FROM order_item oi
     JOIN `order` o ON oi.order_id = o.order_id
     JOIN users u ON o.user_id = u.user_id
-    WHERE oi.product_id = ? AND oi.user_rating IS NOT NULL
+    WHERE oi.product_id = ? 
+    AND oi.user_rating IS NOT NULL
+    AND oi.review_status = 'visible'
     ORDER BY oi.rated_at DESC
 ");
 $stm_reviews->execute([$id]);
@@ -50,7 +61,6 @@ if ($total_reviews > 0) {
 $_title = $p->product_name;
 include '../_head.php';
 ?>
-
 <!-- BACK BUTTON -->
 <div style="margin-bottom: 20px;">
     <a href="<?= encode($return_url) ?>" style="text-decoration: none; color: #2c3e50; font-size: 16px; display: inline-flex; align-items: center; gap: 8px;">
@@ -82,7 +92,7 @@ include '../_head.php';
     <!-- LEFT: IMAGE CAROUSEL -->
     <div style="width:400px;">
         <!-- MAIN BIG IMAGE -->
-        <div id="productCarousel" data-images='<?= htmlspecialchars(json_encode(array_map("trim", $images)), ENT_QUOTES) ?>' data-folder="<?= htmlspecialchars($folder, ENT_QUOTES) ?>" style="position:relative; width:400px; height:400px; overflow:hidden; border:1px solid #ccc; border-radius:8px;">
+        <div style="position:relative; width:400px; height:400px; overflow:hidden; border:1px solid #ccc; border-radius:8px;">
             <img id="mainImage"
                 src="/images/product/<?= $folder ?>/<?= trim($images[0]) ?>"
                 style="width:100%; height:100%; object-fit:cover;">
@@ -202,7 +212,14 @@ include '../_head.php';
                         $photos = array_filter(array_map('trim', explode(',', $clean)));
                     }
                 }
-                $videos = !empty($review['rating_video']) ? array_filter(array_map('trim', explode(',', $review['rating_video']))) : [];
+                $videos = [];
+                if (!empty($review['rating_video'])) {
+                    $decoded = json_decode($review['rating_video'], true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                        $videos = array_filter(array_map('trim', $decoded));
+                    }
+                }
+
             ?>
                 <div class="review-item" style="background:white; padding:20px; border-radius:8px; border-left:4px solid #f39c12;">
                     <div style="display:flex; align-items:center; margin-bottom:15px;">
@@ -257,4 +274,98 @@ include '../_head.php';
         <video id="modalVideo" style="max-width:100%; max-height:100%; display:none; border-radius:8px;" controls></video>
     </div>
 </div>
+
+<!-- CAROUSEL SCRIPT -->
+<script>
+    (function($) {
+        let images = <?= json_encode(array_map('trim', $images)) ?>;
+        let folder = "<?= $folder ?>";
+        let idx = 0;
+
+        function showImage(i) {
+            idx = i;
+            $('#mainImage').attr('src', '/images/product/' + folder + '/' + images[idx]);
+        }
+
+        function nextImage() {
+            idx = (idx + 1) % images.length;
+            showImage(idx);
+        }
+
+        function prevImage() {
+            idx = (idx - 1 + images.length) % images.length;
+            showImage(idx);
+        }
+
+        // DOM bindings
+        $(function() {
+            $(document).on('click', '.carousel-prev', function(e) {
+                e.preventDefault();
+                prevImage();
+            });
+            $(document).on('click', '.carousel-next', function(e) {
+                e.preventDefault();
+                nextImage();
+            });
+            $(document).on('click', '.thumb', function(e) {
+                e.preventDefault();
+                showImage(Number($(this).data('index')));
+            });
+
+            // Auto slideshow every 3 seconds
+            setInterval(nextImage, 3000);
+        });
+    })(jQuery);
+</script>
+
+<script>
+    $(function() {
+        const $modal = $('#mediaModal');
+        const $modalImage = $('#modalImage');
+        const $modalVideo = $('#modalVideo');
+
+        // Photo click
+        $(document).on('click', '.media-photo', function() {
+            const src = $(this).data('src');
+
+            $modalVideo.hide().attr('src', '');
+            $modalImage.attr('src', src).show();
+
+            $modal.fadeIn().css('display', 'flex');
+        });
+
+        // Video click
+        $(document).on('click', '.media-video', function() {
+            const src = $(this).data('src');
+
+            $modalImage.hide().attr('src', '');
+            $modalVideo.attr('src', src).show()[0].play();
+
+            $modal.fadeIn().css('display', 'flex');
+        });
+
+        // Close modal
+        $('#closeModalBtn').on('click', function() {
+            closeModal();
+        });
+
+        // Click outside content to close
+        $modal.on('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        function closeModal() {
+            $modal.fadeOut();
+            $modalImage.hide().attr('src', '');
+            $modalVideo.hide().attr('src', '').each(function() {
+                this.pause();
+            });
+        }
+    });
+</script>
+
+<script src="/js/notifications.js"></script>
+<script src="/js/wishlist.js"></script>
 <?php include '../_foot.php'; ?>

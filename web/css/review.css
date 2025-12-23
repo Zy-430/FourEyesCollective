@@ -1,3 +1,5 @@
+/* review.css */
+
 .review-container {
     max-width: 1000px;
     margin: 40px auto;
@@ -165,4 +167,90 @@
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* Filter form */
+.review-filter {
+    position: relative;
+    margin-bottom: 20px;
+    width: fit-content;
+}
+
+.review-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.review-pill {
+    display: inline-block;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 999px;
+    margin: 6px 0;
+}
+
+/* Hidden review pill */
+.review-pill.hidden {
+    background-color: #fdecea;
+    color: #c0392b;
+    border: 1px solid #f5c6cb;
+}
+
+.filter-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.filter-form input[type="text"],
+.filter-form select {
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 0.95rem;
+}
+
+.filter-form button {
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: none;
+    background: #8e44ad;
+    color: white;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.filter-form button:hover {
+    background: #732d91;
+}
+
+/* Rate Now button */
+.btn-rate-now {
+    display: inline-block;
+    padding: 6px 14px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+    background-color: #2c3e50;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.btn-rate-now:hover {
+    background-color: #1a252f;
+    text-decoration: none;
+    color: #fff;
+}
+
+.btn-rate-now:active {
+    background-color: #162022;
 }

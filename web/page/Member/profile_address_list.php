@@ -46,7 +46,8 @@ include '../../_head.php';
             <?php if ($addr->default_flag): ?>
                 <span class="default-badge">Default</span>
             <?php endif; ?>
-
+            
+            <p><strong><?= encode($addr->recipient_name) ?></strong></p>
             <p><?= encode($addr->address_line1) ?></p>
             <?php if (!empty($addr->address_line2)): ?><p><?= encode($addr->address_line2) ?></p><?php endif; ?>
             <p><?= encode($addr->city . ', ' . $addr->state . ' ' . $addr->postcode) ?></p>

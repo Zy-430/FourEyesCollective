@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 17, 2025 at 07:01 PM
+-- Generation Time: Dec 22, 2025 at 01:25 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -145,48 +145,6 @@ INSERT INTO `category` (`category_id`, `category_name`, `folder`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `email_verification`
---
-
-CREATE TABLE `email_verification` (
-  `verification_id` int(11) NOT NULL,
-  `user_id` char(6) NOT NULL,
-  `token` varchar(255) NOT NULL,
-  `expiry` datetime NOT NULL,
-  `is_used` tinyint(1) NOT NULL DEFAULT 0,
-  `type` varchar(20) NOT NULL DEFAULT 'verification',
-  `created_at` datetime NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `email_verification`
---
-
-INSERT INTO `email_verification` (`verification_id`, `user_id`, `token`, `expiry`, `is_used`, `type`, `created_at`) VALUES
-(1, 'ME0001', 'a3f9c1d4e7b2178a90bcfe1234abcd56ef90781234cd56ef78ab9012cd45ef67', '2025-11-02 09:00:00', 1, 'verification', '2025-11-01 09:00:00'),
-(2, 'ME0002', 'b7e4d9c3a1f2567890ab34cd56ef7812cd90ef34567812abcd34ef5678cd12ef', '2025-11-03 10:10:00', 1, 'verification', '2025-11-02 10:10:00'),
-(3, 'ME0003', 'c1d2e3f4a5b67890cd12ef34ab56cd7890ef12cd34ab56ef7890cd12ef34ab56', '2025-11-04 11:15:00', 0, 'verification', '2025-11-03 11:15:00'),
-(4, 'ME0004', 'd4c3b2e1f0a98765cd12ef7890ab34ef56cd78ab12ef34cd5678ab12ef90cd34', '2025-11-05 12:20:00', 1, 'verification', '2025-11-04 12:20:00'),
-(5, 'ME0005', 'e5f6a7b8c9d01234ef90ab12cd34ef78ab12cd56ef7890ab34cd12ef5678cd90', '2025-11-06 13:25:00', 1, 'verification', '2025-11-05 13:25:00'),
-(6, 'ME0006', 'f9e8d7c6b5a40123cd90ef12ab34cd56ef78ab34cd12ef56ab78cd90ef12ab34', '2025-11-07 14:30:00', 0, 'verification', '2025-11-06 14:30:00'),
-(7, 'ME0007', 'a1b2c3d4e5f67890cd12ef345678ab12ef90cd34ab56ef7890cd12ef34ab5678', '2025-11-08 15:35:00', 1, 'verification', '2025-11-07 15:35:00'),
-(8, 'ME0008', 'b2c3d4e5f6a78901ef34cd12ab56ef78cd12ef34ab56cd78ef9012cd34ab5678', '2025-11-09 16:40:00', 1, 'verification', '2025-11-08 16:40:00'),
-(9, 'ME0009', 'c3d4e5f6a7b89012cd34ef56ab78cd90ef12ab34cd56ef78ab90cd12ef3456ab', '2025-11-10 17:45:00', 0, 'verification', '2025-11-09 17:45:00'),
-(10, 'ME0010', 'd4e5f6a7b8c90123ef56ab12cd90ef34ab56cd78ef12ab90cd34ef78ab12cd34', '2025-11-11 18:50:00', 1, 'verification', '2025-11-10 18:50:00'),
-(11, 'ME0011', 'e5f6a7b8c9d01234ab78cd56ef12cd34ef90ab12cd56ef78cd12ef34ab7890cd', '2025-11-12 09:55:00', 1, 'verification', '2025-11-11 09:55:00'),
-(12, 'ME0012', 'f6a7b8c9d0e12345cd12ef90ab34cd78ef12ab34cd90ef78ab34cd12ef56ab78', '2025-11-13 10:00:00', 1, 'verification', '2025-11-12 10:00:00'),
-(13, 'ME0013', 'a7b8c9d0e1f23456ef12cd34ab56ef90cd34ab56ef9012cd78ab34ef56cd12ef', '2025-11-14 11:05:00', 0, 'verification', '2025-11-13 11:05:00'),
-(14, 'ME0014', 'b8c9d0e1f2a34567ab12cd34ef90ab56cd12ef34ab78cd56ef3412ab56cd78ef', '2025-11-15 12:10:00', 1, 'verification', '2025-11-14 12:10:00'),
-(15, 'ME0015', 'c9d0e1f2a3b45678cd34ab12ef56cd90ab12ef34cd78ab56ef12cd34ab78ef90', '2025-11-16 13:15:00', 1, 'verification', '2025-11-15 13:15:00'),
-(16, 'AD0001', 'a1c2e3f4b5d67890ef12cd34ab56ef78cd12ab90ef34cd56ab78ef12cd3456ef', '2025-11-02 09:00:00', 1, 'verification', '2025-11-01 09:00:00'),
-(17, 'AD0002', 'b1d2f3e4c5a78901cd34ef12ab56cd78ef90ab12cd34ef56ab12ef34cd5678ab', '2025-11-03 09:10:00', 1, 'verification', '2025-11-02 09:10:00'),
-(18, 'AD0003', 'c1e2f3a4d5b89012ef56cd34ab78ef12cd34ab56ef12cd90ab56ef34cd12ab78', '2025-11-04 09:20:00', 1, 'verification', '2025-11-03 09:20:00'),
-(19, 'AD0004', 'd1f2a3e4c5b90123ab78cd56ef34cd12ab56ef90cd12ef78ab34cd12ef78cd34', '2025-11-05 09:30:00', 1, 'verification', '2025-11-04 09:30:00'),
-(20, 'AD0005', 'e1a2b3c4d5f01234cd12ef78ab34cd56ef12ab34cd90ef56ab78cd12ef34ab90', '2025-11-06 09:40:00', 1, 'verification', '2025-11-05 09:40:00');
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `order`
 --
 
@@ -207,24 +165,24 @@ CREATE TABLE `order` (
 
 INSERT INTO `order` (`order_id`, `user_id`, `address_id`, `order_date`, `total_amount`, `status`, `cancelled_reason`, `delivered_at`) VALUES
 ('OR0001', 'ME0001', 'ADRS0001', '2025-11-01 02:00:00', 630, 'completed', NULL, '2025-11-02 10:00:00'),
-('OR0002', 'ME0002', 'ADRS0002', '2025-11-02 03:00:00', 420, 'delivered', NULL, '2025-11-03 12:00:00'),
+('OR0002', 'ME0002', 'ADRS0002', '2025-12-22 10:06:11', 420, 'completed', NULL, '2025-11-03 12:00:00'),
 ('OR0003', 'ME0003', 'ADRS0003', '2025-11-03 04:00:00', 210, 'cancelled', 'Ordered by mistake', NULL),
 ('OR0004', 'ME0004', 'ADRS0004', '2025-11-04 05:00:00', 1050, 'cancelled', NULL, NULL),
-('OR0005', 'ME0005', 'ADRS0005', '2025-11-05 06:00:00', 420, 'delivered', NULL, '2025-11-06 11:00:00'),
-('OR0006', 'ME0006', 'ADRS0006', '2025-11-06 07:00:00', 420, 'delivered', NULL, '2025-11-07 15:00:00'),
+('OR0005', 'ME0005', 'ADRS0005', '2025-12-22 10:06:11', 420, 'completed', NULL, '2025-11-06 11:00:00'),
+('OR0006', 'ME0006', 'ADRS0006', '2025-12-22 10:06:11', 420, 'completed', NULL, '2025-11-07 15:00:00'),
 ('OR0007', 'ME0007', 'ADRS0007', '2025-11-07 08:00:00', 420, 'shipped', NULL, NULL),
 ('OR0008', 'ME0008', 'ADRS0008', '2025-11-08 09:00:00', 700, 'completed', NULL, '2025-11-10 11:00:00'),
 ('OR0009', 'ME0009', 'ADRS0009', '2025-11-09 10:00:00', 420, 'cancelled', NULL, NULL),
 ('OR0010', 'ME0010', 'ADRS0010', '2025-11-10 11:00:00', 420, 'completed', NULL, '2025-11-11 13:00:00'),
-('OR0011', 'ME0011', 'ADRS0011', '2025-11-11 01:00:00', 210, 'delivered', NULL, '2025-11-12 08:00:00'),
+('OR0011', 'ME0011', 'ADRS0011', '2025-12-22 10:06:11', 210, 'completed', NULL, '2025-11-12 08:00:00'),
 ('OR0012', 'ME0012', 'ADRS0012', '2025-11-12 02:30:00', 700, 'shipped', NULL, NULL),
 ('OR0013', 'ME0013', 'ADRS0013', '2025-11-13 03:15:00', 525, 'completed', NULL, '2025-11-14 10:00:00'),
 ('OR0014', 'ME0014', 'ADRS0014', '2025-11-14 04:45:00', 420, 'cancelled', NULL, NULL),
-('OR0015', 'ME0015', 'ADRS0015', '2025-11-15 05:20:00', 420, 'delivered', NULL, '2025-11-17 12:00:00'),
+('OR0015', 'ME0015', 'ADRS0015', '2025-12-22 10:06:11', 420, 'completed', NULL, '2025-11-17 12:00:00'),
 ('OR0016', 'ME0001', 'ADRS0001', '2025-11-05 02:00:00', 700, 'completed', NULL, '2025-11-06 12:00:00'),
 ('OR0017', 'ME0002', 'ADRS0002', '2025-11-06 03:00:00', 420, 'shipped', NULL, NULL),
 ('OR0018', 'ME0003', 'ADRS0003', '2025-11-07 04:00:00', 420, 'completed', NULL, '2025-11-08 07:00:00'),
-('OR0019', 'ME0004', 'ADRS0004', '2025-11-08 05:00:00', 420, 'delivered', NULL, '2025-11-20 10:00:00'),
+('OR0019', 'ME0004', 'ADRS0004', '2025-12-22 10:06:11', 420, 'completed', NULL, '2025-11-20 10:00:00'),
 ('OR0020', 'ME0005', 'ADRS0005', '2025-11-09 06:00:00', 630, 'cancelled', NULL, NULL),
 ('OR0021', 'ME0001', 'ADRS0001', '2025-11-21 09:00:00', 420, 'pending', NULL, NULL),
 ('OR0022', 'ME0002', 'ADRS0002', '2025-11-22 10:30:00', 315, 'pending', NULL, NULL),
@@ -310,7 +268,13 @@ INSERT INTO `order_history` (`history_id`, `order_id`, `status`, `changed_at`, `
 ('HIS0058', 'OR0020', 'cancelled', '2025-11-20 08:00:00', 'ME0020', 'Your order has been cancelled.'),
 ('HIS0059', 'OR0021', 'pending', '2025-11-21 09:00:00', 'ME0001', 'Your order has been placed.'),
 ('HIS0060', 'OR0022', 'pending', '2025-11-22 10:30:00', 'ME0002', 'Your order has been placed.'),
-('HIS0061', 'OR0023', 'pending', '2025-11-23 14:15:00', 'ME0003', 'Your order has been placed.');
+('HIS0061', 'OR0023', 'pending', '2025-11-23 14:15:00', 'ME0003', 'Your order has been placed.'),
+('HIS0062', 'OR0002', 'completed', '2025-12-22 10:06:11', 'AD0001', 'Auto-completed after 3 days of delivery'),
+('HIS0063', 'OR0005', 'completed', '2025-12-22 10:06:11', 'AD0001', 'Auto-completed after 3 days of delivery'),
+('HIS0064', 'OR0006', 'completed', '2025-12-22 10:06:11', 'AD0001', 'Auto-completed after 3 days of delivery'),
+('HIS0065', 'OR0011', 'completed', '2025-12-22 10:06:11', 'AD0001', 'Auto-completed after 3 days of delivery'),
+('HIS0066', 'OR0015', 'completed', '2025-12-22 10:06:11', 'AD0001', 'Auto-completed after 3 days of delivery'),
+('HIS0067', 'OR0019', 'completed', '2025-12-22 10:06:11', 'AD0001', 'Auto-completed after 3 days of delivery');
 
 -- --------------------------------------------------------
 
@@ -359,7 +323,7 @@ INSERT INTO `order_item` (`order_item_id`, `order_id`, `product_id`, `product_qt
 ('OI0019', 'OR0018', 'PR0003', 1, 420, 420, 4, 'Happy with the purchase.', '2025-11-08 07:30:00', NULL, NULL, 'visible'),
 ('OI0020', 'OR0019', 'PR0003', 1, 420, 420, NULL, NULL, NULL, NULL, NULL, 'visible'),
 ('OI0021', 'OR0020', 'PR0001', 3, 210, 630, NULL, NULL, NULL, NULL, NULL, 'visible'),
-('OI0022', 'OR0021', 'PR0001', 2, 210, 420, 3, 'good', '2025-12-21 06:29:49', NULL, NULL, 'visible'),
+('OI0022', 'OR0021', 'PR0001', 2, 210, 420, NULL, NULL, NULL, NULL, NULL, 'visible'),
 ('OI0023', 'OR0022', 'PR0002', 3, 105, 315, NULL, NULL, NULL, NULL, NULL, 'visible'),
 ('OI0024', 'OR0023', 'PR0003', 1, 420, 420, NULL, NULL, NULL, NULL, NULL, 'visible');
 
@@ -537,7 +501,7 @@ CREATE TABLE `users` (
   `date_of_birth` date NOT NULL,
   `photo` varchar(255) NOT NULL,
   `registration_date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `status` varchar(10) NOT NULL DEFAULT 'Inactive',
+  `status` enum('Active','Blocked','Pending') NOT NULL DEFAULT 'Pending',
   `failed_attempts` int(11) DEFAULT 0,
   `lock_until` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -548,16 +512,16 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`user_id`, `role`, `email`, `password`, `name`, `gender`, `phone`, `date_of_birth`, `photo`, `registration_date`, `status`, `failed_attempts`, `lock_until`) VALUES
 ('AD0001', 'Admin', 'admin1@gmail.com', '$2y$10$ELrFywiho7PikrA55mZxAOWcV/A4yMfjDqim3wjrqbIfGro1HMz3C', 'Admin Yeap', 'F', '198765432', '1985-05-05', 'admin1.jpg', '2025-12-17 11:17:02', 'Active', 0, NULL),
-('AD0002', 'Admin', 'admin2@gmail.com', '$2y$10$JQ8eSFp4flLCP4kM6egYhuFdJ55Xg45RJTEmNTzPs3Gry6dENF9L.', 'Admin Lim', 'M', '198765432', '1980-12-12', 'admin2.jpg', '2025-12-17 11:17:33', 'Inactive', 0, NULL),
+('AD0002', 'Admin', 'admin2@gmail.com', '$2y$10$JQ8eSFp4flLCP4kM6egYhuFdJ55Xg45RJTEmNTzPs3Gry6dENF9L.', 'Admin Lim', 'M', '198765432', '1980-12-12', 'admin2.jpg', '2025-12-22 12:04:10', 'Blocked', 0, NULL),
 ('AD0003', 'Admin', 'admin3@gmail.com', '$2y$10$kuljHiW5kES93KmX0.YdCe5hezj1ydd29dmkuGYE6bdoB4c6joCva', 'Admin Quak', 'F', '198765432', '1979-07-07', 'admin3.jpg', '2025-12-17 11:07:07', 'Active', 0, NULL),
 ('AD0004', 'Admin', 'admin4@gmail.com', '$2y$10$DsPwx0n5VTBw3MydW8EUNu06OqFMS/5HE76EzWGZnFzGs4DY9CIAG', 'Admin Ng', 'M', '198765432', '1982-09-09', 'admin4.jpg', '2025-12-17 11:07:46', 'Active', 0, NULL),
 ('AD0005', 'Admin', 'admin5@gmail.com', '$2y$10$tHo3dkcP.TI.To1YrnEOX.lAA2TcIcKI1xuY51b0vAZSsA3yVw7AS', 'Admin Low', 'F', '198765435', '1986-03-03', 'admin5.jpg', '2025-12-17 11:08:05', 'Active', 0, NULL),
-('ME0001', 'Member', 'john.doe@gmail.com', '$2y$10$DHc0qbmlmTxdFxFq1m1l5..B5L/fC30CNb96RTTrlExmdJRK1Ts7u', 'John Doe', 'M', '123456780', '1990-05-12', 'john1.jpg', '2025-12-17 11:08:28', 'Active', 0, NULL),
-('ME0002', 'Member', 'mary.lee@gmail.com', '$2y$10$4qizTXT0p9RwOhbVWzwoNuhc0S0dizE9cIjX7S8SivM4LOL3Lfzli', 'Mary Lee', 'F', '123456780', '1992-08-23', 'mary2.jpg', '2025-12-17 11:17:43', 'Inactive', 0, NULL),
+('ME0001', 'Member', 'john.doe@gmail.com', '$2y$10$DHc0qbmlmTxdFxFq1m1l5..B5L/fC30CNb96RTTrlExmdJRK1Ts7u', 'John Doe', 'M', '123456780', '1990-05-12', 'john1.jpg', '2025-12-22 12:25:09', 'Active', 0, NULL),
+('ME0002', 'Member', 'mary.lee@gmail.com', '$2y$10$4qizTXT0p9RwOhbVWzwoNuhc0S0dizE9cIjX7S8SivM4LOL3Lfzli', 'Mary Lee', 'F', '123456780', '1992-08-23', 'mary2.jpg', '2025-12-22 12:25:11', 'Blocked', 0, NULL),
 ('ME0003', 'Member', 'bob.tan@gmail.com', '$2y$10$IkSukzHMSH.04P4nHpi1ke12t30/keczTJue4hVaO97PFxT/9GMi6', 'Bob Tan', 'M', '123456780', '1988-01-05', 'bob3.jpg', '2025-12-17 11:08:51', 'Active', 0, NULL),
 ('ME0004', 'Member', 'alice.wong@gmail.com', '$2y$10$ht4ZnUrSq/IPpNYAwvYYN.iictp6xNZpuMJax35M2OP6yWDdwdsGu', 'Alice Wong', 'F', '123456780', '1995-02-14', 'alice4.jpg', '2025-12-17 11:09:04', 'Active', 0, NULL),
-('ME0005', 'Member', 'david.chan@gmail.com', '$2y$10$V/2kOvUVO9/OPhP6HY2JCOVc7RJd/ydpbx2VxjWT5jHJJVc.FI17u', 'David Chan', 'M', '123456780', '1991-07-30', 'david5.jpg', '2025-12-17 11:09:15', 'Active', 0, NULL),
-('ME0006', 'Member', 'susan.koh@gmail.com', '$2y$10$5FMYny7uUaj0KcXwwhz1neAGXBoK1tq4dlRsfLaiTGe9JRVmDZ67i', 'Susan Koh', 'F', '123456780', '1993-09-12', 'susan6.jpg', '2025-12-17 11:17:39', 'Inactive', 0, NULL),
+('ME0005', 'Member', 'david.chan@gmail.com', '$2y$10$V/2kOvUVO9/OPhP6HY2JCOVc7RJd/ydpbx2VxjWT5jHJJVc.FI17u', 'David Chan', 'M', '123456780', '1991-07-30', 'david5.jpg', '2025-12-22 12:22:26', 'Blocked', 0, NULL),
+('ME0006', 'Member', 'susan.koh@gmail.com', '$2y$10$5FMYny7uUaj0KcXwwhz1neAGXBoK1tq4dlRsfLaiTGe9JRVmDZ67i', 'Susan Koh', 'F', '123456780', '1993-09-12', 'susan6.jpg', '2025-12-22 12:21:00', 'Active', 0, NULL),
 ('ME0007', 'Member', 'kevin.lim@gmail.com', '$2y$10$e1dNXWUoNStuNqMhx/.lR.XS.ztiZFk4AirMdisMMqA2WmDkVa5jG', 'Kevin Lim', 'M', '123456780', '1989-12-01', 'kevin7.jpg', '2025-12-17 11:09:41', 'Active', 0, NULL),
 ('ME0008', 'Member', 'kelly.ng@gmail.com', '$2y$10$QrA.LOaF7sQNWS1sJWvGC.peGNizobOC1QbkS0hP24nPtk9dNB5Na', 'Kelly Ng', 'F', '123456780', '1994-03-22', 'kelly8.jpg', '2025-12-17 11:09:56', 'Active', 0, NULL),
 ('ME0009', 'Member', 'eric.tan@gmail.com', '$2y$10$S/9tRqisc4.r6DGNYyDyIuT941pzm4TeBJUIsphg708jm0aYj2am.', 'Eric Tan', 'M', '123456789', '1990-06-18', 'eric9.jpg', '2025-12-17 11:10:07', 'Active', 0, NULL),
@@ -566,7 +530,7 @@ INSERT INTO `users` (`user_id`, `role`, `email`, `password`, `name`, `gender`, `
 ('ME0012', 'Member', 'julia.tan@gmail.com', '$2y$10$eqyNA.28q5j2.bRGuK31ReSrX6cq6Vv55F9sNArzObi8.M0e3Bjau', 'Julia Wong', 'F', '111111222', '1993-08-12', 'julia12.jpg', '2025-12-17 11:10:43', 'Active', 0, NULL),
 ('ME0013', 'Member', 'brian.choo@gmail.com', '$2y$10$fSSy3Z6T.TBmAMLPV9aK8esDBm1KBq1EvUgDiapIMwoNLcdBGcj0u', 'Brian Choo', 'M', '123456783', '1991-10-20', 'brian13.jpg', '2025-12-17 11:10:55', 'Active', 0, NULL),
 ('ME0014', 'Member', 'rachel.koh@gmail.com', '$2y$10$NCgY4Ok1mqyuqB6n4XXct.LFCaXrQs8ed9W4S8E9/oKSHgpnxN0Q6', 'Rachel Koh', 'F', '123456781', '1994-01-25', 'rachel14.jpg', '2025-12-17 11:11:07', 'Active', 0, NULL),
-('ME0015', 'Member', 'steven.lim@gmail.com', '$2y$10$U2gk2.ZM.JU8icu/uYlwXOJUZ43w98XNnupyviOgIyEvBZLD80BkS', 'Steven Lim', 'M', '123456781', '1989-07-11', 'steven15.jpg', '2025-12-17 16:17:28', 'Inactive', 0, NULL),
+('ME0015', 'Member', 'steven.lim@gmail.com', '$2y$10$U2gk2.ZM.JU8icu/uYlwXOJUZ43w98XNnupyviOgIyEvBZLD80BkS', 'Steven Lim', 'M', '123456781', '1989-07-11', 'steven15.jpg', '2025-12-22 12:04:10', 'Blocked', 0, NULL),
 ('ME0018', 'Member', 'AliciaJia@gmail.com', '$2y$10$PpLEex7qH9hz8FLd5Xhh/.QptZULkNikWZ9HopxcLVcAVbnTVldui', 'Alicia Jia', 'F', '192233333', '1996-10-17', '6933812f9e2d9.jpg', '2025-12-17 11:14:41', 'Active', 0, NULL),
 ('ME0019', 'Member', 'QianEn12@gmail.com', '$2y$10$.a0OIWQf1nH8Ft955r8jKet4YKL2V.6UI3kr.OPWg7lL174r2mtNG', 'Qian En', 'F', '11909922', '2001-07-17', '69338c8b37cfe.jpg', '2025-12-17 11:16:04', 'Active', 0, NULL),
 ('ME0020', 'Member', 'NicoleLee@gmail.com', '$2y$10$h77gVnsUYGvCzZ9yglS3aewhHQC5yDslofgozBh9BAIkWu6h7r3qm', 'Nicole Lee', 'F', '19877534', '1999-12-17', '69339e0d34e5d.jpg', '2025-12-17 17:42:35', 'Active', 0, NULL);
@@ -625,13 +589,6 @@ ALTER TABLE `cart_item`
 --
 ALTER TABLE `category`
   ADD PRIMARY KEY (`category_id`);
-
---
--- Indexes for table `email_verification`
---
-ALTER TABLE `email_verification`
-  ADD PRIMARY KEY (`verification_id`),
-  ADD KEY `user_id` (`user_id`);
 
 --
 -- Indexes for table `order`
@@ -702,16 +659,6 @@ ALTER TABLE `wishlist`
   ADD KEY `wishlist_ibfk_2` (`product_id`);
 
 --
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table `email_verification`
---
-ALTER TABLE `email_verification`
-  MODIFY `verification_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
-
---
 -- Constraints for dumped tables
 --
 
@@ -728,12 +675,6 @@ ALTER TABLE `cart_item`
   ADD CONSTRAINT `cart_item_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
   ADD CONSTRAINT `cart_item_ibfk_2` FOREIGN KEY (`product_id`) REFERENCES `product` (`product_id`),
   ADD CONSTRAINT `cart_item_ibfk_3` FOREIGN KEY (`order_item_id`) REFERENCES `order_item` (`order_item_id`);
-
---
--- Constraints for table `email_verification`
---
-ALTER TABLE `email_verification`
-  ADD CONSTRAINT `email_verification_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `payment`

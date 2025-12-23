@@ -214,6 +214,9 @@ try {
                     <a href="shoppage.php" class="btn btn-warning">Shop Other Products</a>
                     <a href="cart.php" class="btn btn-secondary">View Cart</a>
                 </div>
+                <!-- <div style="">
+                     <a href="/page/contact.php" class="btn">Contact Support</a>
+                </div> -->
             </div>
         </div>
 
@@ -255,7 +258,7 @@ try {
                     <p><strong><?= encode($ex->getMessage()) ?></strong></p>
                 </div>
                 <div class="action-buttons">
-                    <a href="cart.php"  class="btn btn-secondary">Return to Cart</a>
+                    <a href="cart.php" class="btn btn-secondary">Return to Cart</a>
                     <a href="/page/contact.php" class="btn">Contact Support</a>
                 </div>
             </div>

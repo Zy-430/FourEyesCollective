@@ -1,3 +1,6 @@
+<?php
+$currentPage = basename($_SERVER['PHP_SELF']);
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -30,14 +33,31 @@
             </div>
 
             <div id="medium-sidebar">
-                <a href="/">Home</a>
-                <a href="/page/shoppage.php">Shop</a>
-                <a href="/page/about_us.php">About Us</a>
+                <a href="/" class="<?= $currentPage === 'homepage.php' ? 'active' : '' ?>">Home</a>
+
+                <a href="/page/shoppage.php"
+                    class="<?= $currentPage === 'shoppage.php' ? 'active' : '' ?>">
+                    Shop
+                </a>
+
+                <a href="/page/about_us.php"
+                    class="<?= $currentPage === 'about_us.php' ? 'active' : '' ?>">
+                    About Us
+                </a>
+
                 <?php if ($_user): ?>
-                    <a href="/page/Member/profile_recent_order.php">My Order</a>
-                    <a href="/page/Member/order_all_rating.php">My Rating</a>
+                    <a href="/page/Member/profile_recent_order.php"
+                        class="<?= $currentPage === 'profile_recent_order.php' ? 'active' : '' ?>">
+                        My Order
+                    </a>
+
+                    <a href="/page/Member/order_all_rating.php"
+                        class="<?= $currentPage === 'order_all_rating.php' ? 'active' : '' ?>">
+                        My Rating
+                    </a>
                 <?php endif ?>
             </div>
+
 
             <div id="right-sidebar">
 
@@ -45,7 +65,7 @@
 
                     <?php if ($_user): ?>
                         <!-- When user login - link to profile -->
-                        <a href="/page/profile_page.php" class="user-icon-link">
+                        <a href="/page/profile_page.php" class="user-icon-link <?= $currentPage === 'profile_page.php' ? 'active' : '' ?>">
                             <img src="/images/user.png" alt="User Account">
                         </a>
                     <?php else: ?>

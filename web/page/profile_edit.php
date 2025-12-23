@@ -20,57 +20,72 @@ if (!$user) {
 $gender_locked = !empty($user->gender);
 $dob_locked = !empty($user->date_of_birth);
 
-// Determine which field is being edited
-$edit = $_GET['edit'] ?? '';
-
-// Update individual fields
 if (is_post()) {
+    $errors = [];
 
-    // Update Name
-    if (isset($_POST['save_name'])) {
-        $name = req('name');
-        if ($name != '') {
-            $_db->prepare("UPDATE users SET name = ? WHERE user_id = ?")
-                ->execute([$name, $user_id]);
-        }
-        redirect('profile_edit.php');
+    // Name: only letters and spaces, min 2 characters
+    $name = trim(req('name'));
+    if ($name === '') {
+        $errors[] = "Name is required.";
+    } elseif (!preg_match('/^[A-Za-z ]+$/', $name)) {
+        $errors[] = "Name can only contain letters and spaces (no numbers or special characters).";
+    } elseif (strlen($name) < 2) {
+        $errors[] = "Name must be at least 2 characters.";
     }
 
-    // Update Email
-    if (isset($_POST['save_email'])) {
-        $email = req('email');
-        if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $_db->prepare("UPDATE users SET email = ? WHERE user_id = ?")
-                ->execute([$email, $user_id]);
+    // Email
+    $email = trim(req('email'));
+    if ($email === '') {
+        $errors[] = "Email is required.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errors[] = "Invalid email format. Example: user@example.com";
+    } else {
+        $stmtCheck = $_db->prepare("SELECT COUNT(*) FROM users WHERE email=? AND user_id!=?");
+        $stmtCheck->execute([$email, $user_id]);
+        if ($stmtCheck->fetchColumn() > 0) {
+            $errors[] = "This email is already in use by another account.";
         }
-        redirect('profile_edit.php');
     }
 
-    // Update Phone (stored WITHOUT 0)
-    if (isset($_POST['save_phone'])) {
-        $phone = req('phone'); // e.g. "123456789"
-        if (preg_match('/^[1-9][0-9]{7,9}$/', $phone)) {
-            $_db->prepare("UPDATE users SET phone = ? WHERE user_id = ?")
-                ->execute([$phone, $user_id]);
-        }
-        redirect('profile_edit.php');
+    // Phone
+    $phone = trim(req('phone'));
+    if ($phone === '') {
+        $errors[] = "Phone number is required.";
+    } elseif (!preg_match('/^[1-9][0-9]{7,9}$/', $phone)) {
+        $errors[] = "Invalid phone number. Must be 8-10 digits without leading 0. Example: 12345678";
     }
 
-    // Update Gender (only once)
-    if (!$gender_locked && isset($_POST['save_gender'])) {
+    // Gender
+    if (!$gender_locked) {
         $gender = req('gender');
-        $_db->prepare("UPDATE users SET gender = ? WHERE user_id = ?")
-            ->execute([$gender, $user_id]);
+        if (!in_array($gender, ['M', 'F'])) {
+            $errors[] = "Please select a valid gender: Male (M) or Female (F).";
+        }
+    } else {
+        $gender = $user->gender;
+    }
+
+    // DOB
+    if (!$dob_locked) {
+        $dob = req('date_of_birth');
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $dob)) {
+            $errors[] = "Invalid date of birth format. Please use the calendar selector (YYYY-MM-DD).";
+        }
+    } else {
+        $dob = $user->date_of_birth;
+    }
+
+    if (!empty($errors)) {
+        $_SESSION['error'] = implode("<br>", $errors);
         redirect('profile_edit.php');
     }
 
-    // Update DOB (only once)
-    if (!$dob_locked && isset($_POST['save_dob'])) {
-        $dob = req('date_of_birth');
-        $_db->prepare("UPDATE users SET date_of_birth = ? WHERE user_id = ?")
-            ->execute([$dob, $user_id]);
-        redirect('profile_edit.php');
-    }
+    // Update user
+    $update = $_db->prepare("UPDATE users SET name=?, email=?, phone=?, gender=?, date_of_birth=? WHERE user_id=?");
+    $update->execute([$name, $email, $phone, $gender, $dob, $user_id]);
+
+    $_SESSION['success'] = "Profile updated successfully.";
+    redirect('profile_page.php');
 }
 
 $_title = "Edit Profile | Four Eyes Collective";
@@ -79,135 +94,69 @@ include '../_head.php';
 ?>
 
 <section class="profile-section">
-    <div class="profile-card large-card">
+    <div class="profile-card compact-card">
+        <h1 class="compact-title">Edit Profile</h1>
+        <form method="post" class="compact-form">
 
-        <h1 class="edit-title">Edit Profile</h1>
+            <div class="form-group">
+                <label>Name *</label>
+                <input type="text" name="name" class="form-control" required value="<?= htmlspecialchars($user->name) ?>" pattern="[A-Za-z ]+" title="Only letters and spaces, minimum 2 characters">
+            </div>
 
-        <?php
-        function inputBox($content)
-        {
-            return '<div class="input-row">' . $content . '</div>';
-        }
+            <div class="form-group">
+                <label>Email *</label>
+                <input type="email" name="email" class="form-control" required value="<?= htmlspecialchars($user->email) ?>" title="Enter a valid email address, e.g., user@example.com">
+            </div>
 
-        // replace inline style variables with class attributes (UI only)
-        $btnEdit = 'class="btn-edit"';
-        $btnCancel = 'class="btn-cancel"';
-        $btnSave = 'class="btn-save"';
-        $inputStyle = 'class="form-control"';
-        ?>
+            <div class="form-group">
+                <label>Phone (+60) *</label>
+                <div style="display:flex; gap:10px;">
+                    <span style="background:#ecf0f1;padding:12px 15px;border-radius:8px;">+60</span>
+                    <input type="text" name="phone" class="form-control" style="flex:1;" pattern="[1-9][0-9]{7,9}" required value="<?= ltrim($user->phone, '0') ?>" title="8-10 digits without leading 0. Example: 12345678">
+                </div>
+            </div>
 
-        <!-- NAME -->
-        <?= inputBox(
-            '
-    <strong>Name</strong><br>' .
+            <div class="form-group">
+                <label>Gender <?= $gender_locked ? '(Locked)' : '*' ?></label>
+                <?php if ($gender_locked): ?>
+                    <input type="text" class="form-control disabled" value="<?= $user->gender ?>" disabled>
+                <?php else: ?>
+                    <select name="gender" class="form-control" required title="Select gender: Male (M) or Female (F)">
+                        <option value="">Select gender</option>
+                        <option value="M" <?= $user->gender == 'M' ? 'selected' : '' ?>>Male</option>
+                        <option value="F" <?= $user->gender == 'F' ? 'selected' : '' ?>>Female</option>
+                    </select>
+                <?php endif; ?>
+            </div>
 
-                ($edit === 'name' ?
-                    '<form method="post" class="mini-form">
-        <input type="text" name="name" value="' . encode($user->name) . '" required ' . $inputStyle . '>
-        <br><br>
-        <button type="submit" name="save_name" ' . $btnSave . '>Save</button>
-        <a href="profile_edit.php" ' . $btnCancel . '>Cancel</a>
-    </form>'
-                    :
-                    encode($user->name) . ' <a href="?edit=name" ' . $btnEdit . '>Edit</a>'
-                )
-        ) ?>
+            <div class="form-group">
+                <label>Date of Birth <?= $dob_locked ? '(Locked)' : '*' ?></label>
+                <?php if ($dob_locked): ?>
+                    <input type="text" class="form-control disabled" value="<?= $user->date_of_birth ?>" disabled>
+                <?php else: ?>
+                    <input type="date" name="date_of_birth" class="form-control" required value="<?= $user->date_of_birth ?>" title="Select date from the calendar">
+                <?php endif; ?>
+            </div>
 
-        <!-- EMAIL -->
-        <?= inputBox(
-            '
-    <strong>Email</strong><br>' .
-
-                ($edit === 'email' ?
-                    '<form method="post" class="mini-form">
-        <input type="email" name="email" value="' . encode($user->email) . '" required ' . $inputStyle . '>
-        <br><br>
-        <button type="submit" name="save_email" ' . $btnSave . '>Save</button>
-        <a href="profile_edit.php" ' . $btnCancel . '>Cancel</a>
-    </form>'
-                    :
-                    encode($user->email) . ' <a href="?edit=email" ' . $btnEdit . '>Edit</a>'
-                )
-        ) ?>
-
-        <!-- PHONE -->
-        <?php $phone_display = ltrim($user->phone, '0'); ?>
-        <?= inputBox(
-            '
-    <strong>Phone (+60)</strong><br>' .
-
-                ($edit === 'phone' ?
-                    '<form method="post" class="mini-form">
-        <div style="display:flex; gap:10px;">
-            <span style="
-                background:#ecf0f1;
-                padding:12px 15px;
-                border-radius:8px;
-            ">+60</span>
-
-            <input type="text" name="phone" value="' . encode($phone_display) . '"
-                pattern="[1-9][0-9]{7,9}" required ' . $inputStyle . ' style="flex:1;">
-        </div>
-        <br>
-        <button type="submit" name="save_phone" ' . $btnSave . '>Save</button>
-        <a href="profile_edit.php" ' . $btnCancel . '>Cancel</a>
-    </form>'
-                    :
-                    '+60 ' . encode($phone_display) . ' <a href="?edit=phone" ' . $btnEdit . '>Edit</a>'
-                )
-        ) ?>
-
-        <!-- GENDER -->
-        <?= inputBox(
-            '
-    <strong>Gender</strong><br>' .
-
-                ($gender_locked ?
-                    encode($user->gender) . ' <span style="color:#7f8c8d;">(Locked)</span>'
-                    : ($edit === 'gender' ?
-                        '<form method="post" class="mini-form">
-                <select name="gender" ' . $inputStyle . '>
-                    <option value="Male" ' . ($user->gender == 'Male' ? 'selected' : '') . '>Male</option>
-                    <option value="Female" ' . ($user->gender == 'Female' ? 'selected' : '') . '>Female</option>
-                </select><br><br>
-                <button type="submit" name="save_gender" ' . $btnSave . '>Save</button>
-                <a href="profile_edit.php" ' . $btnCancel . '>Cancel</a>
-            </form>'
-                        :
-                        encode($user->gender ?: "Not set") . ' <a href="?edit=gender" ' . $btnEdit . '>Edit</a>'
-                    )
-                )
-        ) ?>
-
-        <!-- DOB -->
-        <?= inputBox(
-            '
-    <strong>Date of Birth</strong><br>' .
-
-                ($dob_locked ?
-                    strtoupper(date("M-d-Y", strtotime($user->date_of_birth))) . ' 
-        <span style="color:#7f8c8d;">(Locked)</span>'
-                    : ($edit === 'dob' ?
-                        '<form method="post" class="mini-form">
-                <input type="date" name="date_of_birth"
-                    value="' . $user->date_of_birth . '" required ' . $inputStyle . '>
-                <br><br>
-                <button type="submit" name="save_dob" ' . $btnSave . '>Save</button>
-                <a href="profile_edit.php" ' . $btnCancel . '>Cancel</a>
-            </form>'
-                        : ($user->date_of_birth
-                            ? strtoupper(date("M-d-Y", strtotime($user->date_of_birth)))
-                            : "Not set"
-                        ) . ' <a href="?edit=dob" ' . $btnEdit . '>Edit</a>'
-                    )
-                )
-        ) ?>
-
-        <div class="center-actions">
-            <a href="profile_page.php" class="cta-button secondary">Back to Profile</a>
-        </div>
-
+            <div class="form-actions">
+                <button class="cta-button primary" type="submit">Save Changes</button>
+                <a href="profile_page.php" class="cta-button secondary">Cancel</a>
+            </div>
+        </form>
     </div>
 </section>
 
 <?php include '../_foot.php'; ?>
+<script src="/js/notifications.js"></script>
+<script>
+    $(function() {
+        <?php if (!empty($_SESSION['error'])): ?>
+            showNotification("<?= addslashes($_SESSION['error']) ?>", "error");
+            <?php unset($_SESSION['error']); ?>
+        <?php endif; ?>
+        <?php if (!empty($_SESSION['success'])): ?>
+            showNotification("<?= addslashes($_SESSION['success']) ?>", "success");
+            <?php unset($_SESSION['success']); ?>
+        <?php endif; ?>
+    });
+</script>

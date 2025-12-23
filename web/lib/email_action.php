@@ -5,7 +5,7 @@ require_once '../lib/PHPMailer.php';
 
 
 // Use for account verification and password reset
-// For account verification - when user is inactive , it will send link to email to activate account
+// For account verification - when user is pending , it will send link to email to activate account
 // For reset password - it will send link to email to let user reset their password 
 function sendEmailAction(string $email, string $type)
 {
@@ -22,8 +22,10 @@ function sendEmailAction(string $email, string $type)
     // If user not found then return
     if (!$user) return;
 
-    // Verification requires user with "inactive" status
-    if ($type === 'verification' && $user->status !== 'Inactive') return;
+    // Verification requires user with "pending" status
+    if ($type === 'verification') {
+        if ($user->role !== 'Member' || $user->status !== 'Pending') return;
+    }
 
     // Remove previous tokens
     $stm = $_db->prepare("DELETE FROM token WHERE user_id = ? AND type = ?");
