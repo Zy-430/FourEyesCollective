@@ -34,8 +34,12 @@ if (empty($user->photo) || !file_exists($photoPath)) {
 }
 
 $_title = "My Profile | Four Eyes Collective";
-$_css = ['profile.css'];
-include '../_head.php';
+// Determine which header/footer and CSS to use based on role
+if ($_user->role === 'Admin') {
+    include '../_admin_head.php'; // Admin header
+} else {
+    include '../_head.php'; // Member header
+}
 ?>
 
 <section class="profile-page">
@@ -106,3 +110,12 @@ $(function() {
     <?php endif; ?>
 });
 </script>
+<?php 
+// Conditionally include footer based on role
+if ($_user->role === 'Admin') {
+    // Admin pages don't have a footer file, just close the HTML
+    echo '</body></html>';
+} else {
+    include '../_foot.php'; // Member footer
+}
+?>

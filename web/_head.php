@@ -10,6 +10,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     <title><?= $_title ?? 'Four Eyes Collective' ?></title>
     <link rel="shortcut icon" href="/images/WIS_logo_white.png">
     <link rel="stylesheet" href="/css/app.css">
+    <link rel="stylesheet" href="/css/profile.css">
     <!-- Page-specific CSS -->
     <?php if (!empty($_css)): ?>
         <?php foreach ($_css as $css): ?>

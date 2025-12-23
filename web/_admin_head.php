@@ -27,42 +27,42 @@ $current_url = $_SERVER['REQUEST_URI'];
         </div>
 
         <nav class="admin-menu">
-            <a href="admin_dashboard.php"
+            <a href="/page/Admin/admin_dashboard.php"
                 class="<?= $current_script == 'admin_dashboard.php' ? 'active' : '' ?>">
                 <i class="fas fa-tachometer-alt"></i>Dashboard
             </a>
 
-            <a href="view_user.php?role=Admin"
+            <a href="/page/Admin/view_user.php?role=Admin"
                 class="<?= (strpos($current_url, 'view_user.php') !== false && isset($_GET['role']) && $_GET['role'] == 'Admin') ? 'active' : '' ?>">
                 <i class="fas fa-user-shield"></i>Admin
             </a>
 
-            <a href="view_user.php?role=Member"
+            <a href="/page/Admin/view_user.php?role=Member"
                 class="<?= (strpos($current_url, 'view_user.php') !== false && isset($_GET['role']) && $_GET['role'] == 'Member') ? 'active' : '' ?>">
                 <i class="fas fa-user-friends"></i>Member
             </a>
 
-            <a href="view_category.php"
+            <a href="/page/Admin/view_category.php"
                 class="<?= $current_script == 'view_category.php' ? 'active' : '' ?>">
                 <i class="fas fa-tags"></i>Category
             </a>
 
-            <a href="view_product.php"
+            <a href="/page/Admin/view_product.php"
                 class="<?= $current_script == 'view_product.php' ? 'active' : '' ?>">
                 <i class="fas fa-boxes"></i>Product
             </a>
 
-            <a href="admin_order.php"
+            <a href="/page/Admin/admin_order.php"
                 class="<?= $current_script == 'admin_order.php' ? 'active' : '' ?>">
                 <i class="fas fa-shopping-cart"></i>Order
             </a>
 
-            <a href="admin_review.php"
+            <a href="/page/Admin/admin_review.php"
                 class="<?= $current_script == 'admin_review.php' ? 'active' : '' ?>">
                 <i class="fas fa-star"></i>Review
             </a>
 
-            <a href="view_product_report.php"
+            <a href="/page/Admin/view_product_report.php"
                 class="<?= $current_script == 'view_product_report.php' ? 'active' : '' ?>">
                 <i class="fas fa-chart-bar"></i>Product Analytics
             </a>
@@ -94,7 +94,7 @@ $current_url = $_SERVER['REQUEST_URI'];
     <div class="admin-header">
         <h2 class="admin-title">Four Eyes Collective Administration Panel</h2>
         <div class="admin-logout">
-            <a href="../logout.php"><i class="fa-solid fa-right-from-bracket" style="color: #162b65"></i>
+            <a href="/page/logout.php"><i class="fa-solid fa-right-from-bracket" style="color: #162b65"></i>
             </a>
         </div>
     </div>
