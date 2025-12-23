@@ -36,28 +36,16 @@ if (empty($user->photo) || !file_exists($photoPath)) {
 $_title = "My Profile | Four Eyes Collective";
 $_css = ['profile.css'];
 include '../_head.php';
-
 ?>
 
 <section class="profile-page">
-
     <div class="profile-container">
-
         <h1 class="profile-title">My Profile</h1>
 
-        <?php if (isset($_SESSION['success'])): ?>
-            <div class="profile-success">
-                <?= $_SESSION['success'] ?>
-            </div>
-            <?php unset($_SESSION['success']); ?>
-        <?php endif; ?>
-
         <div class="profile-layout">
-
             <!-- Left -->
             <div class="profile-left">
                 <img src="<?= $photoPath ?>" class="profile-photo">
-
                 <a href="profile_change_photo.php" class="btn btn-photo">
                     Change Photo
                 </a>
@@ -65,7 +53,6 @@ include '../_head.php';
 
             <!-- Right -->
             <div class="profile-right">
-
                 <h2><?= encode($user->name) ?></h2>
                 <p class="profile-email"><?= encode($user->email) ?></p>
 
@@ -74,19 +61,14 @@ include '../_head.php';
                         <p>Gender</p>
                         <p><?= encode($user->gender) ?></p>
                     </div>
-
                     <div>
                         <p>Phone</p>
-                        <p>
-                            <?= !empty($user->phone) ? '+60 ' . encode($user->phone) : 'Not set'; ?>
-                        </p>
+                        <p><?= !empty($user->phone) ? '+60 ' . encode($user->phone) : 'Not set'; ?></p>
                     </div>
-
                     <div>
                         <p>Date of Birth</p>
                         <p><?= strtoupper(date('M d, Y', strtotime($user->date_of_birth))) ?></p>
                     </div>
-
                     <div>
                         <p>Registration Date</p>
                         <p><?= strtoupper(date('M d, Y', strtotime($user->registration_date))) ?></p>
@@ -101,16 +83,26 @@ include '../_head.php';
                         <a href="Member/profile_address_list.php" class="btn btn-gray">My Address</a>
                     <?php endif; ?>
                 </div>
-
-
             </div>
-
         </div>
-
     </div>
-
-
-
 </section>
 
 <?php include '../_foot.php'; ?>
+
+<!-- jQuery & notification.js -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="Member/js/notifications.js"></script>
+<script>
+$(function() {
+    <?php if (!empty($_SESSION['success'])): ?>
+        showNotification("<?= addslashes($_SESSION['success']) ?>", "success");
+        <?php unset($_SESSION['success']); ?>
+    <?php endif; ?>
+
+    <?php if (!empty($_SESSION['error'])): ?>
+        showNotification("<?= addslashes($_SESSION['error']) ?>", "error");
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+});
+</script>

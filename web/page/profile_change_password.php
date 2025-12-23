@@ -77,15 +77,11 @@ include '../_head.php';
                 Back to Profile
             </a>
         </div>
-
-        <div class="forgot-link">
-            <a href="forgot_password.php">Forgot password?</a>
-        </div>
     </div>
 </section>
 
 <?php include '../_foot.php'; ?>
-<script src="notification.js"></script>
+<script src="../js/notifications.js"></script>
 
 <script>
 $(function() {

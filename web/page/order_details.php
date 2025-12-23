@@ -90,6 +90,9 @@ include '../_head.php';
 ?>
 
 <div class="page-container">
+    <a href="javascript:history.back()" class="floating-back-arrow">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
 
     <!-- Order Info Card -->
     <div class="card order-card">
