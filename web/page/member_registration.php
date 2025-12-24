@@ -77,6 +77,8 @@ if (is_post()) {
     // Validate phone number
     if (!preg_match('/^[1-9][0-9]{7,9}$/', $phone)) {
         $_err['phone'] = 'Phone number must be in format 0XXXXXXXXX';
+    } else if (!is_unique($phone, 'users', 'phone')) {
+        $_err['phone'] = 'Duplicated phone number';
     }
 
     // Validate day , month , year (later combine for date of birth)
