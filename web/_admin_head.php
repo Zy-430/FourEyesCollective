@@ -20,6 +20,30 @@ $current_url = $_SERVER['REQUEST_URI'];
 </head>
 
 <body>
+
+    <?php
+    // Read temporary flash messages
+    $__temp_success = temp('success');
+    $__temp_error = temp('error');
+    $__temp_info = temp('info');
+    ?>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            <?php if (!empty($__temp_success)): ?>
+                if (typeof showNotification === 'function') showNotification("<?= addslashes($__temp_success) ?>", 'success');
+            <?php endif; ?>
+
+            <?php if (!empty($__temp_error)): ?>
+                if (typeof showNotification === 'function') showNotification("<?= addslashes($__temp_error) ?>", 'error');
+            <?php endif; ?>
+
+            <?php if (!empty($__temp_info)): ?>
+                if (typeof showNotification === 'function') showNotification("<?= addslashes($__temp_info) ?>", 'info');
+            <?php endif; ?>
+        });
+    </script>
+
     <!-- Sidebar -->
     <aside class="admin-sidebar">
         <div class="logo">

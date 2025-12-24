@@ -71,7 +71,7 @@ if (is_post()) {
                         temp('info', 'Welcome! Please set your new password.');
                         redirect('force_password_change.php');
                     } else {
-                        temp('info', 'Login successfully!');
+                        temp('success', 'Login successfully!');
                         // Redirect by role
                         if ($user->role === 'Member') {
                             login($user, '/page/homepage.php');
