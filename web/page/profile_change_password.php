@@ -44,6 +44,7 @@ if (is_post()) {
 }
 
 $_title = "Change Password | Four Eyes Collective";
+// Determine which header/footer and CSS to use based on role
 if ($_user->role === 'Admin') {
     include '../_admin_head.php'; // Admin header
 } else {
@@ -93,46 +94,51 @@ if ($_user->role === 'Admin') {
 </section>
 
 <?php include '../_foot.php'; ?>
-<script src="../js/notifications.js"></script>
+<script src="/js/notifications.js"></script>
 
 <script>
-    $(function() {
-        // Show notifications from PHP session
-        <?php if (!empty($_SESSION['error'])): ?>
-            showNotification("<?= addslashes($_SESSION['error']) ?>", "error");
-            <?php unset($_SESSION['error']); ?>
-        <?php endif; ?>
+$(function () {
 
-        <?php if (!empty($_SESSION['success'])): ?>
-            showNotification("<?= addslashes($_SESSION['success']) ?>", "success");
-            <?php unset($_SESSION['success']); ?>
-        <?php endif; ?>
+    // ---- Show server-side message ONCE ----
+    <?php if (!empty($_SESSION['error'])): ?>
+        showNotification("<?= addslashes($_SESSION['error']) ?>", "error");
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
 
-        // Client-side live validation for new password
-        function isStrongPasswordJS(password) {
-            return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/.test(password);
+    <?php if (!empty($_SESSION['success'])): ?>
+        showNotification("<?= addslashes($_SESSION['success']) ?>", "success");
+        <?php unset($_SESSION['success']); ?>
+    <?php endif; ?>
+
+    // ---- Client-side validation only on submit ----
+    $('#changePasswordForm').on('submit', function (e) {
+        const newPass = $('input[name="new_password"]').val();
+        const confirmPass = $('input[name="confirm_password"]').val();
+
+        const strongPassword =
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
+
+        if (!strongPassword.test(newPass)) {
+            e.preventDefault();
+            showNotification(
+                "Password must be at least 8 characters and include uppercase, lowercase, number, and symbol.",
+                "error"
+            );
+            return;
         }
 
-        $('#changePasswordForm input[name="new_password"]').on('input', function() {
-            const val = $(this).val();
-            if (!isStrongPasswordJS(val)) {
-                showNotification(
-                    "Password must be at least 8 characters and include uppercase, lowercase, number, and symbol.",
-                    "error"
-                );
-            }
-        });
-
-        // Confirm password check
-        $('#changePasswordForm input[name="confirm_password"]').on('input', function() {
-            const newPass = $('#changePasswordForm input[name="new_password"]').val();
-            const confirmPass = $(this).val();
-            if (confirmPass !== newPass) {
-                showNotification("Confirm password does not match new password.", "error");
-            }
-        });
+        if (newPass !== confirmPass) {
+            e.preventDefault();
+            showNotification(
+                "New password and confirm password do not match.",
+                "error"
+            );
+            return;
+        }
     });
+});
 </script>
+
 <?php
 // Conditionally include footer based on role
 if ($_user->role === 'Admin') {

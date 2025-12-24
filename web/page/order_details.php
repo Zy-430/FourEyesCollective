@@ -300,7 +300,9 @@ if ($_user->role === 'Admin') {
     </div>
 </div>
 
-<!-- replace all inline JS with jQuery-based handlers below -->
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="/js/notifications.js"></script>
+
 <script>
     $(function() {
         var $returnModal = $('#returnModal');

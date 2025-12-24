@@ -95,7 +95,7 @@ if ($_user->role === 'Admin') {
 
 <!-- jQuery & notification.js -->
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="Member/js/notifications.js"></script>
+<script src="/js/notifications.js"></script>
 <script>
 $(function() {
     <?php if (!empty($_SESSION['success'])): ?>

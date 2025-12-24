@@ -74,6 +74,9 @@ include '../../_head.php';
     </div>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="/js/notifications.js"></script>
+
 <script>
     $(function() {
         <?php if ($allRated): ?>

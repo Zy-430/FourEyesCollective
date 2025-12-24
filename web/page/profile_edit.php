@@ -89,6 +89,7 @@ if (is_post()) {
 }
 
 $_title = "Edit Profile | Four Eyes Collective";
+// Determine which header/footer and CSS to use based on role
 if ($_user->role === 'Admin') {
     include '../_admin_head.php'; // Admin header
 } else {
@@ -151,7 +152,7 @@ if ($_user->role === 'Admin') {
 </section>
 
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="../js/notifications.js"></script>
+<script src="/js/notifications.js"></script>
 
 <script>
     $(function() {
@@ -166,7 +167,7 @@ if ($_user->role === 'Admin') {
     });
 </script>
 
-<?php 
+<?php
 // Conditionally include footer based on role
 if ($_user->role === 'Admin') {
     // Admin pages don't have a footer file, just close the HTML

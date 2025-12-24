@@ -52,6 +52,7 @@ if (is_post() && isset($_FILES['profile_photo'])) {
 }
 
 $_title = "Change Profile Photo | Four Eyes Collective";
+// Determine which header/footer and CSS to use based on role
 if ($_user->role === 'Admin') {
     include '../_admin_head.php'; // Admin header
 } else {
@@ -88,6 +89,8 @@ $current_photo = (!empty($user->photo) && file_exists('../images/users/' . $user
     </div>
 </section>
 
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="/js/notifications.js"></script>
 <script>
     $(document).ready(function() {
         var $input = $('#photo_input');
@@ -150,7 +153,7 @@ $current_photo = (!empty($user->photo) && file_exists('../images/users/' . $user
     });
 </script>
 
-<?php 
+<?php
 // Conditionally include footer based on role
 if ($_user->role === 'Admin') {
     // Admin pages don't have a footer file, just close the HTML
