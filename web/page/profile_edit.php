@@ -89,10 +89,10 @@ if (is_post()) {
 }
 
 $_title = "Edit Profile | Four Eyes Collective";
-// Determine which header/footer and CSS to use based on role
 if ($_user->role === 'Admin') {
     include '../_admin_head.php'; // Admin header
 } else {
+    $_css = ['profile.css'];
     include '../_head.php'; // Member header
 }
 ?>
