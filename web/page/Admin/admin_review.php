@@ -4,6 +4,18 @@ require '../../lib/db.php';
 include '../../_admin_head.php';
 require_once '../../lib/SimplePager.php';
 
+?>
+<script>
+    (function(){
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function(){ document.body.classList.add('product'); });
+        } else {
+            document.body.classList.add('product');
+        }
+    })();
+</script>
+<?php
+
 auth('Admin');
 $admin_id = $_user->user_id;
 
@@ -158,21 +170,21 @@ $_title = "Admin Review Management | Four Eyes Collective";
         <table class="table table-small">
             <thead>
                 <tr>
-                    <th><?= sortLink('order_item_id', 'Review ID', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
-                    <th><?= sortLink('user_name', 'User', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
-                    <th><?= sortLink('product_name', 'Product', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
-                    <th><?= sortLink('user_rating', 'Rating', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
-                    <th>Comment</th>
-                    <th>Photo</th>
-                    <th>Video</th>
-                    <th><?= sortLink('review_status', 'Status', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
-                    <th><?= sortLink('rated_at', 'Date', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
+                    <th style="width: 12%;"><?= sortLink('order_item_id', 'Review ID', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
+                    <th style="width: 10%;"><?= sortLink('user_name', 'User', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
+                    <th style="width: 14%;"><?= sortLink('product_name', 'Product', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
+                    <th style="width: 10%;"><?= sortLink('user_rating', 'Rating', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
+                    <th style="width: 13%;">Comment</th>
+                    <th style="width: 7%;">Photo</th>
+                    <th style="width: 7%;">Video</th>
+                    <th style="width: 9%;"><?= sortLink('review_status', 'Status', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
+                    <th style="width: 9%;"><?= sortLink('rated_at', 'Date', $currentSort, $currentDir, $search, $status_filter, $rating_filter) ?></th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 <?php foreach ($reviews as $r): ?>
-                    <tr style="height: 60px;">
+                    <tr class="review_tr">
                         <td><?= $r->order_item_id ?></td>
                         <td><?= htmlspecialchars($r->user_name) ?></td>
                         <td><?= htmlspecialchars($r->product_name) ?></td>
@@ -226,13 +238,16 @@ $_title = "Admin Review Management | Four Eyes Collective";
                                 </video>
                             <?php endforeach; ?>
                         </td>
-                        <td><?= ucfirst($r->review_status) ?></td>
+                        <td>
+                            <span class="status-badge status-<?= $r->review_status ?>">
+                            <?= ucfirst($r->review_status) ?></span>
+                        </td>
                         <td><?= $r->rated_at ?></td>
                         <td>
-                            <button class="toggle-review-btn"
+                            <button class="btn-default toggle-review-btn"
                                 data-id="<?= $r->order_item_id ?>"
                                 data-status="<?= $r->review_status ?>">
-                                <?= $r->review_status === 'visible' ? 'Hide' : 'Unhide' ?>
+                                <?= $r->review_status === 'visible' ? '<i class="fas fa-eye-slash">' : '<i class="fas fa-eye">' ?>
                             </button>
                         </td>
                     </tr>

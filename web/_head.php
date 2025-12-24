@@ -10,7 +10,6 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     <title><?= $_title ?? 'Four Eyes Collective' ?></title>
     <link rel="shortcut icon" href="/images/WIS_logo_white.png">
     <link rel="stylesheet" href="/css/app.css">
-    <link rel="stylesheet" href="/css/profile.css">
     <!-- Page-specific CSS -->
     <?php if (!empty($_css)): ?>
         <?php foreach ($_css as $css): ?>
@@ -54,7 +53,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 
                     <a href="/page/Member/order_all_rating.php"
                         class="<?= $currentPage === 'order_all_rating.php' ? 'active' : '' ?>">
-                        My Rating
+                        My Review
                     </a>
                 <?php endif ?>
             </div>

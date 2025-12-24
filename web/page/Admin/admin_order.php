@@ -249,25 +249,25 @@ $_title = "Admin Orders | Four Eyes Collective";
             <table class="table table-small">
                 <thead>
                     <tr>
-                        <th><?= sortLink('order_id', 'Order ID', $currentSort, $currentDir, $search, $status_filter) ?></th>
-                        <th><?= sortLink('customer_name', 'Customer', $currentSort, $currentDir, $search, $status_filter) ?></th>
-                        <th><?= sortLink('customer_email', 'Email', $currentSort, $currentDir, $search, $status_filter) ?></th>
-                        <th><?= sortLink('order_date', 'Date', $currentSort, $currentDir, $search, $status_filter) ?></th>
-                        <th><?= sortLink('total_amount', 'Total', $currentSort, $currentDir, $search, $status_filter) ?></th>
-                        <th><?= sortLink('status', 'Status', $currentSort, $currentDir, $search, $status_filter) ?></th>
+                        <th style="width: 11%;"><?= sortLink('order_id', 'Order ID', $currentSort, $currentDir, $search, $status_filter) ?></th>
+                        <th style="width: 13%;"><?= sortLink('customer_name', 'Customer', $currentSort, $currentDir, $search, $status_filter) ?></th>
+                        <th style="width: 17%;"><?= sortLink('customer_email', 'Email', $currentSort, $currentDir, $search, $status_filter) ?></th>
+                        <th style="width: 14%;"><?= sortLink('order_date', 'Date', $currentSort, $currentDir, $search, $status_filter) ?></th>
+                        <th style="width: 12%;"><?= sortLink('total_amount', 'Total', $currentSort, $currentDir, $search, $status_filter) ?></th>
+                        <th style="width: 10%;"><?= sortLink('status', 'Status', $currentSort, $currentDir, $search, $status_filter) ?></th>
                         <th style="text-align:center;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($orders as $o): ?>
-                        <tr style="border-bottom:1px solid #ddd; height:80px;">
+                        <tr style="border-bottom:1px solid #ddd; height:100px !important ;">
                             <td style="padding:10px;"><?= $o->order_id ?></td>
                             <td style="padding:10px;"><?= htmlspecialchars($o->customer_name) ?></td>
                             <td style="padding:10px;"><?= htmlspecialchars($o->customer_email) ?></td>
                             <td style="padding:10px;"><?= date('d M Y H:i', strtotime($o->order_date)) ?></td>
                             <td style="padding:10px;">RM <?= number_format($o->total_amount, 2) ?></td>
                             <td style="padding:10px; font-weight:bold; color:#e67e22;"><?= ucfirst($o->status) ?></td>
-                            <td style="padding:10px; text-align:center; display:flex; gap:5px; justify-content:center;">
+                            <td style="padding:15px; text-align:center; display:flex; gap:5px; justify-content:center;">
                                 <!-- View Details Button -->
                                 <form method="GET" action="../order_details.php" style="display:inline;">
                                     <input type="hidden" name="order_id" value="<?= $o->order_id ?>">

@@ -28,9 +28,9 @@ include '../../_head.php';
 ?>
 
 <div style="max-width:900px;margin:40px auto;">
-    <a href="javascript:history.back()" class="floating-back-arrow">
-            <i class="fas fa-arrow-left"></i> Back
-        </a>
+    <a href="javascript:history.back()" style="text-decoration: none; color: #2c3e50; font-size: 16px; display: inline-flex; align-items: center; gap: 8px;">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
     <div class="rate-page">
         <h2>Rate Your Order</h2>
         <p>Select an item and give your rating:</p>
@@ -56,15 +56,18 @@ include '../../_head.php';
 
                         <textarea class="comment form-control" placeholder="Leave a comment..." rows="3"></textarea>
 
-                        <div class="file-upload-section">
-                            <input type="file" class="rating-media" accept="image/*,video/*" multiple>
+                        <div class="file-upload-section" style="margin-top: 10px;">
+                            <label for="file-upload-<?= $item['order_item_id'] ?>" class="file-upload-btn" >
+                                <i class="fas fa-camera"></i> Choose Photos/Videos
+                            </label>
+                            <input type="file" id="file-upload-<?= $item['order_item_id'] ?>" class="rating-media" accept="image/*,video/*" multiple style="display: none;"> 
                             <small class="text-muted">Max 5 photos & videos per item. Images ≤ 5MB, Videos ≤ 5MB</small>
                         </div>
 
                         <div class="file-preview"></div>
                     </div>
 
-                    <button class="submitRate btn-submit">Submit</button>
+                    <button class="submitRate view-btn" style="margin-top: -6%;">Submit</button>
                 </div>
             <?php endforeach; ?>
         </div>

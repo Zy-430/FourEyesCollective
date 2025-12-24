@@ -38,6 +38,7 @@ $_title = "My Profile | Four Eyes Collective";
 if ($_user->role === 'Admin') {
     include '../_admin_head.php'; // Admin header
 } else {
+    $_css = ['profile.css'];
     include '../_head.php'; // Member header
 }
 ?>
@@ -91,8 +92,6 @@ if ($_user->role === 'Admin') {
         </div>
     </div>
 </section>
-
-<?php include '../_foot.php'; ?>
 
 <!-- jQuery & notification.js -->
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>

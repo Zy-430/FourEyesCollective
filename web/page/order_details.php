@@ -2,6 +2,20 @@
 require '../_base.php';
 require '../lib/db.php';
 
+?>
+<script>
+    (function() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                document.body.classList.add('product');
+            });
+        } else {
+            document.body.classList.add('product');
+        }
+    })();
+</script>
+<?php
+
 auth();
 $order_id = $_GET['order_id'] ?? null;
 if (!$order_id) exit("Invalid order");
@@ -85,14 +99,21 @@ $stm_hist->execute([$order_id]);
 $history = $stm_hist->fetchAll(PDO::FETCH_ASSOC);
 
 $_title = "Order Details | Four Eyes Collective";
-$_css = ['order.css'];
-include '../_head.php';
+// Determine which header/footer and CSS to use based on role
+if ($_user->role === 'Admin') {
+    include '../_admin_head.php'; // Admin header
+} else {
+    $_css = ['order.css'];
+    include '../_head.php'; // Member header
+}
 ?>
 
+
 <div class="page-container">
-    <a href="javascript:history.back()" class="floating-back-arrow">
-            <i class="fas fa-arrow-left"></i> Back
-        </a>
+
+    <a href="javascript:history.back()" style="text-decoration: none; color: #2c3e50; font-size: 16px; display: inline-flex; align-items: center; gap: 8px;">
+        <i class="fas fa-arrow-left" style="color: black;"></i> Back
+    </a>
 
     <!-- Order Info Card -->
     <div class="card order-card">
@@ -127,22 +148,45 @@ include '../_head.php';
         <?php endforeach; ?>
     </div>
 
-    <!-- Payment Summary Card -->
-    <div class="card">
-        <h3>💳 Payment Details</h3>
-        <p><strong>Total Amount:</strong> RM <?= number_format($order['total_amount'], 2) ?></p>
-        <p><strong>Payment Method:</strong> <?= $order['payment_brand'] ?? '-' ?></p>
-        <p><strong>Transaction Date:</strong> <?= $order['transaction_date'] ? date('d M Y H:i', strtotime($order['transaction_date'])) : '-' ?></p>
-    </div>
+    <?php if ($isAdmin):
+    ?>
+        <div class="admin-view-container">
+            <!-- Payment Summary Card -->
+            <div class="card admin-view">
+                <h3>💳 Payment Details</h3>
+                <p><strong>Total Amount:</strong> RM <?= number_format($order['total_amount'], 2) ?></p>
+                <p><strong>Payment Method:</strong> <?= $order['payment_brand'] ?? '-' ?></p>
+                <p><strong>Transaction Date:</strong> <?= $order['transaction_date'] ? date('d M Y H:i', strtotime($order['transaction_date'])) : '-' ?></p>
+            </div>
 
-    <!-- Shipping Address Card -->
-    <div class="card">
-        <h3>📍 Shipping Address</h3>
-        <p><?= encode($order['recipient_name']) ?></p>
-        <p><?= encode($order['address_line1']) ?> <?= encode($order['address_line2']) ?></p>
-        <p><?= encode($order['city']) ?>, <?= encode($order['state']) ?> <?= encode($order['postcode']) ?></p>
-        <p><?= encode($order['country']) ?></p>
-    </div>
+            <!-- Shipping Address Card -->
+            <div class="card admin-view">
+                <h3>📍 Shipping Address</h3>
+                <p><?= encode($order['recipient_name']) ?></p>
+                <p><?= encode($order['address_line1']) ?> <?= encode($order['address_line2']) ?></p>
+                <p><?= encode($order['city']) ?>, <?= encode($order['state']) ?> <?= encode($order['postcode']) ?></p>
+                <p><?= encode($order['country']) ?></p>
+            </div>
+        </div>
+    <?php else: ?>
+
+        <!-- Payment Summary Card -->
+        <div class="card admin-view">
+            <h3>💳 Payment Details</h3>
+            <p><strong>Total Amount:</strong> RM <?= number_format($order['total_amount'], 2) ?></p>
+            <p><strong>Payment Method:</strong> <?= $order['payment_brand'] ?? '-' ?></p>
+            <p><strong>Transaction Date:</strong> <?= $order['transaction_date'] ? date('d M Y H:i', strtotime($order['transaction_date'])) : '-' ?></p>
+        </div>
+
+        <!-- Shipping Address Card -->
+        <div class="card admin-view">
+            <h3>📍 Shipping Address</h3>
+            <p><?= encode($order['recipient_name']) ?></p>
+            <p><?= encode($order['address_line1']) ?> <?= encode($order['address_line2']) ?></p>
+            <p><?= encode($order['city']) ?>, <?= encode($order['state']) ?> <?= encode($order['postcode']) ?></p>
+            <p><?= encode($order['country']) ?></p>
+        </div>
+    <?php endif; ?>
 
     <!-- Shipping Timeline Card -->
     <div class="card">
@@ -171,8 +215,11 @@ include '../_head.php';
     <?php if ($order['status'] == 'completed'): ?>
         <div class="card">
             <h3>Documents</h3>
-            <a href="/page/order_download_receipt.php?order_id=<?= encode($order['order_id']) ?>&type=pdf" class="cta-button">
+            <a href="/page/order_download_receipt.php?order_id=<?= encode($order['order_id']) ?>&type=pdf" class="cta-button admin-btn">
                 Download PDF
+            </a>
+            <a href="/page/order_invoice.php?order_id=<?= encode($order['order_id']) ?>" class="cta-button admin-btn">
+                View Invoice
             </a>
             <?php if (!$isAdmin): // only non-admins can send to email 
             ?>
@@ -180,10 +227,6 @@ include '../_head.php';
                     Send to Email
                 </button>
             <?php endif; ?>
-
-            <a href="/page/order_invoice.php?order_id=<?= encode($order['order_id']) ?>" class="cta-button">
-                View Invoice
-            </a>
         </div>
     <?php endif; ?>
 
@@ -430,4 +473,12 @@ include '../_head.php';
     });
 </script>
 
-<?php include '../_foot.php'; ?>
+<?php
+// Conditionally include footer based on role
+if ($_user->role === 'Admin') {
+    // Admin pages don't have a footer file, just close the HTML
+    echo '</body></html>';
+} else {
+    include '../_foot.php'; // Member footer
+}
+?>

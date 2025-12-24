@@ -229,6 +229,8 @@ i {
     background: #162b65;
 }
 
+
+
 .admin-sidebar,
 .admin-header,
 .admin-content,
@@ -568,6 +570,11 @@ i {
 
 .table tbody tr {
     transition: background-color 0.2s;
+}
+
+.review_tr {
+    transition: background-color 0.2s;
+    height: 80px !important;
 }
 
 .table tbody tr:hover {
@@ -1571,10 +1578,11 @@ i {
 
 /* Profile*/
 /* Profile page wrapper */
+.page-container,
+.profile-section ,
 .profile-page {
     padding: 30px 20px;
     margin-left: 18%;
-    /* Match admin sidebar width */
     width: calc(100% - 18%);
     min-height: calc(100vh - 80px);
     box-sizing: border-box;
@@ -1587,14 +1595,17 @@ i {
     padding-left: 80px;
 }
 
+
+
 /* Profile container */
-.profile-container {
+.profile-container,
+.profile-card {
     width: 90%;
     max-width: 1000px;
     background: #ffffff;
     border-radius: 12px;
     padding: 40px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 15px 20px rgba(0, 0, 0, 0.05);
     border-left: 6px solid #162b65;
     margin: 0 auto;
 }
@@ -1629,7 +1640,8 @@ i {
     border-radius: 12px;
 }
 
-.profile-photo {
+.profile-photo,
+.avatar-preview {
     width: 200px;
     height: 200px;
     border-radius: 50%;
@@ -1681,6 +1693,61 @@ i {
     margin: 0;
 }
 
+.narrow-card {
+    max-width: 520px;
+}
+
+.compact-card {
+    max-width: 700px;
+    height: 50%;
+}
+
+.large-card {
+    max-width: 1000px;
+}
+
+.centered-card {
+    text-align: center;
+}
+
+.profile-card.narrow-card .form-group,
+.profile-card.compact-card .compact-form .form-group {
+    margin-bottom: 12px; 
+}
+
+.profile-card.compact-card .compact-form .form-group input[name="phone"] {
+    width: 81% !important;
+    flex: none !important;
+}
+
+.drop-zone {
+    padding: 40px;
+    text-align: center;
+    border: 2px dashed #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    color: #64748b;
+}
+
+.drop-zone:hover {
+    border-color: #162b65;
+    background: #e2e8f0;
+}
+
+.alert.error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
 /* Profile action buttons */
 .profile-actions {
     display: flex;
@@ -1691,6 +1758,7 @@ i {
 }
 
 /* Profile-specific button styles */
+.cta-button,
 .btn-dark,
 .btn-danger,
 .btn-photo {
@@ -1707,35 +1775,315 @@ i {
     cursor: pointer;
     transition: all 0.3s ease;
     border: none;
-    min-width: 140px;
+    width: 30%;
     text-align: center;
 }
 
 .btn-photo {
     background: #0d1a3f;
+    min-width: 140px;
 }
 
-.btn-dark {
-    background: #1f419d;
+.admin-btn{
+    background: #0d1a3f;
+    width: 120px;
 }
 
-.btn-dark:hover {
-    background: rgb(38, 74, 172);
-    transform: translateY(-2px);
-}
-
+.admin-btn:hover,
 .btn-photo:hover {
     background: #162b65;
     transform: translateY(-2px);
 }
 
+.cta-button.primary,
+.cta-button.upload-primary,
+.btn-dark {
+    background: #1f419d;
+}
+
+.cta-button.primary:hover,
+.cta-button.upload-primary:hover,
+.btn-dark:hover {
+    background: rgb(38, 74, 172);
+    transform: translateY(-2px);
+}
+
+.cta-button.upload-primary{
+    margin-right: 10px;
+}
+
+.cta-button.secondary,
 .btn-danger {
     background: #df1d1d;
  }
 
+.cta-button.secondary:hover,
 .btn-danger:hover {
     background: #9c3624;
     transform: translateY(-2px);
+}
+
+.cta-button.secondary {
+    width: 20%;
+ }
+
+ /* Order details page */
+.card {
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background: #fff;
+    margin-bottom: 10px;
+}
+
+.order-card {
+    position: relative;
+}
+
+.order-status-badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-radius: 8px;
+    background-color: #fcefee;
+    margin-bottom: 10px;
+}
+
+.product-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.product-thumb {
+    width: 70px;
+    height: auto;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.product-meta {
+    display: flex;
+    flex-direction: column;
+}
+
+.product-name {
+    margin: 0;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.product-qty {
+    margin: 0;
+    color: #7f8c8d;
+}
+
+/* Price */
+.product-price {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.cancel-btn {
+    background: #c06c84;
+    color: #fff;
+}
+
+.receive-btn {
+    background: #355c7d;
+    color: #fff;
+}
+
+.cta-button.large {
+    padding: 15px 40px;
+    font-size: 15px;
+}
+
+/* Back button styling */
+a[href="javascript:history.back()"] {
+    text-decoration: none;
+    color: #2c3e50;
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-view-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; 
+    margin-bottom: 20px;
+}
+
+.admin-view{
+    width: 92%;
+}
+
+/* Shipping Address Card */
+.card p {
+    margin: 5px 0;
+    color: #2c3e50;
+}
+
+.card h3 {
+    color: #2c3e50;
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+/* Timeline container */
+.timeline {
+    position: relative;
+    margin: 20px 0;
+    padding-left: 30px;
+    border-left: 2px solid #ddd;
+}
+
+/* Each item */
+.timeline-item {
+    position: relative;
+    margin-bottom: 25px;
+    padding: 10px 15px;
+    border-radius: 6px;
+    background: #f9f9f9;
+}
+
+/* Dot */
+.timeline-item .timeline-dot {
+    position: absolute;
+    left: -16px;
+    top: 12px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #ddd;
+    border: 2px solid white;
+}
+
+/* Status colors */
+.timeline-item.status-pending .timeline-dot {
+    background: #f39c12;
+}
+
+.timeline-item.status-shipped .timeline-dot {
+    background: #3498db;
+}
+
+.timeline-item.status-delivered .timeline-dot {
+    background: #2ecc71;
+}
+
+.timeline-item.status-completed .timeline-dot {
+    background: #27ae60;
+}
+
+.timeline-item.status-cancelled .timeline-dot {
+    background: #e74c3c;
+}
+
+.timeline-item.status-return_requested .timeline-dot {
+    background: #f1c40f;
+}
+
+.timeline-item.status-returned .timeline-dot {
+    background: #9b59b6;
+}
+
+.timeline-item.status-return_rejected .timeline-dot {
+    background: #e74c3c;
+}
+
+/* Active item */
+.timeline-item.active {
+    background: #f5e6fa;
+}
+
+.timeline-item.active .timeline-dot {
+    background: #9b59b6;
+    box-shadow: 0 0 8px rgba(155, 89, 182, 0.7);
+}
+
+.timeline-content {
+    margin-left: 20px;
+}
+
+.timeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.timeline-header strong {
+    font-weight: 600;
+}
+
+.timeline-header span {
+    font-size: 12px;
+    color: #7f8c8d;
+}
+
+
+/* Return Modal */
+.return-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+}
+
+.return-modal .modal-box {
+    background: #fff;
+    padding: 18px;
+    border-radius: 10px;
+    width: 360px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.return-modal label {
+    display: block;
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 6px;
+}
+
+.custom-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: #ecf0f1 url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQiIGhlaWdodD0iOCIgdmlld0JveD0iMCAwIDE0IDgiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGxpbmUgeDE9IjAiIHkxPSIwIiB4Mj0iNyIgeTI9IjgiIHN0cm9rZT0iIzAwMCIgc3Ryb2tlLXdpZHRoPSIyIi8+PGxpbmUgeDE9IjciIHkxPSI4IiB4Mj0iMTQiIHkyPSIwIiBzdHJva2U9IiMwMDAiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==') no-repeat right 10px center;
+    border: 1px solid #bdc3c7;
+    border-radius: 6px;
+    padding: 8px 35px 8px 12px;
+    font-size: 14px;
+    color: #2c3e50;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.custom-select:focus {
+    outline: none;
+    border-color: #34495e;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
 

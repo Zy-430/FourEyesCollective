@@ -1,7 +1,7 @@
 /* review.css */
 
 .review-container {
-    max-width: 1000px;
+    max-width: 1400px;
     margin: 40px auto;
     display: flex;
     flex-direction: column;
@@ -121,6 +121,53 @@
     text-decoration: none;
     display: inline-block;
     transition: background-color 0.3s, transform 0.2s;
+}
+
+
+/* File upload styling */
+.file-upload-section {
+    margin-top: 15px;
+    position: relative;
+}
+
+/* Hide the default file input */
+.file-upload-section input[type="file"] {
+    display: none;
+}
+
+/* Style the custom file upload button */
+.file-upload-btn {
+    display: inline-block;
+    background: #2c3e50;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 2px solid #2c3e50;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.file-upload-btn:hover {
+    background: #34495e;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.file-upload-btn i {
+    margin-right: 8px;
+}
+
+
+/* Help text */
+.text-muted {
+    color: #6c757d;
+    font-size: 12px;
+    display: block;
+    margin-top: 5px;
 }
 
 .view-btn:hover,

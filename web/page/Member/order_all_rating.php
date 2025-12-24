@@ -131,9 +131,7 @@ include '../../_head.php';
                             <p class="review-comment">"<?= encode($r['user_comment']) ?>"</p>
                         <?php endif; ?>
 
-                        <?php if ($statusFilter === 'unrated'): ?>
-                            <a href="/page/Member/order_rate.php?order_id=<?= encode($r['order_id']) ?>" class="btn-rate-now">Rate Now</a>
-                        <?php endif; ?>
+                        
                     </div>
 
                     <div class="review-meta">
@@ -144,6 +142,10 @@ include '../../_head.php';
 
                         <a class="view-order-link" href="/page/order_details.php?order_id=<?= encode($r['order_id']) ?>">View Order</a>
 
+                        <?php if ($statusFilter === 'unrated'): ?>
+                            <a href="/page/Member/order_rate.php?order_id=<?= encode($r['order_id']) ?>" class="btn-rate-now">Rate Now</a>
+                        <?php endif; ?>
+                        
                         <?php if ($statusFilter === 'rated'): ?>
                             <button class="view-btn viewReviewBtn"
                                 data-photo='<?= htmlspecialchars(json_encode($photos), ENT_QUOTES, 'UTF-8') ?>'
