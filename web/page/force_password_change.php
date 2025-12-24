@@ -53,8 +53,10 @@ if (is_post()) {
             unset($_SESSION['temp_user']);
 
             if ($updated_user->role === 'Member') {
+                temp('success', 'Login successfully!');
                 login($updated_user, 'homepage.php?msg=password_changed');
             } elseif ($updated_user->role === 'Admin') {
+                temp('success', 'Login successfully!');
                 login($updated_user, 'Admin/admin_dashboard.php?msg=password_changed');
             } else {
                 login($updated_user, '/');
@@ -73,6 +75,19 @@ $_title = "Set Your Password | Four Eyes Collective";
 <!DOCTYPE html>
 <html lang="en">
 
+<?php
+    // Read temporary flash messages
+    $__temp_info = temp('info');
+    ?>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            <?php if (!empty($__temp_info)): ?>
+                if (typeof showNotification === 'function') showNotification("<?= addslashes($__temp_info) ?>", 'info');
+            <?php endif; ?>
+        });
+    </script>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -80,6 +95,7 @@ $_title = "Set Your Password | Four Eyes Collective";
     <link rel="shortcut icon" href="/images/WIS_logo_white.png">
     <link rel="stylesheet" href="/css/app.css">
     <link rel="stylesheet" href="/css/user.css">
+        <script src="/js/notifications.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 

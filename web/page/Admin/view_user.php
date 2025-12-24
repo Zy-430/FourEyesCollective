@@ -2,6 +2,7 @@
 require '../../_base.php';
 require '../../lib/db.php';
 include '../../_admin_head.php';
+require_once '../../lib/SimplePager.php';
 
 auth('Admin');
 
@@ -51,7 +52,6 @@ in_array($dir, ['asc', 'desc']) || $dir = 'asc';
 
 // Pagination
 $page = req('page', 1);
-require_once '../../lib/SimplePager.php';
 
 // Build query 
 $where = [];
