@@ -7,7 +7,7 @@ auth('Admin');
 $_title = 'Product Sales Report';
 ?>
 
-<div class="admin-content" style="width: 80%;">
+<div class="admin-content view-product-report">
     <div class="content-header">
         <h1 class="dashboard-title">Top Selling Products Report</h1>
         <div style="margin-bottom:20px;">
@@ -22,7 +22,7 @@ $_title = 'Product Sales Report';
 
     <!-- CHART CONTAINER -->
     <div style="background:white; padding:20px; border-radius:8px; border:1px solid #ddd;">
-        <canvas id="salesChart" height="480"></canvas>
+        <canvas id="salesChart"></canvas>
     </div>
 
     <!-- jQuery -->

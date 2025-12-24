@@ -22,7 +22,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     <script src="/js/notifications.js"></script>
 </head>
 
-<body data-logged-in="<?= $_user ? '1' : '0' ?>">
+<body data-logged-in="<?= $_user ? '1' : '0' ?>" data-current-page="<?= $currentPage ?>">
 
     <?php
     // Read temporary flash messages
@@ -83,7 +83,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             </div>
 
 
-            <div id="right-sidebar">
+            <div id="right-sidebar" data-current-page="<?= $currentPage ?>">
 
                 <div class="user-dropdown">
 

@@ -116,7 +116,7 @@ if ($_user->role === 'Admin') {
             <div class="form-group">
                 <label>Phone (+60) *</label>
                 <div style="display:flex; gap:10px;">
-                    <span style="background:#ecf0f1;padding:12px 15px;border-radius:8px;">+60</span>
+                    <span style="font-size:14px;background:#ecf0f1;padding:10px 13px;border-radius:8px;">+60</span>
                     <input type="text" name="phone" class="form-control" style="flex:1;" pattern="[1-9][0-9]{7,9}" required value="<?= ltrim($user->phone, '0') ?>" title="8-10 digits without leading 0. Example: 12345678">
                 </div>
             </div>

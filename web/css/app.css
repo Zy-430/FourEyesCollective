@@ -143,6 +143,25 @@ header nav {
     transform: scale(1.1);
 }
 
+#right-sidebar a.active {
+    background-color: #f0f0f0;
+    border-radius: 50%;
+}
+
+#right-sidebar a.active img {
+    opacity: 1;
+}
+
+/*  icon active state */
+#right-sidebar a.user-icon-link.active,
+body[data-current-page="cart.php"] #cart-link,
+body[data-current-page="wishlist.php"] .wishlist-link,
+#cart-link.active,
+.wishlist-link.active {
+    background-color: #f0f0f0 !important;
+    border-radius: 50%;
+}
+
 /* User dropdown */
 .user-dropdown {
     position: relative;
