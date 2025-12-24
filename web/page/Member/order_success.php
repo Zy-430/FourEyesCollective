@@ -36,7 +36,7 @@ if (!$session_id || !$order_id) {
                 </div>
                 <div class="action-buttons">
                     <a href="cart.php" class="btn btn-secondary">Return to Cart</a>
-                    <a href="shoppage.php" class="btn btn-primary">Continue Shopping</a>
+                    <a href="../shoppage.php" class="btn btn-primary">Continue Shopping</a>
                 </div>
             </div>
         </div>
@@ -77,7 +77,7 @@ if (!$order) {
                 </div>
                 <div class="action-buttons">
                     <a href="order_history.php" class="btn btn-secondary">View My Orders</a>
-                    <a href="shoppage.php" class="btn btn-primary">Continue Shopping</a>
+                    <a href="../shoppage.php" class="btn btn-primary">Continue Shopping</a>
                 </div>
             </div>
         </div>
@@ -112,7 +112,7 @@ try {
     $payment = $stm->fetch(PDO::FETCH_OBJ);
 
     if (!$payment) {
-        throw new Exception("Payment record not found");
+        throw new Exception("Payment session not found. This may happen if you refreshed the page during payment.");
     }
 
     $_db->beginTransaction();
@@ -142,7 +142,7 @@ try {
             $session_id
         ]);
 
-        // Update order status
+        // Update order status from pending_payment to pending
         $_db->prepare("UPDATE `order` SET status = 'pending' WHERE order_id = ?")->execute([$order_id]);
 
         // Insert order history
@@ -151,7 +151,7 @@ try {
         $history_id = 'HIS' . str_pad($max_history_id + 1, 4, '0', STR_PAD_LEFT);
         $_db->prepare("
             INSERT INTO order_history (history_id, order_id, status, changed_at, changed_by, message)
-            VALUES (?, ?, 'pending', NOW(), ?, 'The order has been placed.')
+            VALUES (?, ?, 'pending', NOW(), ?, 'Payment successful, order confirmed')
         ")->execute([$history_id, $order_id, $_user->user_id]);
 
         $_db->commit();
@@ -183,12 +183,15 @@ try {
             $paymentLabel = ucfirst($methodType);
         }
 
-        // Display subtotal
+        // Display subtotal and delivery fee
         if ($order->total_amount <= 500) {
             $subtotal = $order->total_amount - 20;
             $delivery_fee = 20;
+            $is_free_shipping = false;
         } else {
             $subtotal = $order->total_amount;
+            $delivery_fee = 0;
+            $is_free_shipping = true;
         }
     ?>
         <!DOCTYPE html>
@@ -230,7 +233,7 @@ try {
                         </div>
                         <div class="detail-box">
                             <div class="detail-label">Order Status</div>
-                            <div class="detail-value" style="color:#27ae60;">Paid</div>
+                            <div class="detail-value" style="color:#27ae60;">Confirmed</div>
                         </div>
                         <div class="detail-box">
                             <div class="detail-label">Total Amount</div>
@@ -243,7 +246,7 @@ try {
                     <!-- Payment Details -->
                     <div class="checkout-section">
                         <h3>Payment Details</h3>
-                        <div class="order-details-grid">
+                        <div class="order-details-grid" style="grid-template-columns: repeat(3, 1fr);">
                             <div class="detail-box">
                                 <div class="detail-label">Payment Method</div>
                                 <div class="detail-value"><?= encode($paymentLabel) ?></div>
@@ -294,7 +297,11 @@ try {
                             </div>
                             <div class="total-row">
                                 <span>Shipping</span>
-                                <span>RM <?= number_format($delivery_fee, 2) ?></span>
+                                <?php if ($is_free_shipping): ?>
+                                    <span>Free</span>
+                                <?php else: ?>
+                                    <span>RM <?= number_format($delivery_fee, 2) ?></span>
+                                <?php endif; ?>
                             </div>
                             <div class="total-row">
                                 <span>Tax</span>
@@ -320,48 +327,128 @@ try {
     <?php
 
     } else {
-        throw new Exception("Payment failed. Status: " . $paymentIntent->status);
+        // Payment failed - cancel the order and restore items
+        throw new Exception("Payment was not completed successfully.");
     }
 } catch (Exception $e) {
-    // Payment failed
+    // Payment failed - cancel the order
+    $_db->beginTransaction();
+
+    try {
+        // Set order as cancelled
+        $_db->prepare("
+            UPDATE `order` SET 
+                status = 'cancelled',
+                cancelled_reason = 'Payment interrupted or failed'
+            WHERE order_id = ? AND user_id = ?
+        ")->execute([$order_id, $_user->user_id]);
+
+        // Get order items with category information
+        $stm = $_db->prepare("
+            SELECT oi.product_id, oi.product_qty, p.product_name, p.product_image, c.category_id
+            FROM order_item oi
+            JOIN product p ON oi.product_id = p.product_id
+            LEFT JOIN category c ON p.category_id = c.category_id
+            WHERE oi.order_id = ?
+        ");
+        $stm->execute([$order_id]);
+        $items = $stm->fetchAll(PDO::FETCH_OBJ);
+
+        // Get last cart_item_id
+        $stm = $_db->query("SELECT MAX(CAST(SUBSTRING(cart_item_id, 3) AS UNSIGNED)) AS max_id FROM cart_item");
+        $max_id = $stm->fetch()->max_id ?? 0;
+
+        // Insert NEW cart items
+        foreach ($items as $item) {
+            $new_cart_item_id = 'CI' . str_pad(++$max_id, 4, '0', STR_PAD_LEFT);
+
+            $_db->prepare("
+                INSERT INTO cart_item (
+                    cart_item_id,
+                    user_id,
+                    product_id,
+                    product_qty,
+                    item_status,
+                    created_at
+                ) VALUES (?, ?, ?, ?, 'in_cart', NOW())
+            ")->execute([
+                $new_cart_item_id,
+                $_user->user_id,
+                $item->product_id,
+                $item->product_qty
+            ]);
+
+            // Restore stock
+            $_db->prepare("
+                UPDATE product
+                SET product_stock = product_stock + ?
+                WHERE product_id = ?
+            ")->execute([$item->product_qty, $item->product_id]);
+        }
+
+        // Update payment status if exists
+        $_db->prepare("
+            UPDATE payment SET status = 'cancelled' 
+            WHERE order_id = ?
+        ")->execute([$order_id]);
+
+        // Insert order history
+        $stm = $_db->query("SELECT MAX(CAST(SUBSTRING(history_id, 4) AS UNSIGNED)) AS max_id FROM order_history");
+        $max_history_id = $stm->fetch()->max_id ?? 0;
+        $history_id = 'HIS' . str_pad($max_history_id + 1, 4, '0', STR_PAD_LEFT);
+        $_db->prepare("
+            INSERT INTO order_history (history_id, order_id, status, changed_at, changed_by, message)
+            VALUES (?, ?, 'cancelled', NOW(), ?, 'Payment interrupted or failed, order cancelled')
+        ")->execute([$history_id, $order_id, $_user->user_id]);
+
+        $_db->commit();
+
+        $item_count = count($items);
+        $total_quantity = 0;
+        foreach ($items as $item) {
+            $total_quantity += $item->product_qty;
+        }
+
+        // Redirect to cancel_payment.php 
+        header("Location: cancel_payment.php?order_id=" . urlencode($order_id));
+        exit;
+    } catch (Exception $ex) {
+        $_db->rollBack();
+        // If cancellation fails, show error
     ?>
-    <!DOCTYPE html>
-    <html lang="en">
+        <!DOCTYPE html>
+        <html lang="en">
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Payment Failed | Four Eyes Collective</title>
-        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="/css/checkout_flow.css">
-        <link rel="stylesheet" href="/css/app.css">
-    </head>
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link rel="shortcut icon" href="/images/WIS_logo_white.png">
+            <title>Error Processing Cancellation | Four Eyes Collective</title>
+            <link rel="stylesheet" href="/css/checkout_flow.css">
+            <link rel="stylesheet" href="/css/app.css">
+        </head>
 
-    <body>
-        <div class="checkout-status-container status-error">
-            <div class="page-header">
-                <h1>Payment Failed</h1>
-                <p>We encountered an issue with your payment</p>
-            </div>
-            <div class="checkout-section">
-                <div class="status-icon">❌</div>
-
-                <div class="error-message">
-                    <h3>Payment Unsuccessful</h3>
-                    <p>Your payment for order <strong><?= encode($order_id) ?></strong> failed to process.</p>
-                    <p><strong>Reason:</strong> <?= encode($e->getMessage()) ?></p>
+        <body>
+            <div class="checkout-status-container status-error">
+                <div class="page-header">
+                    <h1>⚠️ System Error</h1>
+                    <p>An error occurred while processing your cancellation</p>
                 </div>
-
-                <div class="action-buttons">
-                    <a href="cart.php" class="btn btn-secondary">Return to Cart</a>
-                    <a href="shoppage.php" class="btn btn-primary">Continue Shopping</a>
-                    <a href="order_history.php" class="btn">View Order History</a>
+                <div class="checkout-section" style="text-align: center;">
+                    <div class="error-message">
+                        <p>An error occurred while processing your cancellation:</p>
+                        <p><strong><?= encode($ex->getMessage()) ?></strong></p>
+                    </div>
+                    <div class="action-buttons">
+                        <a href="cart.php" class="btn btn-secondary">Return to Cart</a>
+                        <a href="/page/contact.php" class="btn">Contact Support</a>
+                    </div>
                 </div>
             </div>
-        </div>
-    </body>
+        </body>
 
-    </html>
+        </html>
 <?php
+    }
 }
 ?>
