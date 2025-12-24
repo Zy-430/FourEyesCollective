@@ -5,7 +5,7 @@ include '../../_admin_head.php';
 
 auth('Admin');
 
-$_title = 'Manage User';
+$_title = 'Manage User | Four Eyes Collective';
 
 $role = req('role', 'Member');
 $user_id = get('user_id');

@@ -4,7 +4,9 @@ require '../lib/db.php';
 require '../lib/category.php';
 require '../lib/product_stats.php';
 
-$_title = 'My Wishlist';
+auth('Member');
+
+$_title = 'My Wishlist | Four Eyes Collective';
 include '../_head.php';
 
 // Get all wishlist items for the current user

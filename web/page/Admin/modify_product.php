@@ -50,7 +50,7 @@ if (isset($_GET['delete_img'])) {
     exit;
 }
 
-$_title = 'Modify Product';
+$_title = "Modify Products | Four Eyes Collective";
 
 $folder = $categoryFolders[$p->category_id] ?? 'others';
 

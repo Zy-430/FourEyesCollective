@@ -2,7 +2,7 @@
 require '../_base.php';
 require '../lib/db.php';
 
-auth('Admin', 'Member');
+auth();
 
 $user_id = $_user->user_id;
 
@@ -63,7 +63,7 @@ if ($_user->role === 'Admin') {
 // Display current photo or default
 $current_photo = (!empty($user->photo) && file_exists('../images/users/' . $user->photo))
     ? $user->photo
-    : 'default.jpg';
+    : 'user_default.jpg';
 ?>
 
 <section class="profile-section">

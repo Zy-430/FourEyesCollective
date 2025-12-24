@@ -4,14 +4,13 @@ require '../lib/db.php';
 require '../lib/PHPMailer.php';
 require '../lib/email_action.php';
 
-
 if (is_post()) {
     $email = req('email');
 
     if (!is_email($email)) {
         $_err['email'] = 'Invalid email format';
     } else {
-        // Check email existence
+        // Check if the email exist
         $stm = $_db->prepare("SELECT user_id FROM users WHERE email = ?");
         $stm->execute([$email]);
         $user = $stm->fetch();
@@ -22,18 +21,16 @@ if (is_post()) {
     }
 
     if (!$_err) {
+        // Use lib to send reset password email (user will get reset password page link)
         sendEmailAction($email, 'password_reset');
 
-        temp(
-            'success',
-            'A password reset link has been sent to your email address.'
-        );
+        temp('success', 'A password reset link has been sent to your email address.');
         redirect('login.php');
     }
 }
 
 // ----------------------------------------------------------------------------
-$_title = 'Forgot Password';
+$_title = 'Forgot Password | Four Eyes Collective';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -49,6 +46,7 @@ $_title = 'Forgot Password';
 
 <body class="login-page">
     <div class="login-container">
+        <!-- Header -->
         <div class="login-header">
             <div class="header-content">
                 <div class="logo-container">
@@ -61,6 +59,7 @@ $_title = 'Forgot Password';
             </div>
         </div>
 
+        <!-- Form content -->
         <form method="post" class="login-form">
             <div class="form-group">
                 <label for="email">Email *</label>
@@ -79,12 +78,10 @@ $_title = 'Forgot Password';
                 <div class="forgot-link">
                     <a href="login.php">Login</a>
                 </div>
-
                 <div class="back-link">
                     <a href="/">Back to Home</a>
                 </div>
             </div>
-
         </form>
     </div>
 </body>

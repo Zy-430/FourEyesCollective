@@ -1,7 +1,9 @@
-<?php require '../../_base.php';
+<?php 
+require '../../_base.php';
 require '../../lib/db.php';
-$_title = 'Admin Dashboard';
 include '../../_admin_head.php';
+
+$_title = "Admin Dashboard | Four Eyes Collective";
 
 auth('Admin');
 $user_id = $_user->user_id;
@@ -74,13 +76,6 @@ if (get('msg') == 'password_changed') {
 <script src="/js/notifications.js"></script>
 
 <script>
-    // Show notification on page load if there's a message
-    document.addEventListener('DOMContentLoaded', function() {
-        <?php if ($notification_message): ?>
-            showNotification('<?= addslashes($notification_message) ?>', 'success');
-        <?php endif; ?>
-    });
-
 $(function () {
 
     $.ajax({
@@ -139,7 +134,6 @@ $(function () {
             alert('Failed to load dashboard sales data.');
         }
     });
-
 });
 </script>
 </body>

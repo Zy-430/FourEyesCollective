@@ -2,7 +2,7 @@
 require '../../_base.php';
 require '../../lib/db.php';
 include '../../_admin_head.php';
-$_title = 'Add User';
+$_title = "Add User | Four Eyes Collective";
 
 auth('Admin');
 $role = req('role', 'Member');
@@ -22,7 +22,6 @@ function generateDefaultPassword($length = 8)
     for ($i = 0; $i < $length; $i++) {
         $password .= $chars[random_int(0, strlen($chars) - 1)];
     }
-
     return $password;
 }
 
@@ -31,10 +30,10 @@ $password = generateDefaultPassword();
 // Member status is pending (wait for email verification)
 // Admin status is active immediately
 $status = ($role === 'Admin') ? 'Active' : 'Pending';
-// Force password change on first login
+
+// Set to force password change on first login
 $force_password_change = 1;
 $registration_date = date('Y-m-d');
-
 
 if (is_post()) {
 
@@ -65,6 +64,8 @@ if (is_post()) {
     //Validate name
     if (strlen($name) > 100) {
         $_err['name'] = 'Maximum length 100';
+    } elseif (!preg_match('/^[A-Za-z ]+$/', $name)) {
+        $errors[] = "Name can only contain letters and spaces.";
     }
 
     //Validate gender
@@ -121,7 +122,6 @@ if (is_post()) {
             }
         }
     }
-
 
     // Password hashing
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
@@ -195,21 +195,22 @@ if (is_post()) {
             $verification_token = sha1(uniqid() . rand());
 
             $stm = $_db->prepare('
-        INSERT INTO token (token_id, expire, user_id, type)
-        VALUES(?, ADDTIME(NOW(), "24:00"), ?, "verification")
-    ');
+                INSERT INTO token (token_id, expire, user_id, type)
+                VALUES(?, ADDTIME(NOW(), "24:00"), ?, "verification")
+            ');
             $stm->execute([$verification_token, $user_id]);
         }
 
         $_db->commit();
 
-        // Send verification email to user
+        // verification url with token (send in email)
         $verification_url = base("page/activate_account.php?token_id=$verification_token");
 
         $m = get_mail();
         $m->addAddress($email, $name);
         $m->isHTML(true);
 
+        // Send verifiction email to member for activation (with verification url & default password)
         if ($role === 'Member') {
             $m->Subject = 'Verify Your Account - Four Eyes Collective';
             $m->Body =  "
@@ -263,7 +264,8 @@ if (is_post()) {
                     </body>
                 </html>
                 ";
-        } elseif ($role === 'Admin') {
+        } // Send email to admin to inform them their default password for this system (then first login will force reset password)
+        elseif ($role === 'Admin') {
             $m->Subject = 'Admin Account - Four Eyes Collective';
 
             $m->Body = "
@@ -374,7 +376,7 @@ if (is_post()) {
                 <div class="form-group">
                     <label for="password">
                         Password (Auto-generated)
-                    </label> <input type="text" id="password_display" class="form-control" required
+                    </label> <input type="password" id="password_display" class="form-control" required
                         value="<?= encode($password) ?>" disabled>
                 </div>
 
@@ -406,11 +408,11 @@ if (is_post()) {
                 </div>
             </div>
 
-            <!-- Date of Birth -->
+            <!-- Profile photo & Date of Birth -->
             <div class="form-row">
                 <div class="form-group">
                     <label>Profile Photo </label>
-                    <div class="upload-photo-container">
+                    <div class="upload-photo-container" id="photoDropZone">
                         <label class="photo-label" for="photo" tabindex="0">
                             <div class="photo-preview">
                                 <img id="photoPreview" src="/images/upload.png">
@@ -501,23 +503,73 @@ if (is_post()) {
         </form>
 
     </div>
-
 </div>
 
 <script>
-    // Photo preview function
-    document.getElementById('photo').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('photoPreview').src = e.target.result;
+    document.addEventListener('DOMContentLoaded', function() {
+
+            const input = document.getElementById('photo');
+            const preview = document.getElementById('photoPreview');
+            const dropZone = document.getElementById('photoDropZone');
+            const label = document.querySelector('.photo-label');
+
+            // Upload validation
+            const MAX_SIZE = 1024 * 1024; // 1MB
+            const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
+
+            // Handle normal file selection (click the area and choose file)
+            input.addEventListener('change', function() {
+                if (this.files[0]) handleFile(this.files[0]);
+            });
+
+            // Highlight the drop zone during drag
+            ['dragenter', 'dragover'].forEach(event => {
+                dropZone.addEventListener(event, e => {
+                    e.preventDefault();
+                    dropZone.classList.add('dragover');
+                    label.classList.add('dragover');
+                });
+            });
+
+            // Remove highlight when drag ends
+            ['dragleave', 'drop'].forEach(event => {
+                dropZone.addEventListener(event, e => {
+                    e.preventDefault();
+                    dropZone.classList.remove('dragover');
+                    label.classList.remove('dragover');
+                });
+            });
+
+            // Handle drag-drop file uploaded
+            dropZone.addEventListener('drop', function(e) {
+                const file = e.dataTransfer.files[0];
+                if (file) {
+                    input.files = e.dataTransfer.files;  // Assign file to input
+                    handleFile(file);  // File validation
+                }
+            });
+
+            function handleFile(file) {
+                // Validate file type
+                if (!ALLOWED_TYPES.includes(file.type)) {
+                    alert('Invalid file type. Only JPG, PNG, GIF allowed.');
+                    input.value = '';
+                    return;
+                }
+
+                // Validate file size
+                if (file.size > MAX_SIZE) {
+                    alert('File too large. Maximum size is 1MB.');
+                    input.value = '';
+                    return;
+                }
+
+                // Image preview
+                const reader = new FileReader();
+                reader.onload = e => preview.src = e.target.result;
+                reader.readAsDataURL(file);
             }
-            reader.readAsDataURL(file);
-        }
-    });
+        });
 </script>
 </body>
-
-
 </html>

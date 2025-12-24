@@ -2,15 +2,9 @@
 require '../_base.php';
 require '../lib/db.php';
 
-auth('Admin', 'Member');
+auth();
 
 $user_id = $_user->user_id;
-
-// Server-side strong password check
-function isStrongPassword($password)
-{
-    return preg_match('/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/', $password);
-}
 
 // Handle form submission
 if (is_post()) {
@@ -29,7 +23,7 @@ if (is_post()) {
         $_SESSION['error'] = "Current password is incorrect.";
     } elseif ($new_password !== $confirm_password) {
         $_SESSION['error'] = "New password and confirm password do not match.";
-    } elseif (!isStrongPassword($new_password)) {
+    } elseif (!is_strong_password($new_password)) {
         $_SESSION['error'] = "Password must be at least 8 characters and include uppercase, lowercase, number, and symbol.";
     } elseif (password_verify($new_password, $user->password)) {
         $_SESSION['error'] = "New password cannot be the same as your current password.";
@@ -93,7 +87,6 @@ if ($_user->role === 'Admin') {
     </div>
 </section>
 
-<?php include '../_foot.php'; ?>
 <script src="/js/notifications.js"></script>
 
 <script>

@@ -41,6 +41,7 @@ if (is_post()) {
     header("Location: view_category.php?msg=updated&cat_id=$id");
     exit;
 }
+$_title = "Modify Category | Four Eyes Collective";
 
 ?>
 

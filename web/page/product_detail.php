@@ -19,7 +19,6 @@ if (empty($images)) {
     $folder = ''; // no folder needed for fallback
 }
 
-
 $return_url = get('return_url', '/page/homepage.php');
 $return_url = trim($return_url);
 
@@ -34,7 +33,6 @@ if (!in_array($path, $allowed_returns)) {
     // Use the full validated path
     $return_url = $path;
 }
-
 
 // Fetch reviews
 $stm_reviews = $_db->prepare("

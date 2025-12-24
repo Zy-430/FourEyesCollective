@@ -2,9 +2,9 @@
 require '../_base.php';
 require '../lib/db.php';
 
-// Login attempts
+// Login attempts (max 3 times, if exceed then lock for 5 minute)
 define('MAX_ATTEMPTS', 3);
-define('LOCK_MINUTES', 15);
+define('LOCK_MINUTES', 5);
 
 $__temp_success = temp('success');
 $__temp_error = temp('error');
@@ -26,7 +26,6 @@ if (is_post()) {
         $user = $stm->fetch();
 
         if ($user) {
-
             /* First check if lock has expired (if yes then reset the attempt) */
             if ($user->lock_until && strtotime($user->lock_until) <= time()) {
                 $_db->prepare("
@@ -40,7 +39,7 @@ if (is_post()) {
                 $user->lock_until = null;
             }
 
-            /* Then check whether the account is currectly lock (mean the lock time haven't expired) */
+            /* Then check account is currectly lock or not (mean the lock time haven't expired) */
             if ($user->lock_until && strtotime($user->lock_until) > time()) {
 
                 /* Calculate the remaining lock time to show to user */
@@ -50,7 +49,6 @@ if (is_post()) {
                 $_err['email'] =
                     'Too many failed attempts. Please try again in ' . $remainingMinutes . ' minute(s).';
             } /* Else verify to email and password match or not */ elseif (password_verify($password, $user->password)) {
-
                 // Login successfully then reset attempts
                 $_db->prepare("
                     UPDATE users 
@@ -69,7 +67,7 @@ if (is_post()) {
                     if ($user->force_password_change == 1) {
                         // Store user in session ,  redirect to forced password change page
                         $_SESSION['temp_user'] = $user;
-                        temp('info', 'Welcome! Please set your new password.');
+                        temp('info', 'Welcome! Please set your new password for first login.');
                         redirect('force_password_change.php');
                     } else {
                         temp('success', 'Login successfully!');
@@ -83,7 +81,7 @@ if (is_post()) {
                         }
                     }
                 }
-            }/* If wrong password then the attempt will keep increasing (max attempts = 3 and will lock for 15 minutes)*/ else {
+            }/* If wrong password then the attempt will keep increasing (max attempts = 3 and will lock for 5 minutes)*/ else {
                 $attempts = $user->failed_attempts + 1;
 
                 if ($attempts >= MAX_ATTEMPTS) {
@@ -100,7 +98,7 @@ if (is_post()) {
                     ")->execute([$attempts, $lockUntil, $user->user_id]);
 
                     $_err['password'] =
-                        'Too many attempts. Account locked for 15 minutes.';
+                        'Too many attempts. Account locked for 5 minutes.';
                 } else {
                     $_db->prepare("
                         UPDATE users 
@@ -119,7 +117,7 @@ if (is_post()) {
 }
 
 // ----------------------------------------------------------------------------
-$_title = 'Login';
+$_title = 'Login | Four Eyes Collective';
 ?>
 
 <!DOCTYPE html>
@@ -137,6 +135,7 @@ $_title = 'Login';
 </head>
 
 <body class="login-page">
+    <!-- Show notificatioon -->
     <script>
         $(function() {
             <?php if (!empty($__temp_success)): ?>
@@ -154,6 +153,7 @@ $_title = 'Login';
     </script>
 
     <div class="login-container">
+        <!-- Header -->
         <div class="login-header">
             <div class="header-content">
                 <div class="logo-container">
@@ -166,6 +166,7 @@ $_title = 'Login';
             </div>
         </div>
 
+        <!-- Form content -->
         <form method="post" class="login-form">
             <div class="form-group">
                 <label for="email">Email *</label>
@@ -184,16 +185,13 @@ $_title = 'Login';
                 <button type="submit" class="btn btn-black">Sign In</button>
                 <button type="reset" class="btn btn-white">Reset</button>
             </div>
-
             <div class="links-container">
                 <div class="forgot-link">
                     <a href="forgot_password.php">Forgot Password?</a>
                 </div>
-
                 <div class="back-link">
                     <a href="/">Back to Home</a>
                 </div>
-
                 <div class="signup-link">
                     Don't have an account? <a href="member_registration.php">Sign Up</a>
                 </div>

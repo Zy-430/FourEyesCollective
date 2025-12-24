@@ -4,7 +4,7 @@ require '../../lib/db.php';
 include '../../_admin_head.php';
 auth('Admin');
 
-$_title = 'Product Sales Report';
+$_title = 'Product Sales Report | Four Eyes Collective';
 ?>
 
 <div class="admin-content view-product-report">

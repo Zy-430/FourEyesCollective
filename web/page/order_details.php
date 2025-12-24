@@ -2,20 +2,6 @@
 require '../_base.php';
 require '../lib/db.php';
 
-?>
-<script>
-    (function() {
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
-                document.body.classList.add('product');
-            });
-        } else {
-            document.body.classList.add('product');
-        }
-    })();
-</script>
-<?php
-
 auth();
 $order_id = $_GET['order_id'] ?? null;
 if (!$order_id) exit("Invalid order");
@@ -97,6 +83,20 @@ $stm_hist = $_db->prepare("
 ");
 $stm_hist->execute([$order_id]);
 $history = $stm_hist->fetchAll(PDO::FETCH_ASSOC);
+
+?>
+<script>
+    (function() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                document.body.classList.add('product');
+            });
+        } else {
+            document.body.classList.add('product');
+        }
+    })();
+</script>
+<?php
 
 $_title = "Order Details | Four Eyes Collective";
 // Determine which header/footer and CSS to use based on role

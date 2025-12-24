@@ -33,7 +33,7 @@ if (is_post()) {
     header("Location: view_category.php?msg=added&cat_id=$category_id");
     exit;
 }
-
+$_title = "Add Category | Four Eyes Collective";
 ?>
 
 <div class="admin-content">

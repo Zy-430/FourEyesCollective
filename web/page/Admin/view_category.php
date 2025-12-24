@@ -4,7 +4,8 @@ require '../../lib/db.php';
 include '../../_admin_head.php';
 auth('Admin');
 
-$_title = 'Manage Categories';
+$_title = 'Manage Categories | Four Eyes Collective';
+
 
 // Sorting
 $fields = [

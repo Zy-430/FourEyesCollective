@@ -618,6 +618,13 @@ i {
     color: #991b1b;
 }
 
+.photo-error {
+    color: #e74c3c;
+    font-size: 0.9em;
+    margin-top: 5px;
+    display: block;
+}
+
 /* Action row for update and delete */
 .actions-row {
     min-width: 100px;
@@ -911,6 +918,15 @@ i {
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.upload-photo-container.dragover {
+    border-color: #27ae60 !important;
+    background-color: rgba(39, 174, 96, 0.1) !important;
+}
+
+.upload-photo-container.dragover{
+    border-color: #27ae60 !important;
 }
 
 .upload-button {
@@ -1580,7 +1596,7 @@ i {
 /* Profile*/
 /* Profile page wrapper */
 .page-container,
-.profile-section ,
+.profile-section,
 .profile-page {
     padding: 30px 20px;
     margin-left: 18%;
@@ -1596,6 +1612,7 @@ i {
     width: 100%;
     padding-left: 80px;
 }
+
 .admin-sidebar.collapsed~.profile-section {
     margin-left: 0;
     width: 100%;
@@ -1719,7 +1736,7 @@ i {
 
 .profile-card.narrow-card .form-group,
 .profile-card.compact-card .compact-form .form-group {
-    margin-bottom: 12px; 
+    margin-bottom: 12px;
 }
 
 .profile-card.compact-card .compact-form .form-group input[name="phone"] {
@@ -1791,7 +1808,7 @@ i {
     min-width: 140px;
 }
 
-.admin-btn{
+.admin-btn {
     background: #0d1a3f;
     width: 120px;
 }
@@ -1815,14 +1832,14 @@ i {
     transform: translateY(-2px);
 }
 
-.cta-button.upload-primary{
+.cta-button.upload-primary {
     margin-right: 10px;
 }
 
 .cta-button.secondary,
 .btn-danger {
     background: #df1d1d;
- }
+}
 
 .cta-button.secondary:hover,
 .btn-danger:hover {
@@ -1832,9 +1849,9 @@ i {
 
 .cta-button.secondary {
     width: 20%;
- }
+}
 
- /* Order details page */
+/* Order details page */
 .card {
     padding: 20px;
     border-radius: 10px;
@@ -1932,11 +1949,11 @@ a[href="javascript:history.back()"] {
 
 .admin-view-container {
     display: grid;
-    grid-template-columns: 1fr 1fr; 
+    grid-template-columns: 1fr 1fr;
     margin-bottom: 20px;
 }
 
-.admin-view{
+.admin-view {
     width: 92%;
 }
 
@@ -2093,7 +2110,7 @@ a[href="javascript:history.back()"] {
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
-.admin-sidebar.collapsed ~ .admin-content.view-product-report {
+.admin-sidebar.collapsed~.admin-content.view-product-report {
     margin-left: 10px;
     width: calc(100% - 20px);
     max-width: none;

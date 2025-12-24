@@ -3,8 +3,7 @@ require '../_base.php';
 require '../lib/db.php';
 require '../lib/email_action.php';
 
-// Registration is only for member ; admin will be add manually through admin mode
-
+// Registration is only for member ; admin will be add manually through admin panel
 // Form submit
 if (is_post()) {
 
@@ -37,6 +36,8 @@ if (is_post()) {
     // Validate name
     if (strlen($name) > 100) {
         $_err['name'] = 'Maximum length 100';
+    } elseif (!preg_match('/^[A-Za-z ]+$/', $name)) {
+        $errors[] = "Name can only contain letters and spaces.";
     }
 
     // Validate password
@@ -64,7 +65,6 @@ if (is_post()) {
         // Only validate if a photo was uploaded
         $allowed = ['jpg', 'jpeg', 'png', 'gif'];
         $ext = strtolower(pathinfo($photo['name'], PATHINFO_EXTENSION));
-
         if (!str_starts_with($photo['type'], 'image/')) {
             $_err['photo'] = 'Must be an image';
         } else if (!in_array($ext, $allowed)) {
@@ -133,7 +133,7 @@ if (is_post()) {
             // Check if filename already exists , then find next available number
             $counter = 1;
             do {
-                // Filename format - steven15_01.jpg, steven15_02.jpg...
+                // Example : steven15_01.jpg, steven15_02.jpg...
                 $photo_filename = $sanitized_name . sprintf('_%02d', $counter) . '.' . $ext;
                 $file_path = $upload_dir . $photo_filename;
                 $counter++;
@@ -182,7 +182,7 @@ if (is_post()) {
             $status
         ]);
 
-        // Generate verification token
+        // Generate verification token (user can get verification email)
         $verification_token = sha1(uniqid() . rand());
 
         // Then store verification token (it will expires in 24 hours)
@@ -191,9 +191,9 @@ if (is_post()) {
             VALUES(?, ADDTIME(NOW(), "24:00"), ?, "verification")
         ');
         $stm->execute([$verification_token, $user_id]);
-
         $_db->commit();
 
+        // Send email with type verification
         sendEmailAction($email, 'verification');
 
         temp('success', 'Registration successful! Please check your email to verify your account.');
@@ -202,7 +202,7 @@ if (is_post()) {
 }
 
 // ----------------------------------------------------------------------------
-$_title = 'Member Registration';
+$_title = 'Member Registration | Four Eyes Collective';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -224,18 +224,6 @@ $_title = 'Member Registration';
             border-color: #27ae60 !important;
         }
 
-        .drag-text {
-            display: none;
-            color: #666;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-
-        .photo-upload-container:hover .drag-text {
-            display: block;
-        }
-
-        /* Error styling for photo upload */
         .photo-error {
             color: #e74c3c;
             font-size: 0.9em;
@@ -243,7 +231,6 @@ $_title = 'Member Registration';
             display: block;
         }
     </style>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 
@@ -329,7 +316,7 @@ $_title = 'Member Registration';
                 </div>
             </div>
 
-            <!-- Date of Birth -->
+            <!-- Profile Photo & Date of Birth -->
             <div class="form-row">
                 <div class="form-group">
                     <label>Profile Photo </label>
@@ -395,7 +382,6 @@ $_title = 'Member Registration';
                 <div class="back-link">
                     <a href="/">Back to Home</a>
                 </div>
-
                 <div class="signin-link">
                     Already a member? <a href="login.php">Sign In</a>
                 </div>
@@ -404,100 +390,70 @@ $_title = 'Member Registration';
     </div>
 
     <script>
-        // Photo preview function
-        document.getElementById('photo').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('photoPreview').src = e.target.result;
-                }
-                reader.readAsDataURL(file);
-            }
-        });
-        // Get elements
-        const dropZone = document.getElementById('photoDropZone');
-        const photoInput = document.getElementById('photo');
-        const photoPreview = document.getElementById('photoPreview');
-        const photoLabel = document.querySelector('.photo-upload-label');
+        document.addEventListener('DOMContentLoaded', function() {
 
-        // Prevent default drag behaviors
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, preventDefaults, false);
-            document.body.addEventListener(eventName, preventDefaults, false);
-        });
+            const input = document.getElementById('photo');
+            const preview = document.getElementById('photoPreview');
+            const dropZone = document.getElementById('photoDropZone');
+            const label = document.querySelector('.photo-upload-label');
 
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
+            // Upload validation
+            const MAX_SIZE = 1024 * 1024; // 1MB
+            const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
 
-        // Highlight drop zone when item is dragged over it
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, highlight, false);
-            photoLabel.addEventListener(eventName, highlight, false);
-        });
+            // Handle normal file selection (click the area and choose file)
+            input.addEventListener('change', function() {
+                if (this.files[0]) handleFile(this.files[0]);
+            });
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, unhighlight, false);
-            photoLabel.addEventListener(eventName, unhighlight, false);
-        });
-
-        function highlight() {
-            dropZone.classList.add('dragover');
-            photoLabel.classList.add('dragover');
-        }
-
-        function unhighlight() {
-            dropZone.classList.remove('dragover');
-            photoLabel.classList.remove('dragover');
-        }
-
-        // Handle dropped files
-        dropZone.addEventListener('drop', handleDrop, false);
-        photoLabel.addEventListener('drop', handleDrop, false);
-
-        function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-
-            if (files.length > 0) {
-                // Only process the first file
-                const file = files[0];
-
-                // Validate file type
-                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-                if (!validTypes.includes(file.type)) {
-                    alert('Please select a valid image file (JPG, PNG, GIF)');
-                    return;
-                }
-
-                // Validate file size (1MB = 1048576 bytes)
-                if (file.size > 1048576) {
-                    alert('File is too large. Maximum size is 1MB.');
-                    return;
-                }
-
-                // Set the file to the input
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                photoInput.files = dataTransfer.files;
-
-                // Trigger change event to update preview
-                const event = new Event('change', {
-                    bubbles: true
+            // Highlight the drop zone during drag
+            ['dragenter', 'dragover'].forEach(event => {
+                dropZone.addEventListener(event, e => {
+                    e.preventDefault();
+                    dropZone.classList.add('dragover');
+                    label.classList.add('dragover');
                 });
-                photoInput.dispatchEvent(event);
+            });
 
-                // Update preview immediately
+            // Remove highlight when drag ends
+            ['dragleave', 'drop'].forEach(event => {
+                dropZone.addEventListener(event, e => {
+                    e.preventDefault();
+                    dropZone.classList.remove('dragover');
+                    label.classList.remove('dragover');
+                });
+            });
+
+            // Handle drag-drop file uploaded
+            dropZone.addEventListener('drop', function(e) {
+                const file = e.dataTransfer.files[0];
+                if (file) {
+                    input.files = e.dataTransfer.files;  // Assign file to input
+                    handleFile(file);  // File validation
+                }
+            });
+
+            function handleFile(file) {
+                // Validate file type
+                if (!ALLOWED_TYPES.includes(file.type)) {
+                    alert('Invalid file type. Only JPG, PNG, GIF allowed.');
+                    input.value = '';
+                    return;
+                }
+
+                // Validate file size
+                if (file.size > MAX_SIZE) {
+                    alert('File too large. Maximum size is 1MB.');
+                    input.value = '';
+                    return;
+                }
+
+                // Image preview
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    photoPreview.src = e.target.result;
-                };
+                reader.onload = e => preview.src = e.target.result;
                 reader.readAsDataURL(file);
             }
-        }
+        });
     </script>
 </body>
-
 </html>

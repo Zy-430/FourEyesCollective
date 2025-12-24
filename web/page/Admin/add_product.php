@@ -5,7 +5,8 @@ include '../../_admin_head.php';
 require '../../lib/category.php';
 auth('Admin');
 
-$_title = 'Add Product';
+$_title = "Add Product | Four Eyes Collective";
+
 
 // Auto-generate product ID
 function generateProductID($db)

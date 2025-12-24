@@ -4,7 +4,6 @@ require '../lib/db.php';
 
 // ----------------------------------------------------------------------------
 
-
 temp('success', 'Logout successfully');
 logout();
 
