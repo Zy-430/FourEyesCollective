@@ -3,6 +3,9 @@ require '../../_base.php';
 require '../../lib/db.php';
 include '../../_admin_head.php';
 require_once '../../lib/SimplePager.php';
+require_once '../../stripe-php-19.0.0/init.php';
+
+\Stripe\Stripe::setApiKey('sk_test_51SZZzU2LpkFiPUtITtnxkZtzongU6II64ZL8YSynXO951EcqTfIfRbWAl586Hh8LOXYexaqDtwwaO6rxwdOQvygm006Vp82pdb');
 
 auth('Admin');
 $admin_id = $_user->user_id;
@@ -56,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 $update->execute([$new_status, $order_id]);
 
-                // Restock products if return approved
+                // Restock products and refund payment if return approved
                 if ($new_status === 'returned') {
                     $stm_items = $_db->prepare("SELECT product_id, product_qty FROM order_item WHERE order_id = ?");
                     $stm_items->execute([$order_id]);
@@ -65,6 +68,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stm_update_stock = $_db->prepare("UPDATE product SET product_stock = product_stock + ? WHERE product_id = ?");
                     foreach ($items as $item) {
                         $stm_update_stock->execute([$item['product_qty'], $item['product_id']]);
+                    }
+
+                    // Get payment details
+                    $paymentStmt = $_db->prepare("
+                        SELECT stripe_payment_intent, amount, status as payment_status
+                        FROM payment 
+                        WHERE order_id = ? AND status = 'succeeded'
+                    ");
+                    $paymentStmt->execute([$order_id]);
+                    $payment = $paymentStmt->fetch(PDO::FETCH_ASSOC);
+
+                    if ($payment && !empty($payment['stripe_payment_intent'])) {
+                        try {
+                            // Create refund in Stripe
+                            $refund = \Stripe\Refund::create([
+                                'payment_intent' => $payment['stripe_payment_intent'],
+                                'amount' => intval($payment['amount'] * 100), // Convert to cents
+                                'reason' => 'requested_by_customer',
+                            ]);
+
+                            // Update payment record with refund ID and date
+                            $updatePayment = $_db->prepare("
+                                UPDATE payment 
+                                SET refund_id = ?, 
+                                    refund_date = NOW(),
+                                    status = 'refunded'
+                                WHERE order_id = ?
+                            ");
+                            $updatePayment->execute([$refund->id, $order_id]);
+
+                            // Update message to include refund info
+                            if (empty($message)) {
+                                $message = "Refund approved. Refund of RM " . number_format($payment['amount'], 2) . " processed via Stripe.";
+                            } else {
+                                $message .= " (Refund of RM " . number_format($payment['amount'], 2) . " processed)";
+                            }
+                        } catch (\Stripe\Exception\ApiErrorException $e) {
+                            // Log the error but don't rollback the entire transaction
+                            error_log('Stripe refund failed for order ' . $order_id . ': ' . $e->getMessage());
+                            if (empty($message)) {
+                                $message = "Return approved but Stripe refund failed: " . $e->getMessage();
+                            } else {
+                                $message .= " (Stripe refund failed: " . $e->getMessage() . ")";
+                            }
+                        }
+                    } else {
+                        // No Stripe payment found
+                        if (empty($message)) {
+                            $message = "Return approved. Note: No successful Stripe payment found for refund.";
+                        } else {
+                            $message .= " (No Stripe refund processed - payment not found or not succeeded)";
+                        }
                     }
                 }
 
