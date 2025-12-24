@@ -59,12 +59,12 @@ if (is_post()) {
 
     // Validate photo (optional : user can upload / use default image)
     $photo_filename = 'user_default.jpg'; // Default filename
-    
+
     if ($photo && $photo['error'] == 0 && $photo['size'] > 0) {
         // Only validate if a photo was uploaded
         $allowed = ['jpg', 'jpeg', 'png', 'gif'];
         $ext = strtolower(pathinfo($photo['name'], PATHINFO_EXTENSION));
-        
+
         if (!str_starts_with($photo['type'], 'image/')) {
             $_err['photo'] = 'Must be an image';
         } else if (!in_array($ext, $allowed)) {
@@ -112,32 +112,46 @@ if (is_post()) {
 
     // Insert into database
     if (!$_err) {
-        // Handle photo upload
+        // Handle photo upload with username-based naming
         if ($photo && $photo['error'] == 0 && $photo['size'] > 0 && !isset($_err['photo'])) {
             $upload_dir = __DIR__ . '/../images/users/';
             if (!is_dir($upload_dir)) {
                 mkdir($upload_dir, 0755, true);
             }
-            
+
             $ext = strtolower(pathinfo($photo['name'], PATHINFO_EXTENSION));
-            $photo_filename = 'user_' . $user_id . '.' . $ext;
-            $file_path = $upload_dir . $photo_filename;
-            
+            $ext = in_array($ext, ['jpg', 'jpeg', 'png', 'gif']) ? $ext : 'jpg';
+
+            // Create a sanitized username for filename
+            $sanitized_name = preg_replace('/[^a-zA-Z0-9]/', '', strtolower($name));
+            if (empty($sanitized_name)) {
+                $sanitized_name = 'user';
+            }
+
+            // Check if filename already exists , then find next available number
+            $counter = 1;
+            do {
+                // Filename format - steven15_01.jpg, steven15_02.jpg...
+                $photo_filename = $sanitized_name . sprintf('_%02d', $counter) . '.' . $ext;
+                $file_path = $upload_dir . $photo_filename;
+                $counter++;
+            } while (file_exists($file_path) && $counter <= 99);
+
             if (move_uploaded_file($photo['tmp_name'], $file_path)) {
                 // Photo uploaded successfully
             } else {
                 // If upload fails, use default
-                $photo_filename = 'default_user.png';
+                $photo_filename = 'user_default.jpg';
             }
         } else {
             // Use default photo
-            $photo_filename = 'default_user.png';
+            $photo_filename = 'user_default.jpg';
         }
 
         // Member registration only for member
-        // Default status for new members is inactive (wait for email verification)
+        // Default status for new members is pending (wait for email verification)
         $role = 'Member';
-        $status = 'Inactive';
+        $status = 'Pending';
 
         // Get current date for registration_date 
         if (empty($registration_date)) {
@@ -218,7 +232,7 @@ $_title = 'Member Registration';
         .photo-upload-container:hover .drag-text {
             display: block;
         }
-        
+
         /* Error styling for photo upload */
         .photo-error {
             color: #e74c3c;
@@ -481,8 +495,6 @@ $_title = 'Member Registration';
                 reader.readAsDataURL(file);
             }
         }
-
-       
     </script>
 </body>
 

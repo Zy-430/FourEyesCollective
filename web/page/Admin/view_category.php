@@ -35,20 +35,27 @@ $sql = "SELECT
 $stmt = $_db->prepare($sql);
 $stmt->execute();
 $categories = $stmt->fetchAll();
+
+// Store notification messages
+$notification_message = '';
+$notification_type = 'success';
+$category_id = get('cat_id');
+
+if (get('msg') == 'added') {
+    $notification_message = 'Category (' . $category_id . ') added successfully!';
+} elseif (get('msg') == 'updated') {
+    $notification_message = 'Category (' . $category_id . ') updated successfully!';
+} elseif (get('msg') == 'deleted') {
+    $notification_message = 'Category (' . $category_id . ') deleted successfully!';
+} elseif (get('msg') == 'error') {
+    $notification_message = 'Cannot delete category (' . $category_id . ') because it contains products!';
+    $notification_type = 'error';
+}
 ?>
 
 <div class="admin-content">
     <div class="content-header">
         <h1 class="dashboard-title">Manage Categories</h1>
-
-        <!-- SUCCESS MESSAGE -->
-        <?php if (get('msg')): ?>
-            <div class="flash-msg" style="padding:10px; background:#d4f8d4; border:1px solid #8acb8a; margin-bottom:15px;">
-                <?= get('msg') === 'added' ? 'Category added successfully!' : '' ?>
-                <?= get('msg') === 'updated' ? 'Category updated successfully!' : '' ?>
-                <?= get('msg') === 'deleted' ? 'Category deleted successfully!' : '' ?>
-            </div>
-        <?php endif; ?>
         <div class="header-actions small">
             <!-- ADD CATEGORY BUTTON -->
             <button class="btn-default btn-add" onclick="location.href='add_category.php'">
@@ -84,8 +91,9 @@ $categories = $stmt->fetchAll();
                                     </a>
 
                                     <a href="delete_category.php?id=<?= $c->category_id ?>"
-                                        onclick="return confirm('Are you sure you want to delete this category?');"
+                                        onclick="return confirm('⚠ WARNING ⚠\n\nAre you VERY sure you want to delete this category?\n\nCategory: <?= $c->category_id ?>\nFolder will be deleted ONLY if empty.\n\nThis action cannot be undone!');"
                                         class="btn-default delete-btn">
+
                                         <i class="fas fa-trash"></i>
                                     </a>
                                 </div>
@@ -144,3 +152,11 @@ $categories = $stmt->fetchAll();
         </table>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    <?php if ($notification_message): ?>
+        showNotification('<?= addslashes($notification_message) ?>', '<?= $notification_type ?>');
+    <?php endif; ?>
+});
+</script>

@@ -38,7 +38,8 @@ $genders = [
 $statuses = [
     '' => 'All Status',
     'Active' => 'Active',
-    'Inactive' => 'Inactive'
+    'Pending' => 'Pending Verification',
+    'Blocked' => 'Blocked'
 ];
 
 // Sorting
@@ -107,44 +108,41 @@ $query_params[] = "sort=$sort";
 $query_params[] = "dir=$dir";
 
 $query_string = implode('&', $query_params);
+
+// Store notification message 
+$notification_message = '';
+$notification_type = 'success';
+
+if (get('msg') == 'added') {
+    $notification_message = $role . ' (' . $user_id . ') added successfully!';
+} elseif (get('msg') == 'updated') {
+    $notification_message = $role . ' (' . $user_id . ') updated successfully!';
+} elseif (get('msg') == 'blocked') {
+    $notification_message = $role . ' (' . $user_id . ') blocked successfully!';
+} elseif (get('msg') == 'unblocked') {
+    $notification_message = $role . ' (' . $user_id . ') unblocked successfully!';
+} elseif (get('msg') == 'added_no_email') {
+    $notification_message = $role . ' (' . $user_id . ') added but email sending failed!';
+    $notification_type = 'error';
+} elseif (get('error') == 'last_admin') {
+    $notification_message = 'Cannot block the last active admin!';
+    $notification_type = 'error';
+} elseif (get('error') == 'user_not_found') {
+    $notification_message = 'User not found!';
+    $notification_type = 'error';
+}
 ?>
 
 <div class="admin-content">
     <div class="content-header">
         <h1 class="dashboard-title"><?= $role ?> Management </h1>
-
-        <?php if (get('msg') == 'added'): ?>
-            <div class="flash-msg" style="padding:10px; background:#d4f8d4; border:1px solid #8acb8a; margin-bottom:15px;">
-                <?= $role ?> (<?= $user_id ?>) added successfully!
-            </div>
-        <?php endif; ?>
-
-        <?php if (get('msg') == 'updated'): ?>
-            <div class="flash-msg" style="padding:10px; background:#d4f8d4; border:1px solid #8acb8a; margin-bottom:15px;">
-                <?= $role ?> (<?= $user_id ?>) updated successfully!
-            </div>
-        <?php endif; ?>
-
-        <?php if (get('msg') == 'deleted'): ?>
-            <div class="flash-msg" style="padding:10px; background:#d4f8d4; border:1px solid #8acb8a; margin-bottom:15px;">
-                <?= $role ?> (<?= $user_id ?>) blocked successfully!
-            </div>
-        <?php endif; ?>
-
-        <?php if (get('msg') == 'restored'): ?>
-            <div class="flash-msg" style="padding:10px; background:#d4f8d4; border:1px solid #8acb8a; margin-bottom:15px;">
-                <?= $role ?> (<?= $user_id ?>) unblocked successfully!
-            </div>
-        <?php endif; ?>
-
-
         <div class="header-actions small" style="margin-top:10px;">
             <form method="GET" style="display:flex; gap:10px; align-items:center;">
 
-                <!-- Preserve role -->
+                <!-- Preserve role so admin and member can use same folder -->
                 <input type="hidden" name="role" value="<?= $role ?>">
 
-                <!-- Search (ENTER to submit) -->
+                <!-- Search -->
                 <input type="text"
                     name="search"
                     value="<?= htmlspecialchars($search) ?>"
@@ -202,31 +200,56 @@ $query_string = implode('&', $query_params);
     <div class="table-container">
         <table class="table table-small">
             <tr>
-                <th>Actions</th>
                 <?= table_headers($fields, $sort, $dir, "role=$role&page=$page") ?>
+                <th>Actions</th>
             </tr>
 
             <?php foreach ($member as $u): ?>
 
                 <?php
                 // First image
-                $imgArr = explode(",", $u->photo);
-                $firstImage = trim($imgArr[0]);
+                $firstImage = trim($u->photo);
                 $imgPath = "/images/users/$firstImage";
                 ?>
 
                 <tr>
+                    
+                    <td><?= $u->user_id ?></td>
+                    <!-- Show user name and profile photo (click the photo can enlarge it) -->
+                    <td class="name-container">
+                        <img src="/images/users/<?= htmlspecialchars($firstImage) ?>" alt="<?= htmlspecialchars($u->photo) ?>"
+                            class="member-avatar clickable-photo" onclick="openPhotoModal(this.src)">
+                        <?= $u->name ?>
+                    </td>
+                    <td style="max-width: 150px;"><?= $u->email ?></td>
+                    <td><?= $u->gender ?></td>
+                    <td>0<?= $u->phone ?></td>
+                    <td><?= $u->date_of_birth ?></td>
+                    <td><?= $u->registration_date ?></td>
+                    <!-- Badge to show user status -->
+                    <td>
+                        <span class="status-badge status-<?= strtolower($u->status) ?>">
+                            <?php
+                            $statusLabels = [
+                                'Active' => 'Active',
+                                'Pending' => 'Pending',
+                                'Blocked' => 'Blocked'
+                            ];
+                            echo $statusLabels[$u->status] ?? $u->status;
+                            ?>
+                        </span>
+                    </td>
                     <td class="actions-row">
                         <div class="action-buttons">
                             <!-- Modify user button -->
                             <a href="modify_user.php?user_id=<?= $u->user_id ?>" class="btn-default edit-btn">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <!-- Display button based on status (Active: delete ; Inactive: restore) -->
+                            <!-- Display button based on status (Active: block button ; Blocked: unblocked button) -->
                             <?php if ($u->status == "Active"): ?>
                                 <form method="post" action="delete_user.php" style="display:inline">
                                     <input type="hidden" name="user_id" value="<?= $u->user_id ?>">
-                                    <input type="hidden" name="action" value="delete">
+                                    <input type="hidden" name="action" value="block">
                                     <input type="hidden" name="role" value="<?= $role ?>">
                                     <button type="submit"
                                         onclick="return confirm('Are you sure you want to block <?= $role ?> (<?= $u->user_id ?>) ?');"
@@ -238,7 +261,7 @@ $query_string = implode('&', $query_params);
                                 <form method="post" action="delete_user.php" style="display:inline">
                                     <input type="hidden" name="user_id" value="<?= $u->user_id ?>">
                                     <input type="hidden" name="role" value="<?= $role ?>">
-                                    <input type="hidden" name="action" value="restore">
+                                    <input type="hidden" name="action" value="unblock">
 
                                     <button type="submit"
                                         onclick="return confirm('Are you sure you want to unblock <?= $role ?> (<?= $u->user_id ?>) ?');"
@@ -248,24 +271,6 @@ $query_string = implode('&', $query_params);
                                 </form>
                             <?php endif ?>
                         </div>
-                    </td>
-                    <td><?= $u->user_id ?></td>
-                    <!-- Show user name and profile photo (click the photo can enlarge it) -->
-                    <td class="name-container">
-                        <img src="../../images/users/<?= $firstImage ?>" alt="<?= htmlspecialchars($u->name) ?>"
-                            class="member-avatar clickable-photo" onclick="openPhotoModal(this.src)">
-                        <?= $u->name ?>
-                    </td>
-                    <td style="max-width: 150px;"><?= $u->email ?></td>
-                    <td><?= $u->gender ?></td>
-                    <td><?= $u->phone ?></td>
-                    <td><?= $u->date_of_birth ?></td>
-                    <td><?= $u->registration_date ?></td>
-                    <!-- Badge to show user status -->
-                    <td>
-                        <span class="status-badge status-<?= strtolower($u->status) ?>">
-                            <?= $u->status ?>
-                        </span>
                     </td>
                 </tr>
             <?php endforeach ?>
@@ -289,7 +294,14 @@ $query_string = implode('&', $query_params);
         </div>
     <?php endif; ?>
 </div>
-
+<script>
+    // Show notification on page load if there's a message
+    document.addEventListener('DOMContentLoaded', function() {
+        <?php if ($notification_message): ?>
+            showNotification('<?= addslashes($notification_message) ?>', '<?= $notification_type ?>');
+        <?php endif; ?>
+    });
+</script>
 </body>
 
 </html>

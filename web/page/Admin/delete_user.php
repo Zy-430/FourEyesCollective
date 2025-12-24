@@ -18,8 +18,8 @@ if (!$target) {
     exit;
 }
 
-// Prevent delete last admin
-if ($target->role === 'Admin' && $action === 'delete') {
+// Prevent block last admin
+if ($target->role === 'Admin' && $action === 'block') {
     $count = $_db->query("SELECT COUNT(*) FROM users WHERE role='Admin' AND status='Active'")->fetchColumn();
     if ($count <= 1) {
         header("Location: view_user.php?error=last_admin");
@@ -28,12 +28,12 @@ if ($target->role === 'Admin' && $action === 'delete') {
 }
 
 // User status
-if ($action === 'delete') {
-    $status = 'Inactive';
-    $msg = 'deleted';
+if ($action === 'block') {
+    $status = 'Blocked';
+    $msg = 'blocked';
 } else {
     $status = 'Active';
-    $msg = 'restored';
+    $msg = 'unblocked';
 }
 
 // Update

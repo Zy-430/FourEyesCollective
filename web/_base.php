@@ -273,6 +273,11 @@ for ($i = $current_year; $i >= $current_year - 100; $i--) {
     $_years[$i] = $i;
 }
 
+$_user_statuses = [
+    'Pending' => 'Pending Verification',
+    'Active' => 'Active',
+    'Blocked' => 'Blocked'
+];
 
 // ============================================================================
 // Security
@@ -284,8 +289,13 @@ $_user = $_SESSION['user'] ?? null;
 // Login user
 function login($user, $url = '/')
 {
-    $_SESSION['user'] = $user;
-    redirect($url);
+    if ($user->force_password_change == 1) {
+        $_SESSION['temp_user'] = $user;
+        redirect('/page/force_password_change.php');
+    } else {
+        $_SESSION['user'] = $user;
+        redirect($url);
+    }
 }
 
 // Logout user

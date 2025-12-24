@@ -28,8 +28,11 @@ function generateDefaultPassword($length = 8)
 
 $password = generateDefaultPassword();
 
-// All status is inactive (wait for email verification)
-$status = 'Inactive';
+// Member status is pending (wait for email verification)
+// Admin status is active immediately
+$status = ($role === 'Admin') ? 'Active' : 'Pending';
+// Force password change on first login
+$force_password_change = 1;
 $registration_date = date('Y-m-d');
 
 
@@ -70,7 +73,7 @@ if (is_post()) {
     }
 
     // Validate photo (optional : user can upload / use default image)
-    $photo_filename = 'default_user.png'; // Default filename
+    $photo_filename = 'user_default.jpg'; // Default filename
 
     if ($photo && $photo['error'] == 0 && $photo['size'] > 0) {
         // Only validate if a photo was uploaded
@@ -102,10 +105,18 @@ if (is_post()) {
         //Age restriction (member must be at least 12 years old)
         $current_year = date('Y');
         $age = $current_year - $year;
-        if ($age < 12) {
-            $_err['date_of_birth'] = 'You must be at least 12 years old';
-        } else if ($age > 100) {
-            $_err['date_of_birth'] = 'Please enter a valid date of birth';
+        if ($role === 'Member') {
+            if ($age < 12) {
+                $_err['date_of_birth'] = 'You must be at least 12 years old';
+            } else if ($age > 100) {
+                $_err['date_of_birth'] = 'Please enter a valid date of birth';
+            }
+        } else {
+            if ($age < 18) {
+                $_err['date_of_birth'] = 'You must be at least 18 years old';
+            } else if ($age > 100) {
+                $_err['date_of_birth'] = 'Please enter a valid date of birth';
+            }
         }
     }
 
@@ -124,8 +135,22 @@ if (is_post()) {
             }
 
             $ext = strtolower(pathinfo($photo['name'], PATHINFO_EXTENSION));
-            $photo_filename = 'user_' . $user_id . '.' . $ext;
-            $file_path = $upload_dir . $photo_filename;
+            $ext = in_array($ext, ['jpg', 'jpeg', 'png', 'gif']) ? $ext : 'jpg';
+
+            // Create a sanitized username for filename
+            $sanitized_name = preg_replace('/[^a-zA-Z0-9]/', '', strtolower($name));
+            if (empty($sanitized_name)) {
+                $sanitized_name = 'user';
+            }
+
+            // Check if filename already exists , then find next available number
+            $counter = 1;
+            do {
+                // Filename format - steven15_01.jpg, steven15_02.jpg...
+                $photo_filename = $sanitized_name . sprintf('_%02d', $counter) . '.' . $ext;
+                $file_path = $upload_dir . $photo_filename;
+                $counter++;
+            } while (file_exists($file_path) && $counter <= 99);
 
             if (move_uploaded_file($photo['tmp_name'], $file_path)) {
                 // Photo uploaded successfully
@@ -142,8 +167,8 @@ if (is_post()) {
         $_db->beginTransaction();
 
         $stm = $_db->prepare('
-        INSERT INTO users (user_id, role, email, password, name, gender, phone, date_of_birth, photo, registration_date, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?)
+        INSERT INTO users (user_id, role, email, password, name, gender, phone, date_of_birth, photo, registration_date, status, force_password_change)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), ?, ?)
     ');
 
         $stm->execute([
@@ -156,18 +181,23 @@ if (is_post()) {
             $phone,
             $date_of_birth,
             $photo_filename,
-            $status
+            $status,
+            $force_password_change
         ]);
 
-        // Generate verification token
-        $verification_token = sha1(uniqid() . rand());
+        $verification_token = null;
 
-        // Then store verification token into db (it will expires in 24 hours)
-        $stm = $_db->prepare('
-            INSERT INTO token (token_id, expire, user_id, type)
-            VALUES(?, ADDTIME(NOW(), "24:00"), ?, "verification")
-        ');
-        $stm->execute([$verification_token, $user_id]);
+
+        // If is member then create verification token and store into db (it will expires in 24 hours)
+        if ($role === 'Member') {
+            $verification_token = sha1(uniqid() . rand());
+
+            $stm = $_db->prepare('
+        INSERT INTO token (token_id, expire, user_id, type)
+        VALUES(?, ADDTIME(NOW(), "24:00"), ?, "verification")
+    ');
+            $stm->execute([$verification_token, $user_id]);
+        }
 
         $_db->commit();
 
@@ -211,7 +241,7 @@ if (is_post()) {
                                 <p>Please activate your account and set your own password using the link below:</p>
                     
                                 <p style='text-align: center;'>
-                                        <a href='$verification_url' class='button'>Verify Account</a>
+                                        <a href='$verification_url' class='button' style='color:white;'>Verify Account</a>
                                 </p>
                     
                                 <p>You may also use the link below:</p>
@@ -232,7 +262,7 @@ if (is_post()) {
                 </html>
                 ";
         } elseif ($role === 'Admin') {
-            $m->Subject = 'Admin Account Activation - Four Eyes Collective';
+            $m->Subject = 'Admin Account - Four Eyes Collective';
 
             $m->Body = "
                 <!DOCTYPE html>
@@ -245,38 +275,38 @@ if (is_post()) {
                         .content { background:#f9f9f9; padding:30px; }
                         .button { background:#0d1a3f; color:#ddd; padding:12px 24px; text-decoration:none; border-radius:6px; }
                         .warning { color:red; font-style:italic; }
+                        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #777; font-size: 12px; }
                     </style>
                     </head>
                     <body>
                         <div class='container'>
                             <div class='header'>
                                 <h2>Four Eyes Collective</h2>
-                                <h3>Admin Account Activation</h3>
+                                <h3>Admin Account</h3>
                             </div>
 
                         <div class='content'>
                             <p>Hello <strong>" . htmlspecialchars($name) . "</strong>,</p>
-                            <p>An <strong>administrator account</strong> has been created for you by an existing system administrator.</p>
-                            <p>Here is your temporary login credentials:</p>
-                            <ul>
-                                <li><strong>Email   :</strong> $email</li>
-                                <li><strong>Password:</strong> $password</li>
-                            </ul>
-                            <p>Please activate your account and set your own password using the link below:</p>
+                            <p>An administrator account has been created for you.</p>
 
-                            <p style='text-align:center'>
-                                <a href='$verification_url' class='button'>Activate Admin Account</a>
-                            </p>
+                            <p>Here is your login credentials:</p>
+                                    <ul>
+                                        <li><strong>Email   :</strong> $email</li>
+                                        <li><strong>Password:</strong> $password</li>
+                                    </ul>                            
+                                    
+                             <p>Your account is already <strong>active</strong>.</p>
 
-                            <p>You may also use the link below:</p>
-                            <p><code>$verification_url</code></p>
-
-                            <div class='warning'>
-                                <p>* This link will expire in 24 hours. If you didn't create an account with us, please ignore it.</p>
-                            </div>
+                            <p>Please login and change your password immediately:</p>
+                            <p style='text-align: center;'>
+                                        <a href='" . base("page/login.php") . "' class='button' style='color:white;'>Login Now</a>
+                                </p>
 
                             <p>Best regards,<br>
                             <strong>Four Eyes Collective System Administration</strong></p>
+                            <div class='footer'>
+                                <p>&copy; " . date('Y') . " Four Eyes Collective. All rights reserved.</p>
+                            </div>
                         </div>
                     </div>
                 </body>

@@ -2,43 +2,63 @@
 require '../_base.php';
 require '../lib/db.php';
 
-
-
-// Fetch category folder mapping dynamically
-$stm_cat = $_db->query("SELECT category_id, folder FROM category");
-$categories = $stm_cat->fetchAll(PDO::FETCH_KEY_PAIR);
-
 $_title = "About Us";
 include '../_head.php';
 ?>
 
-<div style="max-width: 800px; margin: 0 auto;">
-    <h2>Our Story</h2>
-    <p style="line-height: 1.8; margin-bottom: 30px; color: #555;">
-        Four Eyes Collective was born from a simple idea: eyewear should be more than just a vision correction tool. 
-        It should be an expression of personality, a statement of style, and a testament to quality craftsmanship.
-    </p>
-    
-    <h3>Our Mission</h3>
-    <p style="line-height: 1.8; margin-bottom: 30px; color: #555;">
-        We're committed to providing exceptional eyewear that combines timeless design with modern innovation. 
-        Each pair in our collection is carefully curated to ensure it meets our high standards of quality, comfort, and style.
-    </p>
-    
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px; margin: 40px 0;">
-        <div style="text-align: center;">
-            <h4 style="color: #2c3e50;">Quality</h4>
-            <p>Premium materials and expert craftsmanship</p>
+<!-- Hero Section -->
+<section class="about-hero">
+    <h1>About Four Eyes Collective</h1>
+    <p class="tagline">Where Vision Meets Style, and Craftsmanship Creates Legacy</p>
+</section>
+
+<!-- Story Section -->
+<div class="about-content">
+    <section class="about-story-section">
+        <div class="story-text">
+            <h2>Our Visionary Journey</h2>
+            <p>Four Eyes Collective was born from a simple yet powerful idea: eyewear should transcend mere vision correction. It should be an extension of personality, a statement of style, and a testament to impeccable craftsmanship.</p>
+            <p>Founded in 2020, our journey began with a passion for helping people see the world clearly while expressing their unique identities. We believe that the right pair of glasses can transform not just how you see the world, but how the world sees you.</p>
+            <p>Today, we stand as a collective of designers, opticians, and style enthusiasts dedicated to redefining eyewear culture.</p>
         </div>
-        <div style="text-align: center;">
-            <h4 style="color: #2c3e50;">Style</h4>
-            <p>Curated designs for every personality</p>
+        <div class="story-image">
+            <img src="/images/about-story.png" alt="Our Story - Crafting Eyewear">
         </div>
-        <div style="text-align: center;">
-            <h4 style="color: #2c3e50;">Service</h4>
-            <p>Expert guidance and support</p>
+    </section>
+
+    <!-- Core Values -->
+    <section class="values-grid">
+        <div class="value-card">
+            <div class="value-icon">👑</div>
+            <h4>Uncompromising Quality</h4>
+            <p>Every frame is crafted using premium acetate, titanium, and stainless steel, ensuring durability and comfort that lasts.</p>
         </div>
-    </div>
+        
+        <div class="value-card">
+            <div class="value-icon">🎨</div>
+            <h4>Timeless Design</h4>
+            <p>Our designs blend classic elegance with contemporary aesthetics, creating pieces that remain stylish for years to come.</p>
+        </div>
+        
+        <div class="value-card">
+            <div class="value-icon">❤️</div>
+            <h4>Personalized Service</h4>
+            <p>From virtual try-ons to expert fittings, we provide personalized guidance to find your perfect match.</p>
+        </div>
+    </section>
+
+    <!-- Mission Section -->
+    <section class="about-story-section">
+        <div class="story-image">
+            <img src="/images/about-mission.png" alt="Our Mission - Quality Eyewear">
+        </div>
+        <div class="story-text">
+            <h2>Our Commitment</h2>
+            <p>We're on a mission to revolutionize the eyewear experience. Our commitment extends beyond providing exceptional eyewear to creating lasting relationships with our community.</p>
+            <p>We carefully curate each collection, ensuring every pair meets our rigorous standards of optical precision, comfort, and style. From prescription glasses to designer sunglasses, every product tells a story of meticulous craftsmanship.</p>
+            <p>Through sustainable practices and community engagement, we aim to not just be an eyewear brand, but a movement toward clearer vision and confident style.</p>
+        </div>
+    </section>
 </div>
 
 <?php

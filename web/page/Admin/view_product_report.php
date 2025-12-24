@@ -22,7 +22,7 @@ $_title = 'Product Sales Report';
 
     <!-- CHART CONTAINER -->
     <div style="background:white; padding:20px; border-radius:8px; border:1px solid #ddd;">
-        <canvas id="salesChart" height="120"></canvas>
+        <canvas id="salesChart" height="480"></canvas>
     </div>
 
     <!-- jQuery -->

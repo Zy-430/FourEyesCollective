@@ -89,8 +89,13 @@ if (is_post()) {
 }
 
 $_title = "Edit Profile | Four Eyes Collective";
-$_css = ['profile.css'];
-include '../_head.php';
+// Determine which header/footer and CSS to use based on role
+if ($_user->role === 'Admin') {
+    include '../_admin_head.php'; // Admin header
+} else {
+    $_css = ['profile.css'];
+    include '../_head.php'; // Member header
+}
 ?>
 
 <section class="profile-section">
@@ -139,16 +144,15 @@ include '../_head.php';
             </div>
 
             <div class="form-actions">
-                <button class="cta-button primary" type="submit">Save Changes</button>
+                <button class="cta-button primary" type="submit">Save</button>
                 <a href="profile_page.php" class="cta-button secondary">Cancel</a>
             </div>
         </form>
     </div>
 </section>
 
-<?php include '../_foot.php'; ?>
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="../js/notifications.js"></script>
+<script src="/js/notifications.js"></script>
 
 <script>
     $(function() {
@@ -162,3 +166,13 @@ include '../_head.php';
         <?php endif; ?>
     });
 </script>
+
+<?php
+// Conditionally include footer based on role
+if ($_user->role === 'Admin') {
+    // Admin pages don't have a footer file, just close the HTML
+    echo '</body></html>';
+} else {
+    include '../_foot.php'; // Member footer
+}
+?>

@@ -432,7 +432,7 @@
 
 /* Orders page layout */
 .orders-page {
-    max-width: 1000px;
+    max-width: 1400px;
     margin: 50px auto;
     padding: 0 12px;
 }
@@ -717,4 +717,9 @@
 .sort-form {
     min-width: 200px;
     height: 44px;
+}
+
+.floating-back-arrow:hover {
+    background-color: #ffffff;
+    transform: translateX(-3px);
 }

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 22, 2025 at 01:25 PM
+-- Generation Time: Dec 23, 2025 at 05:51 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -496,44 +496,45 @@ CREATE TABLE `users` (
   `email` varchar(100) NOT NULL,
   `password` varchar(255) NOT NULL,
   `name` varchar(100) NOT NULL,
-  `gender` char(1) NOT NULL,
+  `gender` ENUM('M','F','N') NOT NULL,
   `phone` varchar(10) NOT NULL,
   `date_of_birth` date NOT NULL,
   `photo` varchar(255) NOT NULL,
   `registration_date` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `status` enum('Active','Blocked','Pending') NOT NULL DEFAULT 'Pending',
   `failed_attempts` int(11) DEFAULT 0,
-  `lock_until` datetime DEFAULT NULL
+  `lock_until` datetime DEFAULT NULL,
+  `force_password_change` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`user_id`, `role`, `email`, `password`, `name`, `gender`, `phone`, `date_of_birth`, `photo`, `registration_date`, `status`, `failed_attempts`, `lock_until`) VALUES
-('AD0001', 'Admin', 'admin1@gmail.com', '$2y$10$ELrFywiho7PikrA55mZxAOWcV/A4yMfjDqim3wjrqbIfGro1HMz3C', 'Admin Yeap', 'F', '198765432', '1985-05-05', 'admin1.jpg', '2025-12-17 11:17:02', 'Active', 0, NULL),
-('AD0002', 'Admin', 'admin2@gmail.com', '$2y$10$JQ8eSFp4flLCP4kM6egYhuFdJ55Xg45RJTEmNTzPs3Gry6dENF9L.', 'Admin Lim', 'M', '198765432', '1980-12-12', 'admin2.jpg', '2025-12-22 12:04:10', 'Blocked', 0, NULL),
-('AD0003', 'Admin', 'admin3@gmail.com', '$2y$10$kuljHiW5kES93KmX0.YdCe5hezj1ydd29dmkuGYE6bdoB4c6joCva', 'Admin Quak', 'F', '198765432', '1979-07-07', 'admin3.jpg', '2025-12-17 11:07:07', 'Active', 0, NULL),
-('AD0004', 'Admin', 'admin4@gmail.com', '$2y$10$DsPwx0n5VTBw3MydW8EUNu06OqFMS/5HE76EzWGZnFzGs4DY9CIAG', 'Admin Ng', 'M', '198765432', '1982-09-09', 'admin4.jpg', '2025-12-17 11:07:46', 'Active', 0, NULL),
-('AD0005', 'Admin', 'admin5@gmail.com', '$2y$10$tHo3dkcP.TI.To1YrnEOX.lAA2TcIcKI1xuY51b0vAZSsA3yVw7AS', 'Admin Low', 'F', '198765435', '1986-03-03', 'admin5.jpg', '2025-12-17 11:08:05', 'Active', 0, NULL),
-('ME0001', 'Member', 'john.doe@gmail.com', '$2y$10$DHc0qbmlmTxdFxFq1m1l5..B5L/fC30CNb96RTTrlExmdJRK1Ts7u', 'John Doe', 'M', '123456780', '1990-05-12', 'john1.jpg', '2025-12-22 12:25:09', 'Active', 0, NULL),
-('ME0002', 'Member', 'mary.lee@gmail.com', '$2y$10$4qizTXT0p9RwOhbVWzwoNuhc0S0dizE9cIjX7S8SivM4LOL3Lfzli', 'Mary Lee', 'F', '123456780', '1992-08-23', 'mary2.jpg', '2025-12-22 12:25:11', 'Blocked', 0, NULL),
-('ME0003', 'Member', 'bob.tan@gmail.com', '$2y$10$IkSukzHMSH.04P4nHpi1ke12t30/keczTJue4hVaO97PFxT/9GMi6', 'Bob Tan', 'M', '123456780', '1988-01-05', 'bob3.jpg', '2025-12-17 11:08:51', 'Active', 0, NULL),
-('ME0004', 'Member', 'alice.wong@gmail.com', '$2y$10$ht4ZnUrSq/IPpNYAwvYYN.iictp6xNZpuMJax35M2OP6yWDdwdsGu', 'Alice Wong', 'F', '123456780', '1995-02-14', 'alice4.jpg', '2025-12-17 11:09:04', 'Active', 0, NULL),
-('ME0005', 'Member', 'david.chan@gmail.com', '$2y$10$V/2kOvUVO9/OPhP6HY2JCOVc7RJd/ydpbx2VxjWT5jHJJVc.FI17u', 'David Chan', 'M', '123456780', '1991-07-30', 'david5.jpg', '2025-12-22 12:22:26', 'Blocked', 0, NULL),
-('ME0006', 'Member', 'susan.koh@gmail.com', '$2y$10$5FMYny7uUaj0KcXwwhz1neAGXBoK1tq4dlRsfLaiTGe9JRVmDZ67i', 'Susan Koh', 'F', '123456780', '1993-09-12', 'susan6.jpg', '2025-12-22 12:21:00', 'Active', 0, NULL),
-('ME0007', 'Member', 'kevin.lim@gmail.com', '$2y$10$e1dNXWUoNStuNqMhx/.lR.XS.ztiZFk4AirMdisMMqA2WmDkVa5jG', 'Kevin Lim', 'M', '123456780', '1989-12-01', 'kevin7.jpg', '2025-12-17 11:09:41', 'Active', 0, NULL),
-('ME0008', 'Member', 'kelly.ng@gmail.com', '$2y$10$QrA.LOaF7sQNWS1sJWvGC.peGNizobOC1QbkS0hP24nPtk9dNB5Na', 'Kelly Ng', 'F', '123456780', '1994-03-22', 'kelly8.jpg', '2025-12-17 11:09:56', 'Active', 0, NULL),
-('ME0009', 'Member', 'eric.tan@gmail.com', '$2y$10$S/9tRqisc4.r6DGNYyDyIuT941pzm4TeBJUIsphg708jm0aYj2am.', 'Eric Tan', 'M', '123456789', '1990-06-18', 'eric9.jpg', '2025-12-17 11:10:07', 'Active', 0, NULL),
-('ME0010', 'Member', 'amy.lim@gmail.com', '$2y$10$9mprAg3Rc4O1A3H3LhhxFuNs.lQY8Mi6j5IA990ji76LBrcbgvdTm', 'Amy Lim', 'F', '123456781', '1992-11-05', 'amy10.jpg', '2025-12-17 11:10:18', 'Active', 0, NULL),
-('ME0011', 'Member', 'ronald.lee@gmail.com', '$2y$10$K6uyxwayzJoYJvzmcZeHv.RTFasamtxpAgtBB/rbBPSRE9gY0S.FW', 'Ronald Lee', 'M', '123456781', '1987-04-09', 'ronald11.jpg', '2025-12-17 11:10:31', 'Active', 0, NULL),
-('ME0012', 'Member', 'julia.tan@gmail.com', '$2y$10$eqyNA.28q5j2.bRGuK31ReSrX6cq6Vv55F9sNArzObi8.M0e3Bjau', 'Julia Wong', 'F', '111111222', '1993-08-12', 'julia12.jpg', '2025-12-17 11:10:43', 'Active', 0, NULL),
-('ME0013', 'Member', 'brian.choo@gmail.com', '$2y$10$fSSy3Z6T.TBmAMLPV9aK8esDBm1KBq1EvUgDiapIMwoNLcdBGcj0u', 'Brian Choo', 'M', '123456783', '1991-10-20', 'brian13.jpg', '2025-12-17 11:10:55', 'Active', 0, NULL),
-('ME0014', 'Member', 'rachel.koh@gmail.com', '$2y$10$NCgY4Ok1mqyuqB6n4XXct.LFCaXrQs8ed9W4S8E9/oKSHgpnxN0Q6', 'Rachel Koh', 'F', '123456781', '1994-01-25', 'rachel14.jpg', '2025-12-17 11:11:07', 'Active', 0, NULL),
-('ME0015', 'Member', 'steven.lim@gmail.com', '$2y$10$U2gk2.ZM.JU8icu/uYlwXOJUZ43w98XNnupyviOgIyEvBZLD80BkS', 'Steven Lim', 'M', '123456781', '1989-07-11', 'steven15.jpg', '2025-12-22 12:04:10', 'Blocked', 0, NULL),
-('ME0018', 'Member', 'AliciaJia@gmail.com', '$2y$10$PpLEex7qH9hz8FLd5Xhh/.QptZULkNikWZ9HopxcLVcAVbnTVldui', 'Alicia Jia', 'F', '192233333', '1996-10-17', '6933812f9e2d9.jpg', '2025-12-17 11:14:41', 'Active', 0, NULL),
-('ME0019', 'Member', 'QianEn12@gmail.com', '$2y$10$.a0OIWQf1nH8Ft955r8jKet4YKL2V.6UI3kr.OPWg7lL174r2mtNG', 'Qian En', 'F', '11909922', '2001-07-17', '69338c8b37cfe.jpg', '2025-12-17 11:16:04', 'Active', 0, NULL),
-('ME0020', 'Member', 'NicoleLee@gmail.com', '$2y$10$h77gVnsUYGvCzZ9yglS3aewhHQC5yDslofgozBh9BAIkWu6h7r3qm', 'Nicole Lee', 'F', '19877534', '1999-12-17', '69339e0d34e5d.jpg', '2025-12-17 17:42:35', 'Active', 0, NULL);
+INSERT INTO `users` (`user_id`, `role`, `email`, `password`, `name`, `gender`, `phone`, `date_of_birth`, `photo`, `registration_date`, `status`, `failed_attempts`, `lock_until`, `force_password_change`) VALUES
+('AD0001', 'Admin', 'admin1@gmail.com', '$2y$10$ELrFywiho7PikrA55mZxAOWcV/A4yMfjDqim3wjrqbIfGro1HMz3C', 'Admin Yeap', 'F', '198765432', '1985-05-05', 'admin1.jpg', '2025-12-17 11:17:02', 'Active', 0, NULL, 0),
+('AD0002', 'Admin', 'admin2@gmail.com', '$2y$10$JQ8eSFp4flLCP4kM6egYhuFdJ55Xg45RJTEmNTzPs3Gry6dENF9L.', 'Admin Lim', 'M', '198765432', '1980-12-12', 'admin2.jpg', '2025-12-22 12:04:10', 'Blocked', 0, NULL, 0),
+('AD0003', 'Admin', 'admin3@gmail.com', '$2y$10$kuljHiW5kES93KmX0.YdCe5hezj1ydd29dmkuGYE6bdoB4c6joCva', 'Admin Quak', 'F', '198765432', '1979-07-07', 'admin3.jpg', '2025-12-17 11:07:07', 'Active', 0, NULL, 0),
+('AD0004', 'Admin', 'admin4@gmail.com', '$2y$10$DsPwx0n5VTBw3MydW8EUNu06OqFMS/5HE76EzWGZnFzGs4DY9CIAG', 'Admin Ng', 'M', '198765432', '1982-09-09', 'admin4.jpg', '2025-12-17 11:07:46', 'Active', 0, NULL, 0),
+('AD0005', 'Admin', 'admin5@gmail.com', '$2y$10$tHo3dkcP.TI.To1YrnEOX.lAA2TcIcKI1xuY51b0vAZSsA3yVw7AS', 'Admin Low', 'F', '198765435', '1986-03-03', 'admin5.jpg', '2025-12-17 11:08:05', 'Active', 0, NULL, 0),
+('ME0001', 'Member', 'john.doe@gmail.com', '$2y$10$DHc0qbmlmTxdFxFq1m1l5..B5L/fC30CNb96RTTrlExmdJRK1Ts7u', 'John Doe', 'M', '123456780', '1990-05-12', 'john1.jpg', '2025-12-22 12:25:09', 'Active', 0, NULL, 0),
+('ME0002', 'Member', 'mary.lee@gmail.com', '$2y$10$4qizTXT0p9RwOhbVWzwoNuhc0S0dizE9cIjX7S8SivM4LOL3Lfzli', 'Mary Lee', 'F', '123456780', '1992-08-23', 'mary2.jpg', '2025-12-22 12:25:11', 'Blocked', 0, NULL, 0),
+('ME0003', 'Member', 'bob.tan@gmail.com', '$2y$10$IkSukzHMSH.04P4nHpi1ke12t30/keczTJue4hVaO97PFxT/9GMi6', 'Bob Tan', 'M', '123456780', '1988-01-05', 'bob3.jpg', '2025-12-17 11:08:51', 'Active', 0, NULL, 0),
+('ME0004', 'Member', 'alice.wong@gmail.com', '$2y$10$ht4ZnUrSq/IPpNYAwvYYN.iictp6xNZpuMJax35M2OP6yWDdwdsGu', 'Alice Wong', 'F', '123456780', '1995-02-14', 'alice4.jpg', '2025-12-17 11:09:04', 'Active', 0, NULL, 0),
+('ME0005', 'Member', 'david.chan@gmail.com', '$2y$10$V/2kOvUVO9/OPhP6HY2JCOVc7RJd/ydpbx2VxjWT5jHJJVc.FI17u', 'David Chan', 'M', '123456780', '1991-07-30', 'david5.jpg', '2025-12-22 12:22:26', 'Blocked', 0, NULL, 0),
+('ME0006', 'Member', 'susan.koh@gmail.com', '$2y$10$5FMYny7uUaj0KcXwwhz1neAGXBoK1tq4dlRsfLaiTGe9JRVmDZ67i', 'Susan Koh', 'F', '123456780', '1993-09-12', 'susan6.jpg', '2025-12-22 12:21:00', 'Active', 0, NULL, 0),
+('ME0007', 'Member', 'kevin.lim@gmail.com', '$2y$10$e1dNXWUoNStuNqMhx/.lR.XS.ztiZFk4AirMdisMMqA2WmDkVa5jG', 'Kevin Lim', 'M', '123456780', '1989-12-01', 'kevin7.jpg', '2025-12-17 11:09:41', 'Active', 0, NULL, 0),
+('ME0008', 'Member', 'kelly.ng@gmail.com', '$2y$10$QrA.LOaF7sQNWS1sJWvGC.peGNizobOC1QbkS0hP24nPtk9dNB5Na', 'Kelly Ng', 'F', '123456780', '1994-03-22', 'kelly8.jpg', '2025-12-17 11:09:56', 'Active', 0, NULL, 0),
+('ME0009', 'Member', 'eric.tan@gmail.com', '$2y$10$S/9tRqisc4.r6DGNYyDyIuT941pzm4TeBJUIsphg708jm0aYj2am.', 'Eric Tan', 'M', '123456789', '1990-06-18', 'eric9.jpg', '2025-12-17 11:10:07', 'Active', 0, NULL, 0),
+('ME0010', 'Member', 'amy.lim@gmail.com', '$2y$10$9mprAg3Rc4O1A3H3LhhxFuNs.lQY8Mi6j5IA990ji76LBrcbgvdTm', 'Amy Lim', 'F', '123456781', '1992-11-05', 'amy10.jpg', '2025-12-17 11:10:18', 'Active', 0, NULL, 0),
+('ME0011', 'Member', 'ronald.lee@gmail.com', '$2y$10$K6uyxwayzJoYJvzmcZeHv.RTFasamtxpAgtBB/rbBPSRE9gY0S.FW', 'Ronald Lee', 'M', '123456781', '1987-04-09', 'ronald11.jpg', '2025-12-17 11:10:31', 'Active', 0, NULL, 0),
+('ME0012', 'Member', 'julia.tan@gmail.com', '$2y$10$eqyNA.28q5j2.bRGuK31ReSrX6cq6Vv55F9sNArzObi8.M0e3Bjau', 'Julia Wong', 'F', '111111222', '1993-08-12', 'julia12.jpg', '2025-12-17 11:10:43', 'Active', 0, NULL, 0),
+('ME0013', 'Member', 'brian.choo@gmail.com', '$2y$10$fSSy3Z6T.TBmAMLPV9aK8esDBm1KBq1EvUgDiapIMwoNLcdBGcj0u', 'Brian Choo', 'M', '123456783', '1991-10-20', 'brian13.jpg', '2025-12-17 11:10:55', 'Active', 0, NULL, 0),
+('ME0014', 'Member', 'rachel.koh@gmail.com', '$2y$10$NCgY4Ok1mqyuqB6n4XXct.LFCaXrQs8ed9W4S8E9/oKSHgpnxN0Q6', 'Rachel Koh', 'F', '123456781', '1994-01-25', 'rachel14.jpg', '2025-12-17 11:11:07', 'Active', 0, NULL, 0),
+('ME0015', 'Member', 'steven.lim@gmail.com', '$2y$10$U2gk2.ZM.JU8icu/uYlwXOJUZ43w98XNnupyviOgIyEvBZLD80BkS', 'Steven Lim', 'M', '123456781', '1989-07-11', 'steven15.jpg', '2025-12-22 12:04:10', 'Blocked', 0, NULL, 0),
+('ME0018', 'Member', 'AliciaJia@gmail.com', '$2y$10$PpLEex7qH9hz8FLd5Xhh/.QptZULkNikWZ9HopxcLVcAVbnTVldui', 'Alicia Jia', 'F', '192233333', '1996-10-17', '6933812f9e2d9.jpg', '2025-12-17 11:14:41', 'Active', 0, NULL, 0),
+('ME0019', 'Member', 'QianEn12@gmail.com', '$2y$10$.a0OIWQf1nH8Ft955r8jKet4YKL2V.6UI3kr.OPWg7lL174r2mtNG', 'Qian En', 'F', '11909922', '2001-07-17', '69338c8b37cfe.jpg', '2025-12-17 11:16:04', 'Active', 0, NULL, 0),
+('ME0020', 'Member', 'NicoleLee@gmail.com', '$2y$10$h77gVnsUYGvCzZ9yglS3aewhHQC5yDslofgozBh9BAIkWu6h7r3qm', 'Nicole Lee', 'F', '19877534', '1999-12-17', '69339e0d34e5d.jpg', '2025-12-17 17:42:35', 'Active', 0, NULL, 0);
 
 -- --------------------------------------------------------
 

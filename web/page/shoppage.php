@@ -292,13 +292,17 @@ $filterQuery = http_build_query($currentParams);
                     $folder = $categoryFolders[$p->category_id] ?? 'others';
                     $imgArray = explode(',', $p->product_image);
                     $firstImage = trim($imgArray[0]);
-                    $imgPath = "/images/product/$folder/$firstImage";
+                    if (!$firstImage || $firstImage === "") {
+                        $imgPath = "/images/product/no-image.png";
+                    } else {
+                        $imgPath = "/images/product/$folder/$firstImage";
+                    }
 
                     // Get sold count for product
                     $soldCount = getProductSoldCount($p->product_id);
                     ?>
 
-                    <a href="product_detail.php?id=<?= $p->product_id ?>" class="product-card">
+                    <a href="product_detail.php?id=<?= $p->product_id ?>&return_url=/page/shoppage.php" class="product-card">
                         <!-- Image Container -->
                         <div class="product-image-container">
                             <img src="<?= $imgPath ?>"
@@ -484,79 +488,4 @@ $filterQuery = http_build_query($currentParams);
         });
     });
 </script>
-<style>
-/* Additional styles for better product display */
-h1 {
-    color: #2c3e50;
-    font-size: 32px;
-    font-weight: 700;
-    margin-bottom: 30px;
-    text-align: center;
-}
-
-/* Sort and filter header */
-.sorting-header {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 30px;
-}
-
-/* Pagination styles */
-.pagination {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 15px;
-    margin-top: 40px;
-}
-
-.pagination a, .pagination span {
-    padding: 8px 15px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.pagination a {
-    background: #2c3e50;
-    color: white;
-    transition: background 0.3s ease;
-}
-
-.pagination a:hover {
-    background: #1a252f;
-}
-
-.pagination span.current {
-    background: #3498db;
-    color: white;
-}
-
-/* Page numbers */
-.page-numbers {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 20px;
-}
-
-/* No products message */
-.no-products {
-    text-align: center;
-    padding: 60px 20px;
-    background: #f8f9fa;
-    border-radius: 8px;
-}
-
-.no-products p {
-    font-size: 18px;
-    color: #666;
-    margin-bottom: 20px;
-}
-</style>
-
-<script src="/js/notifications.js"></script>
-<script src="/js/wishlist.js"></script>
 <?php include '../_foot.php'; ?>

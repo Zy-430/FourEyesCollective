@@ -15,11 +15,9 @@ if (!$id) {
 if ($action === 'delete') {
     $product_status = 0; // Inactive
     $msg = 'deleted';
-    $confirm_msg = "Are you sure you want to delete this product?";
 } elseif ($action === 'restore') {
     $product_status = 1; // Active  
     $msg = 'restored';
-    $confirm_msg = "Are you sure you want to restore this product?";
 } else {
     die("Invalid action.");
 }

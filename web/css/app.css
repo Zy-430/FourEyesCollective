@@ -42,7 +42,7 @@ header nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
@@ -87,6 +87,15 @@ header nav {
 
 #medium-sidebar a:hover {
     color: #2c3e50;
+}
+
+#medium-sidebar a.active {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+#medium-sidebar a.active::after {
+    width: 100%;
 }
 
 #medium-sidebar a::after {
