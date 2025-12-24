@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 23, 2025 at 05:51 PM
+-- Generation Time: Dec 24, 2025 at 05:50 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -346,6 +346,8 @@ CREATE TABLE `payment` (
   `card_funding` varchar(10) DEFAULT NULL,
   `last4` varchar(4) DEFAULT NULL,
   `bank_name` varchar(30) DEFAULT NULL,
+  `refund_id` varchar(255) DEFAULT NULL,
+  `refund_date` timestamp NULL DEFAULT NULL,
   `status` varchar(50) NOT NULL,
   `failed_reason` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -354,30 +356,30 @@ CREATE TABLE `payment` (
 -- Dumping data for table `payment`
 --
 
-INSERT INTO `payment` (`payment_id`, `order_id`, `amount`, `transaction_date`, `stripe_session_id`, `stripe_payment_intent`, `stripe_payment_method`, `payment_method_type`, `card_brand`, `card_funding`, `last4`, `bank_name`, `status`, `failed_reason`) VALUES
-('PAY0001', 'OR0001', 630, '2025-11-01 02:02:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0002', 'OR0002', 420, '2025-11-02 03:02:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0003', 'OR0004', 1050, '2025-11-04 05:02:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0004', 'OR0006', 420, '2025-11-06 07:05:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0005', 'OR0007', 420, '2025-11-07 08:02:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0006', 'OR0008', 735, '2025-11-08 09:03:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0007', 'OR0010', 420, '2025-11-10 11:02:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0008', 'OR0012', 700, '2025-11-12 02:32:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0009', 'OR0013', 525, '2025-11-13 03:17:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0010', 'OR0014', 420, '2025-11-14 04:47:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0011', 'OR0003', 210, '2025-11-03 04:00:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0012', 'OR0005', 420, '2025-11-05 06:00:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0013', 'OR0009', 420, '2025-11-09 10:00:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0014', 'OR0011', 210, '2025-11-11 01:00:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0015', 'OR0015', 420, '2025-11-15 05:20:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0016', 'OR0016', 700, '2025-11-05 02:00:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0017', 'OR0017', 420, '2025-11-06 03:00:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0018', 'OR0018', 420, '2025-11-07 04:00:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0019', 'OR0019', 420, '2025-11-08 05:00:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0020', 'OR0020', 630, '2025-11-09 06:00:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0021', 'OR0021', 420, '2025-11-21 09:01:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0022', 'OR0022', 315, '2025-11-22 10:31:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0023', 'OR0023', 420, '2025-11-23 14:16:00', '', '', '', '', '', '', '', '', 'succeeded', NULL);
+INSERT INTO `payment` (`payment_id`, `order_id`, `amount`, `transaction_date`, `stripe_session_id`, `stripe_payment_intent`, `stripe_payment_method`, `payment_method_type`, `card_brand`, `card_funding`, `last4`, `bank_name`, `refund_id`, `refund_date`, `status`, `failed_reason`) VALUES
+('PAY0001', 'OR0001', 630, '2025-11-01 02:02:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0002', 'OR0002', 420, '2025-11-02 03:02:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0003', 'OR0004', 1050, '2025-11-04 05:02:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0004', 'OR0006', 420, '2025-11-06 07:05:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0005', 'OR0007', 420, '2025-11-07 08:02:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0006', 'OR0008', 735, '2025-11-08 09:03:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0007', 'OR0010', 420, '2025-11-10 11:02:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0008', 'OR0012', 700, '2025-11-12 02:32:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0009', 'OR0013', 525, '2025-11-13 03:17:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0010', 'OR0014', 420, '2025-11-14 04:47:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0011', 'OR0003', 210, '2025-11-03 04:00:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0012', 'OR0005', 420, '2025-11-05 06:00:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0013', 'OR0009', 420, '2025-11-09 10:00:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0014', 'OR0011', 210, '2025-11-11 01:00:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0015', 'OR0015', 420, '2025-11-15 05:20:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0016', 'OR0016', 700, '2025-11-05 02:00:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0017', 'OR0017', 420, '2025-11-06 03:00:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0018', 'OR0018', 420, '2025-11-07 04:00:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0019', 'OR0019', 420, '2025-11-08 05:00:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0020', 'OR0020', 630, '2025-11-09 06:00:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0021', 'OR0021', 420, '2025-11-21 09:01:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0022', 'OR0022', 315, '2025-11-22 10:31:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0023', 'OR0023', 420, '2025-11-23 14:16:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL);
 
 -- --------------------------------------------------------
 
@@ -496,7 +498,7 @@ CREATE TABLE `users` (
   `email` varchar(100) NOT NULL,
   `password` varchar(255) NOT NULL,
   `name` varchar(100) NOT NULL,
-  `gender` ENUM('M','F','N') NOT NULL,
+  `gender` enum('M','F','N') NOT NULL,
   `phone` varchar(10) NOT NULL,
   `date_of_birth` date NOT NULL,
   `photo` varchar(255) NOT NULL,

@@ -102,7 +102,7 @@ if (is_post()) {
                         UPDATE cart_item 
                         SET item_status = 'checkout', 
                             checkout_at = NOW(),
-                            order_item_id = NULL  -- Ensure it's NULL
+                            order_item_id = NULL 
                         WHERE cart_item_id = ? AND user_id = ? AND item_status = 'in_cart'
                     ");
                     $stm->execute([$item_id, $user_id]);
@@ -126,7 +126,7 @@ $stm = $_db->prepare("
     FROM cart_item ci
     JOIN product p ON ci.product_id = p.product_id
     LEFT JOIN category c ON p.category_id = c.category_id
-    WHERE ci.user_id = ? AND ci.item_status = 'in_cart' AND ci.order_item_id IS NULL
+    WHERE ci.user_id = ? AND (ci.item_status = 'in_cart' OR (ci.item_status = 'checkout' AND ci.order_item_id IS NULL))
     ORDER BY ci.created_at DESC
 ");
 

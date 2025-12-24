@@ -3,6 +3,9 @@ require '../../_base.php';
 require '../../lib/db.php';
 include '../../_admin_head.php';
 require_once '../../lib/SimplePager.php';
+require_once '../../stripe-php-19.0.0/init.php';
+
+\Stripe\Stripe::setApiKey('sk_test_51SZZzU2LpkFiPUtITtnxkZtzongU6II64ZL8YSynXO951EcqTfIfRbWAl586Hh8LOXYexaqDtwwaO6rxwdOQvygm006Vp82pdb');
 
 auth('Admin');
 $admin_id = $_user->user_id;
@@ -56,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 $update->execute([$new_status, $order_id]);
 
-                // Restock products if return approved
+                // Restock products and refund payment if return approved
                 if ($new_status === 'returned') {
                     $stm_items = $_db->prepare("SELECT product_id, product_qty FROM order_item WHERE order_id = ?");
                     $stm_items->execute([$order_id]);
@@ -65,6 +68,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stm_update_stock = $_db->prepare("UPDATE product SET product_stock = product_stock + ? WHERE product_id = ?");
                     foreach ($items as $item) {
                         $stm_update_stock->execute([$item['product_qty'], $item['product_id']]);
+                    }
+
+                    // Get payment details
+                    $paymentStmt = $_db->prepare("
+                        SELECT stripe_payment_intent, amount, status as payment_status
+                        FROM payment 
+                        WHERE order_id = ? AND status = 'succeeded'
+                    ");
+                    $paymentStmt->execute([$order_id]);
+                    $payment = $paymentStmt->fetch(PDO::FETCH_ASSOC);
+
+                    if ($payment && !empty($payment['stripe_payment_intent'])) {
+                        try {
+                            // Create refund in Stripe
+                            $refund = \Stripe\Refund::create([
+                                'payment_intent' => $payment['stripe_payment_intent'],
+                                'amount' => intval($payment['amount'] * 100), // Convert to cents
+                                'reason' => 'requested_by_customer',
+                            ]);
+
+                            // Update payment record with refund ID and date
+                            $updatePayment = $_db->prepare("
+                                UPDATE payment 
+                                SET refund_id = ?, 
+                                    refund_date = NOW(),
+                                    status = 'refunded'
+                                WHERE order_id = ?
+                            ");
+                            $updatePayment->execute([$refund->id, $order_id]);
+
+                            // Update message to include refund info
+                            if (empty($message)) {
+                                $message = "Refund approved. Refund of RM " . number_format($payment['amount'], 2) . " processed via Stripe.";
+                            } else {
+                                $message .= " (Refund of RM " . number_format($payment['amount'], 2) . " processed)";
+                            }
+                        } catch (\Stripe\Exception\ApiErrorException $e) {
+                            // Log the error but don't rollback the entire transaction
+                            error_log('Stripe refund failed for order ' . $order_id . ': ' . $e->getMessage());
+                            if (empty($message)) {
+                                $message = "Return approved but Stripe refund failed: " . $e->getMessage();
+                            } else {
+                                $message .= " (Stripe refund failed: " . $e->getMessage() . ")";
+                            }
+                        }
+                    } else {
+                        // No Stripe payment found
+                        if (empty($message)) {
+                            $message = "Return approved. Note: No successful Stripe payment found for refund.";
+                        } else {
+                            $message .= " (No Stripe refund processed - payment not found or not succeeded)";
+                        }
                     }
                 }
 
@@ -88,29 +143,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// --- SimplePager Implementation ---
+// --- Pagination, search, table code remains unchanged ---
+$page = max(1, (int)($_GET['page'] ?? 1));
+$limit = 5;
+$offset = ($page - 1) * $limit;
+
 $search = trim($_GET['search'] ?? '');
 $status_filter = $_GET['status'] ?? 'all';
 
-// Sorting
-$currentSort = $_GET['sort'] ?? 'order_date';
-$currentDir  = $_GET['dir'] ?? 'desc';
-
-$allowedSorts = [
-    'order_id'      => 'o.order_id',
-    'customer_name' => 'u.name',
-    'customer_email' => 'u.email',
-    'order_date'    => 'o.order_date',
-    'total_amount'  => 'o.total_amount',
-    'status'        => 'o.status'
-];
-
-if (!array_key_exists($currentSort, $allowedSorts)) $currentSort = 'order_date';
-if (!in_array(strtolower($currentDir), ['asc', 'desc'])) $currentDir = 'desc';
-
-$orderBy = "ORDER BY {$allowedSorts[$currentSort]} $currentDir";
-
-// Build base query
 $where = [];
 $params = [];
 
@@ -129,34 +169,41 @@ if ($search !== '') {
 
 $whereSql = $where ? ('WHERE ' . implode(' AND ', $where)) : '';
 
-$baseSql = "
+$countSql = "SELECT COUNT(*) FROM `order` o JOIN users u ON o.user_id = u.user_id $whereSql";
+$stm = $_db->prepare($countSql);
+$stm->execute($params);
+$totalRecords = $stm->fetchColumn();
+$totalPages = ceil($totalRecords / $limit);
+
+$currentSort = $_GET['sort'] ?? 'order_date';
+$currentDir  = $_GET['dir'] ?? 'desc';
+
+$allowedSorts = [
+    'order_id'      => 'o.order_id',
+    'customer_name' => 'u.name',
+    'customer_email' => 'u.email',
+    'order_date'    => 'o.order_date',
+    'total_amount'  => 'o.total_amount',
+    'status'        => 'o.status'
+];
+
+if (!array_key_exists($currentSort, $allowedSorts)) $currentSort = 'order_date';
+if (!in_array(strtolower($currentDir), ['asc', 'desc'])) $currentDir = 'desc';
+
+$orderBy = "ORDER BY {$allowedSorts[$currentSort]} $currentDir";
+
+$dataSql = "
     SELECT o.*, u.name AS customer_name, u.email AS customer_email
     FROM `order` o
     JOIN users u ON o.user_id = u.user_id
     $whereSql
     $orderBy
+    LIMIT $limit OFFSET $offset
 ";
 
-// Initialize SimplePager
-$page = max(1, (int)($_GET['page'] ?? 1));
-$p = new SimplePager($baseSql, $params, 4, $page); // 4 orders per page
-$orders = $p->result;
-
-// Build query string for pagination links
-$query_params = [];
-
-if ($search !== '') {
-    $query_params[] = "search=" . urlencode($search);
-}
-
-if ($status_filter !== 'all') {
-    $query_params[] = "status=" . urlencode($status_filter);
-}
-
-$query_params[] = "sort=" . urlencode($currentSort);
-$query_params[] = "dir=" . urlencode($currentDir);
-
-$query_string = implode('&', $query_params);
+$stm = $_db->prepare($dataSql);
+$stm->execute($params);
+$orders = $stm->fetchAll(PDO::FETCH_ASSOC);
 
 $_title = "Admin Orders | Four Eyes Collective";
 ?>
@@ -192,14 +239,8 @@ $_title = "Admin Orders | Four Eyes Collective";
 
         ?>
 
-       
         <div class="header-actions small">
             <form method="GET" style="margin-top:10px; display:flex; gap:10px; align-items:center;">
-                <!-- Preserve sorting and page -->
-                <input type="hidden" name="sort" value="<?= htmlspecialchars($currentSort) ?>">
-                <input type="hidden" name="dir" value="<?= htmlspecialchars($currentDir) ?>">
-                <input type="hidden" name="page" value="1">
-                
                 <!-- Search input -->
                 <input type="text"
                     name="search"
@@ -240,36 +281,37 @@ $_title = "Admin Orders | Four Eyes Collective";
                 <thead>
                     <tr>
                         <th style="width: 11%;"><?= sortLink('order_id', 'Order ID', $currentSort, $currentDir, $search, $status_filter) ?></th>
-                        <th style="width: 13%;"><?= sortLink('customer_name', 'Customer', $currentSort, $currentDir, $search, $status_filter) ?></th>
-                        <th style="width: 17%;"><?= sortLink('customer_email', 'Email', $currentSort, $currentDir, $search, $status_filter) ?></th>
+                        <th style="width:13%;"><?= sortLink('customer_name', 'Customer', $currentSort, $currentDir, $search, $status_filter) ?></th>
+                        <th style="width:17%;"><?= sortLink('customer_email', 'Email', $currentSort, $currentDir, $search, $status_filter) ?></th>
                         <th style="width: 14%;"><?= sortLink('order_date', 'Date', $currentSort, $currentDir, $search, $status_filter) ?></th>
                         <th style="width: 12%;"><?= sortLink('total_amount', 'Total', $currentSort, $currentDir, $search, $status_filter) ?></th>
                         <th style="width: 10%;"><?= sortLink('status', 'Status', $currentSort, $currentDir, $search, $status_filter) ?></th>
                         <th style="text-align:center;">Actions</th>
+
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($orders as $o): ?>
-                        <tr style="border-bottom:1px solid #ddd; height:100px !important ;">
-                            <td style="padding:10px;"><?= $o->order_id ?></td>
-                            <td style="padding:10px;"><?= htmlspecialchars($o->customer_name) ?></td>
-                            <td style="padding:10px;"><?= htmlspecialchars($o->customer_email) ?></td>
-                            <td style="padding:10px;"><?= date('d M Y H:i', strtotime($o->order_date)) ?></td>
-                            <td style="padding:10px;">RM <?= number_format($o->total_amount, 2) ?></td>
-                            <td style="padding:10px; font-weight:bold; color:#e67e22;"><?= ucfirst($o->status) ?></td>
-                            <td style="padding:15px; text-align:center; display:flex; gap:5px; justify-content:center;">
+                        <tr style="border-bottom:1px solid #ddd; height:80px;">
+                            <td style="padding:10px;"><?= $o['order_id'] ?></td>
+                            <td style="padding:10px;"><?= htmlspecialchars($o['customer_name']) ?></td>
+                            <td style="padding:10px;"><?= htmlspecialchars($o['customer_email']) ?></td>
+                            <td style="padding:10px;"><?= date('d M Y H:i', strtotime($o['order_date'])) ?></td>
+                            <td style="padding:10px;">RM <?= number_format($o['total_amount'], 2) ?></td>
+                            <td style="padding:10px; font-weight:bold; color:#e67e22;"><?= ucfirst($o['status']) ?></td>
+                            <td style="padding:10px; text-align:center; display:flex; gap:5px; justify-content:center;">
                                 <!-- View Details Button -->
                                 <form method="GET" action="../order_details.php" style="display:inline;">
-                                    <input type="hidden" name="order_id" value="<?= $o->order_id ?>">
+                                    <input type="hidden" name="order_id" value="<?= $o['order_id'] ?>">
                                     <button type="submit" style="background:none; border:none; cursor:pointer;">
                                         <img src="../../images/icons/view.png" alt="View" style="width:22px;">
                                     </button>
                                 </form>
 
-                                <?php if ($o->status === 'return_requested'): ?>
+                                <?php if ($o['status'] === 'return_requested'): ?>
                                     <!-- Return Approval Dropdown -->
                                     <form method="POST" class="return-approval-form" style="display:flex; flex-direction:column; gap:6px; width:150px;">
-                                        <input type="hidden" name="order_id" value="<?= $o->order_id ?>">
+                                        <input type="hidden" name="order_id" value="<?= $o['order_id'] ?>">
                                         <select name="new_status" class="return-status-select" style="padding:6px; font-size:13px; border-radius:5px;">
                                             <option value="">-- Select Action --</option>
                                             <option value="returned">Approve Return</option>
@@ -278,16 +320,16 @@ $_title = "Admin Orders | Four Eyes Collective";
                                         <input type="text" name="message" placeholder="Optional note" style="padding:6px; font-size:13px; border-radius:5px;">
                                         <button type="submit" style="padding:6px; background:#3498db; color:white; border:none; border-radius:5px; cursor:pointer;">Submit</button>
                                     </form>
-                                <?php elseif (!in_array($o->status, ['completed', 'cancelled', 'delivered', 'returned', 'return_rejected'])): ?>
+                                <?php elseif (!in_array($o['status'], ['completed', 'cancelled', 'delivered', 'returned', 'return_rejected'])): ?>
                                     <!-- Regular Status Change -->
                                     <form method="POST" class="status-update-form" style="display:flex; flex-direction:column; gap:6px; width:150px;">
-                                        <input type="hidden" name="order_id" value="<?= $o->order_id ?>">
+                                        <input type="hidden" name="order_id" value="<?= $o['order_id'] ?>">
                                         <select name="new_status" class="status-select" style="padding:6px; font-size:13px; border-radius:5px;">
-                                            <option value="<?= $o->status ?>" selected>No Change</option>
-                                            <?php if ($o->status == 'pending'): ?>
+                                            <option value="<?= $o['status'] ?>" selected>No Change</option>
+                                            <?php if ($o['status'] == 'pending'): ?>
                                                 <option value="shipped">Shipped</option>
                                                 <option value="cancelled">Cancel</option>
-                                            <?php elseif ($o->status == 'shipped'): ?>
+                                            <?php elseif ($o['status'] == 'shipped'): ?>
                                                 <option value="delivered">Delivered</option>
                                             <?php endif; ?>
                                         </select>
@@ -297,31 +339,44 @@ $_title = "Admin Orders | Four Eyes Collective";
                                 <?php endif; ?>
 
                                 <!-- Show Invoice only if status is completed -->
-                                <?php if ($o->status === 'completed'): ?>
+                                <?php if ($o['status'] === 'completed'): ?>
                                     <form method="GET" action="../order_invoice.php" style="display:inline;">
-                                        <input type="hidden" name="order_id" value="<?= $o->order_id ?>">
+                                        <input type="hidden" name="order_id" value="<?= $o['order_id'] ?>">
                                         <button type="submit" style="background:none; border:none; cursor:pointer;">
                                             <img src="../../images/icons/invoice.png" alt="Invoice" style="width:22px;">
                                         </button>
                                     </form>
                                 <?php endif; ?>
                             </td>
+
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
 
-        <?php if ($p->page_count > 1): ?>
+        <?php if ($totalPages > 1): ?>
             <div class="pagination-container">
                 <div class="pagination-info">
-                    Showing <?= (($page - 1) * 5) + 1 ?> - <?= min($page * 5, $p->item_count) ?> of <?= $p->item_count ?> orders
+                    Showing <?= (($page - 1) * $limit) + 1 ?> - <?= min($page * $limit, $totalRecords) ?> of <?= $totalRecords ?> orders
                 </div>
                 <div class="pagination">
-                    <?= $p->html($query_string) ?>
+                    <?php for ($i = 1; $i <= $totalPages; $i++):
+                        $bg = $i == $page ? '#2c3e50' : '#ecf0f1';
+                        $color = $i == $page ? 'white' : '#333';
+                        $pageUrl = "?page={$i}&search=" . urlencode($search) . "&status={$status_filter}&sort={$currentSort}&dir={$currentDir}";
+                    ?>
+                        <a href="<?= $pageUrl ?>"
+                            style="padding:6px 12px; border-radius:4px; text-decoration:none; font-size:14px; background:<?= $bg ?>; color:<?= $color ?>;">
+                            <?= $i ?>
+                        </a>
+                    <?php endfor; ?>
+
+
                 </div>
+            <?php endif; ?>
+
             </div>
-        <?php endif; ?>
     </div>
 
     <script>
@@ -334,7 +389,6 @@ $_title = "Admin Orders | Four Eyes Collective";
             <?php if (!empty($error_msg)): ?>
                 if (typeof showNotification === 'function') showNotification("<?= addslashes($error_msg) ?>", 'error');
             <?php endif; ?>
-
 
             // Handle regular status change forms
             $('.status-update-form').on('change', '.status-select', function() {
@@ -379,8 +433,6 @@ $_title = "Admin Orders | Four Eyes Collective";
 
         });
     </script>
-
 </div>
 </body>
-
 </html>

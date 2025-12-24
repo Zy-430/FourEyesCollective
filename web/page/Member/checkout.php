@@ -23,6 +23,29 @@ $stm = $_db->prepare("
 $stm->execute([$user_id]);
 $cart_items = $stm->fetchAll(PDO::FETCH_OBJ);
 
+// Check if this is likely a refresh after payment initiation
+if (empty($_POST) && !$cart_items) {
+    // No items in checkout and not a form submission = likely a refresh
+    // Check if user has any orders in pending_payment
+    $stm = $_db->prepare("
+        SELECT order_id FROM `order` 
+        WHERE user_id = ? AND status = 'pending_payment' 
+        ORDER BY order_date DESC LIMIT 1
+    ");
+    $stm->execute([$user_id]);
+    $pendingOrder = $stm->fetch(PDO::FETCH_OBJ);
+    
+    if ($pendingOrder) {
+        // Cancel the pending order since user refreshed
+        header("Location: cancel_payment.php?order_id=" . $pendingOrder->order_id);
+        exit;
+    } else {
+        // Just redirect to cart
+        header("Location: cart.php");
+        exit;
+    }
+}
+
 if (!$cart_items) {
 ?>
     <!DOCTYPE html>
@@ -46,8 +69,8 @@ if (!$cart_items) {
             <div class="checkout-section" style="text-align: center;">
                 <p>Please select items from your cart first.</p>
                 <div class="action-buttons">
-                    <a href="cart.php" class="btn btn-secondary">Return to Cart</a>
-                    <a href="shoppage.php" class="btn btn-primary">Continue Shopping</a>
+                    <a href="../cart.php" class="btn btn-secondary">Return to Cart</a>
+                    <a href="../shoppage.php" class="btn btn-primary">Continue Shopping</a>
                 </div>
             </div>
         </div>
