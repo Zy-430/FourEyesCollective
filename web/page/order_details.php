@@ -2,6 +2,20 @@
 require '../_base.php';
 require '../lib/db.php';
 
+?>
+<script>
+    (function() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                document.body.classList.add('product');
+            });
+        } else {
+            document.body.classList.add('product');
+        }
+    })();
+</script>
+<?php
+
 auth();
 $order_id = $_GET['order_id'] ?? null;
 if (!$order_id) exit("Invalid order");
@@ -14,7 +28,8 @@ $stm = $_db->prepare("
         o.order_id, o.order_date, o.total_amount, o.status, o.delivered_at,
         u.name AS customer_name,
         a.recipient_name, a.address_line1, a.address_line2, a.city, a.state, a.postcode, a.country,
-        p.payment_method_type AS payment_brand, p.card_brand, p.card_funding, p.last4, p.bank_name, p.transaction_date,p.refund_date
+        p.payment_method_type AS payment_brand,
+        p.transaction_date
     FROM `order` o
     JOIN users u ON o.user_id = u.user_id
     LEFT JOIN address a ON a.address_id = o.address_id
@@ -22,7 +37,6 @@ $stm = $_db->prepare("
     WHERE o.order_id = ? 
     AND (o.user_id = ? OR ? = 1)
 ");
-
 
 $stm->execute([$order_id, $_user->user_id, $isAdmin ? 1 : 0]);
 $order = $stm->fetch(PDO::FETCH_ASSOC);
@@ -84,20 +98,6 @@ $stm_hist = $_db->prepare("
 $stm_hist->execute([$order_id]);
 $history = $stm_hist->fetchAll(PDO::FETCH_ASSOC);
 
-?>
-<script>
-    (function() {
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
-                document.body.classList.add('product');
-            });
-        } else {
-            document.body.classList.add('product');
-        }
-    })();
-</script>
-<?php
-
 $_title = "Order Details | Four Eyes Collective";
 // Determine which header/footer and CSS to use based on role
 if ($_user->role === 'Admin') {
@@ -151,37 +151,9 @@ if ($_user->role === 'Admin') {
             <div class="card admin-view">
                 <h3>💳 Payment Details</h3>
                 <p><strong>Total Amount:</strong> RM <?= number_format($order['total_amount'], 2) ?></p>
-                <p><strong>Payment Method:</strong>
-                    <?php if ($order['payment_brand'] === 'card'): ?>
-                        <?= ucfirst($order['card_brand'] ?? 'Card') ?>
-                        <?php if (!empty($order['card_funding'])): ?> <?= ucfirst($order['card_funding']) ?>
-                        <?php endif; ?>
-                        <?php if (!empty($order['last4'])): ?>
-                            <br>
-                            **** **** **** <?= $order['last4'] ?>
-                        <?php endif; ?>
-                    <?php elseif ($order['payment_brand'] === 'fpx'): ?>
-                        Online Banking
-                        <?php if (!empty($order['bank_name'])): ?>
-                            <br>
-                            <?= $order['bank_name'] ?>
-                        <?php endif; ?>
-                    <?php elseif ($order['payment_brand'] === 'grabpay'): ?>
-                        GrabPay
-                    <?php else: ?>
-                        <?= ucfirst($order['payment_brand'] ?? 'Unknown') ?>
-                    <?php endif; ?>
-                </p>
-                <p><strong>Transaction Date:</strong>
-                    <?= !empty($order['transaction_date']) ? date('d M Y H:i', strtotime($order['transaction_date'])) : '-' ?>
-                </p>
-                <?php if (!empty($order['refund_date'])): ?>
-                    <p><strong>Refund Date:</strong>
-                        <?= date('d M Y H:i', strtotime($order['refund_date'])) ?>
-                    </p>
-                <?php endif; ?>
+                <p><strong>Payment Method:</strong> <?= $order['payment_brand'] ?? '-' ?></p>
+                <p><strong>Transaction Date:</strong> <?= $order['transaction_date'] ? date('d M Y H:i', strtotime($order['transaction_date'])) : '-' ?></p>
             </div>
-
 
             <!-- Shipping Address Card -->
             <div class="card admin-view">
@@ -195,7 +167,7 @@ if ($_user->role === 'Admin') {
     <?php else: ?>
 
         <!-- Payment Summary Card -->
-        <div class="card">
+        <div class="card admin-view">
             <h3>💳 Payment Details</h3>
             <p><strong>Total Amount:</strong> RM <?= number_format($order['total_amount'], 2) ?></p>
             <p><strong>Payment Method:</strong> <?= $order['payment_brand'] ?? '-' ?></p>
