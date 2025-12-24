@@ -2,12 +2,13 @@
 require '../_base.php';
 require '../lib/db.php';
 
-
 // Login attempts
 define('MAX_ATTEMPTS', 3);
 define('LOCK_MINUTES', 15);
 
-$temp_message = temp('success');
+$__temp_success = temp('success');
+$__temp_error = temp('error');
+$__temp_info = temp('info');
 
 if (is_post()) {
 
@@ -71,7 +72,7 @@ if (is_post()) {
                         temp('info', 'Welcome! Please set your new password.');
                         redirect('force_password_change.php');
                     } else {
-                        temp('info', 'Login successfully!');
+                        temp('success', 'Login successfully!');
                         // Redirect by role
                         if ($user->role === 'Member') {
                             login($user, '/page/homepage.php');
@@ -132,23 +133,25 @@ $_title = 'Login';
     <link rel="stylesheet" href="/css/app.css">
     <link rel="stylesheet" href="/css/user.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="/js/notifications.js"></script>
 </head>
 
 <body class="login-page">
+    <script>
+        $(function() {
+            <?php if (!empty($__temp_success)): ?>
+                if (typeof showNotification === 'function') showNotification("<?= addslashes($__temp_success) ?>", 'success');
+            <?php endif; ?>
 
-    <!-- Use to show register successfully message -->
-    <?php if ($temp_message): ?>
-        <div class="temp-message">
-            <?= encode($temp_message) ?>
-        </div>
-        <script>
-            // Disappear after 6 seconds
-            setTimeout(function() {
-                var msg = document.querySelector('.temp-message');
-                if (msg) msg.style.display = 'none';
-            }, 6000);
-        </script>
-    <?php endif; ?>
+            <?php if (!empty($__temp_error)): ?>
+                if (typeof showNotification === 'function') showNotification("<?= addslashes($__temp_error) ?>", 'error');
+            <?php endif; ?>
+
+            <?php if (!empty($__temp_info)): ?>
+                if (typeof showNotification === 'function') showNotification("<?= addslashes($__temp_info) ?>", 'info');
+            <?php endif; ?>
+        });
+    </script>
 
     <div class="login-container">
         <div class="login-header">

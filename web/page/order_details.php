@@ -111,10 +111,6 @@ if ($_user->role === 'Admin') {
 
 <div class="page-container">
 
-    <a href="javascript:history.back()" style="text-decoration: none; color: #2c3e50; font-size: 16px; display: inline-flex; align-items: center; gap: 8px;">
-        <i class="fas fa-arrow-left" style="color: black;"></i> Back
-    </a>
-
     <!-- Order Info Card -->
     <div class="card order-card">
         <span class="order-status-badge" style="background:<?= statusColor($order['status']) ?>;">

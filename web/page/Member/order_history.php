@@ -95,9 +95,6 @@ include '../../_head.php';
 
 <section class="hero-section">
     <div class="hero-inner">
-        <a href="javascript:history.back()" class="floating-back-arrow">
-            <i class="fas fa-arrow-left"></i> Back
-        </a>
 
         <h1 class="hero-title">My Orders</h1>
         <p class="hero-subtitle">Track your orders, view history, and see details of each purchase.</p>

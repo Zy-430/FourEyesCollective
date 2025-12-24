@@ -20,7 +20,7 @@ if (is_post()) {
 
         if (!$user) {
             $_err['email'] = 'Email not found';
-        } elseif ($user->status !== 'Inactive') {
+        } elseif ($user->status == 'Active') {
             $_err['email'] = 'Account is already activated';
         }
     }
@@ -30,7 +30,7 @@ if (is_post()) {
 
         temp(
             'success',
-            'A verification email has been sent. Please check your inbox.'
+            'A verification email has been sent. Please check your inbox (or spam).'
         );
         redirect('login.php');
     }

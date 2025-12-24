@@ -295,9 +295,35 @@ $_title = "Admin Review Management | Four Eyes Collective";
                 action: newStatus === 'hidden' ? 'hide' : 'unhide'
             }, function(res) {
                 if (res.status === 'success') {
-                    location.reload();
+                    // Update the button state and status badge in-place without reloading
+                    var $btn = $('.toggle-review-btn[data-id="' + id + '"]');
+                    var $row = $btn.closest('tr');
+                    var updatedStatus = res.review_status || newStatus;
+
+                    // Update data-status
+                    $btn.data('status', updatedStatus);
+
+                    // Update status badge text and class
+                    var $badge = $row.find('.status-badge');
+                    $badge.removeClass('status-visible status-hidden').addClass('status-' + updatedStatus).text(updatedStatus.charAt(0).toUpperCase() + updatedStatus.slice(1));
+
+                    // Update button icon
+                    var iconHtml = updatedStatus === 'visible' ? '<i class="fas fa-eye-slash">' : '<i class="fas fa-eye">';
+                    $btn.html(iconHtml);
+
+                    // Show success notification
+                    if (typeof showNotification === 'function') {
+                        var msg = updatedStatus === 'hidden' ? 'Review (' + id + ') hidden successfully' : 'Review (' + id + ') made visible successfully';
+                        showNotification(msg, 'success');
+                    } else {
+                        alert(updatedStatus === 'hidden' ? 'Review (' + id + ') hidden successfully' : 'Review (' + id + ') made visible successfully');
+                    }
                 } else {
-                    alert(res.message || 'Action failed');
+                    if (typeof showNotification === 'function') {
+                        showNotification(res.message || 'Action failed', 'error');
+                    } else {
+                        alert(res.message || 'Action failed');
+                    }
                 }
             }, 'json');
         });

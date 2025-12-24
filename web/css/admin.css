@@ -229,8 +229,9 @@ i {
     background: #162b65;
 }
 
-
-
+.profile-section,
+.profile-page,
+.page-container,
 .admin-sidebar,
 .admin-header,
 .admin-content,
@@ -1589,10 +1590,16 @@ i {
 }
 
 /* Adjust when sidebar is collapsed */
+.admin-sidebar.collapsed~.page-container,
 .admin-sidebar.collapsed~.profile-page {
     margin-left: 0;
     width: 100%;
     padding-left: 80px;
+}
+.admin-sidebar.collapsed~.profile-section {
+    margin-left: 0;
+    width: 100%;
+    padding-left: 20px;
 }
 
 
@@ -2086,7 +2093,23 @@ a[href="javascript:history.back()"] {
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
+.admin-sidebar.collapsed ~ .admin-content.view-product-report {
+    margin-left: 10px;
+    width: calc(100% - 20px);
+    max-width: none;
+    max-height: 300px;
+}
 
+/* chart container use the full width */
+.admin-content.view-product-report .chart-card {
+    width: 100%;
+    max-width: none;
+}
+
+.admin-content.view-product-report #salesChart {
+    width: 100% !important;
+    height: 480px !important;
+}
 
 
 /* Responsive */

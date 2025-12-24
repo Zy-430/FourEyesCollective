@@ -31,11 +31,12 @@ body {
 header {
     background: #fff;
     border-bottom: 1px solid #e0e0e0;
+    position: fixed;
     padding: 15px 50px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    position: sticky;
     top: 0;
     z-index: 1000;
+    width:100%;
 }
 
 header nav {
@@ -143,6 +144,25 @@ header nav {
     transform: scale(1.1);
 }
 
+#right-sidebar a.active {
+    background-color: #f0f0f0;
+    border-radius: 50%;
+}
+
+#right-sidebar a.active img {
+    opacity: 1;
+}
+
+/*  icon active state */
+#right-sidebar a.user-icon-link.active,
+body[data-current-page="cart.php"] #cart-link,
+body[data-current-page="wishlist.php"] .wishlist-link,
+#cart-link.active,
+.wishlist-link.active {
+    background-color: #f0f0f0 !important;
+    border-radius: 50%;
+}
+
 /* User dropdown */
 .user-dropdown {
     position: relative;
@@ -230,6 +250,7 @@ main {
     margin: 0 auto;
     width: 100%;
     box-sizing: border-box;
+    margin-top: 6%;
 }
 
 main h1 {

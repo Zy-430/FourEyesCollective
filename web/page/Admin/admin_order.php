@@ -192,17 +192,7 @@ $_title = "Admin Orders | Four Eyes Collective";
 
         ?>
 
-        <?php if (!empty($success_msg)): ?>
-            <div style="padding:12px; background:#2ecc71; color:white; border-radius:5px; margin-bottom:20px; text-align:center;">
-                <?= $success_msg ?>
-            </div>
-        <?php endif; ?>
-
-        <?php if (!empty($error_msg)): ?>
-            <div style="padding:12px; background:#e74c3c; color:white; border-radius:5px; margin-bottom:20px; text-align:center;">
-                <?= $error_msg ?>
-            </div>
-        <?php endif; ?>
+       
         <div class="header-actions small">
             <form method="GET" style="margin-top:10px; display:flex; gap:10px; align-items:center;">
                 <!-- Preserve sorting and page -->
@@ -336,6 +326,15 @@ $_title = "Admin Orders | Four Eyes Collective";
 
     <script>
         $(document).ready(function() {
+
+            <?php if (!empty($success_msg)): ?>
+                if (typeof showNotification === 'function') showNotification("<?= addslashes($success_msg) ?>", 'success');
+            <?php endif; ?>
+
+            <?php if (!empty($error_msg)): ?>
+                if (typeof showNotification === 'function') showNotification("<?= addslashes($error_msg) ?>", 'error');
+            <?php endif; ?>
+
 
             // Handle regular status change forms
             $('.status-update-form').on('change', '.status-select', function() {

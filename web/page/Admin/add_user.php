@@ -92,6 +92,8 @@ if (is_post()) {
     //Validate phone number
     if (!preg_match('/^[1-9][0-9]{7,9}$/', $phone)) {
         $_err['phone'] = 'Phone number must be in format 0XXXXXXXXX';
+    } else if (!is_unique($phone, 'users', 'phone')) {
+        $_err['phone'] = 'Duplicated phone number';
     }
 
     // Check if date is valid for the selected month
@@ -372,8 +374,8 @@ if (is_post()) {
                 <div class="form-group">
                     <label for="password">
                         Password (Auto-generated)
-                    </label> <input type="password" id="password_display" class="form-control" required
-                        value="<?= encode($password) ?>" readonly>
+                    </label> <input type="text" id="password_display" class="form-control" required
+                        value="<?= encode($password) ?>" disabled>
                 </div>
 
                 <!-- Phone Number -->
@@ -459,10 +461,31 @@ if (is_post()) {
                 </div>
 
                 <!-- Registration Date -->
-                <div class="form-group">
-                    <label for="registration_date">Registration Date</label>
-                    <input type="date" id="registration_date" name="registartion_date" class="form-control"
-                        value="<?= encode($registration_date) ?>" disabled>
+                <div style="width: 380px;">
+                    <div class="form-group">
+                        <label for="registration_date">Registration Date</label>
+                        <input type="date" id="registration_date" name="registartion_date" class="form-control"
+                            value="<?= encode($registration_date) ?>" disabled>
+                    </div>
+
+                    <!-- Status (readonly radios - show only relevant option per role) -->
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label for="status">Status</label>
+                        <div class="radio-group">
+                            <?php if ($role === 'Admin'): ?>
+                                <div class="radio-option">
+                                    <input type="radio" id="status_active" name="status_display" value="Active" checked disabled>
+                                    <label for="status_active" style="text-transform:none;">Active</label>
+                                </div>
+                            <?php else: ?>
+                                <div class="radio-option">
+                                    <input type="radio" id="status_pending" name="status_display" value="Pending" checked disabled>
+                                    <label for="status_pending" style="text-transform:none;">Pending</label>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <input type="hidden" name="status" value="<?= encode($status) ?>">
+                    </div>
                 </div>
 
             </div>

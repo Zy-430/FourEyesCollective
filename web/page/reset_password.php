@@ -50,10 +50,10 @@ if ($id) {
 
                     $stm = $_db->prepare('
                     UPDATE users 
-                    SET password = SHA1(?)
+                    SET password = ?
                     WHERE user_id = ?
                 ');
-                    $stm->execute([$password, $user->user_id]);
+                    $stm->execute([$hashed_password, $user->user_id]);
 
                     // Delete the used token
                     $stm = $_db->prepare('DELETE FROM token WHERE token_id = ?');
@@ -221,7 +221,7 @@ $_title = 'Reset Password';
                     </div>
                 </form>
 
-                <div class="login-redirect">
+                <div class="signup-link">
                     Remember your password? <a href="login.php">Sign in here</a>
                 </div>
 

@@ -2,8 +2,8 @@
    COLOR SYSTEM
 ========================= */
 :root {
-    --blue-primary: #2563eb;
-    --blue-secondary: #3b82f6;
+    --blue-primary: #162b65;
+    --blue-secondary: #223567;
     --blue-soft: #eaf2ff;
     --blue-border: #dbe7ff;
 
@@ -40,7 +40,7 @@ body {
 ========================= */
 .profile-container,
 .profile-card {
-    width: 100%;
+    width: 80%;
     background: var(--white);
     border-radius: 14px;
     padding: 32px 40px;
@@ -170,17 +170,17 @@ body {
 .upload-primary,
 .cta-button.primary {
     display: inline-block;
-    padding: 12px 28px;
+    padding: 8px 25px;
     border-radius: 18px;
     background: var(--blue-primary);
     color: #fff;
-    font-weight: 600;
+    font-weight: 500;
     border: none;
     text-decoration: none;
     cursor: pointer;
     transition: all 0.3s ease;
-    /* smooth hover transition */
     text-align: center;
+    font-size: 16px;
 }
 
 .cta-button.secondary,
@@ -253,10 +253,10 @@ body {
 
 .form-control {
     width: 100%;
-    padding: 12px 14px;
+    padding: 10px 12px;
     border-radius: 8px;
     border: 1px solid var(--blue-border);
-    font-size: 1rem;
+    font-size: 14px;
 }
 
 .form-control:focus {
