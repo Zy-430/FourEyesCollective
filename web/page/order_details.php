@@ -14,8 +14,7 @@ $stm = $_db->prepare("
         o.order_id, o.order_date, o.total_amount, o.status, o.delivered_at,
         u.name AS customer_name,
         a.recipient_name, a.address_line1, a.address_line2, a.city, a.state, a.postcode, a.country,
-        p.payment_method_type AS payment_brand,
-        p.transaction_date
+        p.payment_method_type AS payment_brand, p.card_brand, p.card_funding, p.last4, p.bank_name, p.transaction_date,p.refund_date
     FROM `order` o
     JOIN users u ON o.user_id = u.user_id
     LEFT JOIN address a ON a.address_id = o.address_id
@@ -23,6 +22,7 @@ $stm = $_db->prepare("
     WHERE o.order_id = ? 
     AND (o.user_id = ? OR ? = 1)
 ");
+
 
 $stm->execute([$order_id, $_user->user_id, $isAdmin ? 1 : 0]);
 $order = $stm->fetch(PDO::FETCH_ASSOC);
@@ -159,6 +159,20 @@ if ($_user->role === 'Admin') {
                         <?php if (!empty($order['last4'])): ?>
                             <br>
                             **** **** **** <?= $order['last4'] ?>
+                        <?php endif; ?>
+                    <?php elseif ($order['payment_brand'] === 'fpx'): ?>
+                        Online Banking
+                        <?php if (!empty($order['bank_name'])): ?>
+                            <br>
+                            <?= $order['bank_name'] ?>
+                        <?php endif; ?>
+                    <?php elseif ($order['payment_brand'] === 'grabpay'): ?>
+                        GrabPay
+                    <?php else: ?>
+                        <?= ucfirst($order['payment_brand'] ?? 'Unknown') ?>
+                    <?php endif; ?>
+                </p>
+                <p><strong>Transaction Date:</strong>
                     <?= !empty($order['transaction_date']) ? date('d M Y H:i', strtotime($order['transaction_date'])) : '-' ?>
                 </p>
                 <?php if (!empty($order['refund_date'])): ?>

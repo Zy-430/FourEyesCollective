@@ -95,7 +95,6 @@ include '../../_head.php';
 
 <section class="hero-section">
     <div class="hero-inner">
-        <a href="javascript:history.back()" class="floating-back-arrow">
             <i class="fas fa-arrow-left"></i> Back
         </a>
 
