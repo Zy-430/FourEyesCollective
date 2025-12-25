@@ -13,16 +13,21 @@ $_title = 'Product Sales Report | Four Eyes Collective';
         <div style="margin-bottom:20px;">
             <button onclick="window.print()"
                 style="padding:10px 18px; background:#2c3e50; color:white;
-               border:none; border-radius:5px; cursor:pointer; margin-top:20px;">
-                Print / Download PDF
+                    border:none; border-radius:5px; cursor:pointer; margin-top:20px;">
+                🖨 Print Report
+            </button>
+
+            <button onclick="downloadChart()"
+                style="padding:10px 18px; background:#2c3e50; color:white;
+                    border:none; border-radius:5px; cursor:pointer; margin-left:10px; margin-top:20px;">
+                ⬇ Download Chart
             </button>
         </div>
     </div>
 
-
     <!-- CHART CONTAINER -->
     <div style="background:white; padding:20px; border-radius:8px; border:1px solid #ddd;">
-        <canvas id="salesChart"></canvas>
+        <canvas id="salesChart" height="550"></canvas>
     </div>
 
     <!-- jQuery -->
@@ -32,6 +37,18 @@ $_title = 'Product Sales Report | Four Eyes Collective';
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
+        function downloadChart() {
+            const canvas = document.getElementById('salesChart');
+
+            // Create an invisible link
+            const link = document.createElement('a');
+            link.download = "top_sales_chart.png";
+            link.href = canvas.toDataURL("image/png");
+
+            // Trigger the download
+            link.click();
+        }
+
         $(function() {
 
             $.ajax({
