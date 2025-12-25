@@ -54,7 +54,7 @@ if ($_user->role === 'Admin') {
         <form method="post" id="changePasswordForm">
             <div class="form-group">
                 <label>Current Password *</label>
-                <input type="password" name="current_password" class="form-control" required>
+                <input type="password" name="current_password" class="form-control" autofocus required>
             </div>
 
             <div class="form-group">
