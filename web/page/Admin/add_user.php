@@ -306,6 +306,9 @@ if (is_post()) {
                                         <a href='" . base("page/login.php") . "' class='button' style='color:white;'>Login Now</a>
                                 </p>
 
+                            <p>You may also use the link below:</p>
+                                    <p><code><a href='" . base("page/login.php") . "'>" . base("page/login.php") . "</a></code></p>
+
                             <p>Best regards,<br>
                             <strong>Four Eyes Collective System Administration</strong></p>
                             <div class='footer'>
