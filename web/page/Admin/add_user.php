@@ -2,6 +2,7 @@
 require '../../_base.php';
 require '../../lib/db.php';
 include '../../_admin_head.php';
+require_once '../../lib/email_action.php';
 $_title = "Add User | Four Eyes Collective";
 
 auth('Admin');
@@ -203,136 +204,36 @@ if (is_post()) {
 
         $_db->commit();
 
-        // verification url with token (send in email)
-        $verification_url = base("page/activate_account.php?token_id=$verification_token");
 
-        $m = get_mail();
-        $m->addAddress($email, $name);
-        $m->isHTML(true);
+        // Send email based on role
+        $emailSent = false;
 
-        // Send verifiction email to member for activation (with verification url & default password)
-        if ($role === 'Member') {
-            $m->Subject = 'Verify Your Account - Four Eyes Collective';
-            $m->Body =  "
-                <!DOCTYPE html>
-                    <html>
-                    <head>
-                    <style>
-                        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-                        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                        .header { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
-                        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
-                        .button { display: inline-block; background: #2c3e50; color: #ddd; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 15px 0; }
-                        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #777; font-size: 12px; }
-                        .warning {padding-top: 10px; padding-bottom:10px; color:red; font-style:italic;}
-                    </style>
-                    </head>
-                    <body>
-                        <div class='container'>
-                            <div class='header'>
-                                <h2>Four Eyes Collective</h2>
-                                <h3>Account Verification</h3>
-                            </div>
-                            <div class='content'>
-                                <p>Hello " . htmlspecialchars($name) . ",</p>
-                                <p>A new account has been created for you at Four Eyes Collective by our staff.</p>
-                                <p>Here is your temporary login credentials:</p>
-                                    <ul>
-                                        <li><strong>Email   :</strong> $email</li>
-                                        <li><strong>Password:</strong> $password</li>
-                                    </ul>
-                                <p>Please activate your account and set your own password using the link below:</p>
-                    
-                                <p style='text-align: center;'>
-                                        <a href='$verification_url' class='button' style='color:white;'>Verify Account</a>
-                                </p>
-                    
-                                <p>You may also use the link below:</p>
-                                    <p><code>$verification_url</code></p>
-                    
-                                <div class='warning'>
-                                    <p>* This link will expire in 24 hours. If you didn't create an account with us, please ignore it.</p>
-                                </div>
-                    
-                                <p>Best regards,<br>
-                                <strong>The Four Eyes Collective Team</strong></p>
-                            </div>
-                            <div class='footer'>
-                                <p>&copy; " . date('Y') . " Four Eyes Collective. All rights reserved.</p>
-                            </div>
-                        </div>
-                    </body>
-                </html>
-                ";
-        } // Send email to admin to inform them their default password for this system (then first login will force reset password)
-        elseif ($role === 'Admin') {
-            $m->Subject = 'Admin Account - Four Eyes Collective';
-
-            $m->Body = "
-                <!DOCTYPE html>
-                <html>
-                    <head>
-                    <style>l
-                        body { font-family: Arial, sans-serif; color:#333; }
-                        .container { max-width:600px; margin:auto; }
-                        .header { background:#0d1a3f; color:white; padding:20px; text-align:center; }
-                        .content { background:#f9f9f9; padding:30px; }
-                        .button { background:#0d1a3f; color:#ddd; padding:12px 24px; text-decoration:none; border-radius:6px; }
-                        .warning { color:red; font-style:italic; }
-                        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #777; font-size: 12px; }
-                    </style>
-                    </head>
-                    <body>
-                        <div class='container'>
-                            <div class='header'>
-                                <h2>Four Eyes Collective</h2>
-                                <h3>Admin Account</h3>
-                            </div>
-
-                        <div class='content'>
-                            <p>Hello <strong>" . htmlspecialchars($name) . "</strong>,</p>
-                            <p>An administrator account has been created for you.</p>
-
-                            <p>Here is your login credentials:</p>
-                                    <ul>
-                                        <li><strong>Email   :</strong> $email</li>
-                                        <li><strong>Password:</strong> $password</li>
-                                    </ul>                            
-                                    
-                             <p>Your account is already <strong>active</strong>.</p>
-
-                            <p>Please login and change your password immediately:</p>
-                            <p style='text-align: center;'>
-                                        <a href='" . base("page/login.php") . "' class='button' style='color:white;'>Login Now</a>
-                                </p>
-
-                            <p>You may also use the link below:</p>
-                                    <p><code><a href='" . base("page/login.php") . "'>" . base("page/login.php") . "</a></code></p>
-
-                            <p>Best regards,<br>
-                            <strong>Four Eyes Collective System Administration</strong></p>
-                            <div class='footer'>
-                                <p>&copy; " . date('Y') . " Four Eyes Collective. All rights reserved.</p>
-                            </div>
-                        </div>
-                    </div>
-                </body>
-            </html>
-            ";
+        // Build verification URL if token was created for members
+        if (!empty($verification_token)) {
+            $verification_url = base("page/activate_account.php?token_id=$verification_token");
+        } else {
+            $verification_url = '';
         }
 
-        try {
-            $m->send();
-            // Redirect with success message
-            header("Location: view_user.php?role=$role&msg=added&user_id=$user_id");
-            exit;
-        } catch (Exception $e) {
-            // Error but still redirect (user was created)
-            error_log("Email sending failed: " . $e->getMessage());
+        if ($role === 'Member') {
+            // For members created by staff - use staff_created_member type
+            $emailSent = sendEmailAction($email, 'staff_created_member', [
+                'password' => $password,
+                'verification_url' => $verification_url
+            ]);
+        } elseif ($role === 'Admin') {
+            // For admin accounts - use admin_welcome type
+            $emailSent = sendEmailAction($email, 'admin_welcome', [
+                'password' => $password
+            ]);
+        }
 
-            // Redirect but with email_failed message
+        // Redirect based on email success
+        if ($emailSent) {
+            header("Location: view_user.php?role=$role&msg=added&user_id=$user_id");
+        } else {
+            error_log("Email sending failed for user: $user_id");
             header("Location: view_user.php?role=$role&msg=added_no_email&user_id=$user_id");
-            exit;
         }
     }
 }
@@ -511,68 +412,69 @@ if (is_post()) {
 <script>
     document.addEventListener('DOMContentLoaded', function() {
 
-            const input = document.getElementById('photo');
-            const preview = document.getElementById('photoPreview');
-            const dropZone = document.getElementById('photoDropZone');
-            const label = document.querySelector('.photo-label');
+        const input = document.getElementById('photo');
+        const preview = document.getElementById('photoPreview');
+        const dropZone = document.getElementById('photoDropZone');
+        const label = document.querySelector('.photo-label');
 
-            // Upload validation
-            const MAX_SIZE = 1024 * 1024; // 1MB
-            const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
+        // Upload validation
+        const MAX_SIZE = 1024 * 1024; // 1MB
+        const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
 
-            // Handle normal file selection (click the area and choose file)
-            input.addEventListener('change', function() {
-                if (this.files[0]) handleFile(this.files[0]);
+        // Handle normal file selection (click the area and choose file)
+        input.addEventListener('change', function() {
+            if (this.files[0]) handleFile(this.files[0]);
+        });
+
+        // Highlight the drop zone during drag
+        ['dragenter', 'dragover'].forEach(event => {
+            dropZone.addEventListener(event, e => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+                label.classList.add('dragover');
             });
+        });
 
-            // Highlight the drop zone during drag
-            ['dragenter', 'dragover'].forEach(event => {
-                dropZone.addEventListener(event, e => {
-                    e.preventDefault();
-                    dropZone.classList.add('dragover');
-                    label.classList.add('dragover');
-                });
+        // Remove highlight when drag ends
+        ['dragleave', 'drop'].forEach(event => {
+            dropZone.addEventListener(event, e => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                label.classList.remove('dragover');
             });
+        });
 
-            // Remove highlight when drag ends
-            ['dragleave', 'drop'].forEach(event => {
-                dropZone.addEventListener(event, e => {
-                    e.preventDefault();
-                    dropZone.classList.remove('dragover');
-                    label.classList.remove('dragover');
-                });
-            });
-
-            // Handle drag-drop file uploaded
-            dropZone.addEventListener('drop', function(e) {
-                const file = e.dataTransfer.files[0];
-                if (file) {
-                    input.files = e.dataTransfer.files;  // Assign file to input
-                    handleFile(file);  // File validation
-                }
-            });
-
-            function handleFile(file) {
-                // Validate file type
-                if (!ALLOWED_TYPES.includes(file.type)) {
-                    alert('Invalid file type. Only JPG, PNG, GIF allowed.');
-                    input.value = '';
-                    return;
-                }
-
-                // Validate file size
-                if (file.size > MAX_SIZE) {
-                    alert('File too large. Maximum size is 1MB.');
-                    input.value = '';
-                    return;
-                }
-
-                // Image preview
-                const reader = new FileReader();
-                reader.onload = e => preview.src = e.target.result;
-                reader.readAsDataURL(file);
+        // Handle drag-drop file uploaded
+        dropZone.addEventListener('drop', function(e) {
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                input.files = e.dataTransfer.files; // Assign file to input
+                handleFile(file); // File validation
             }
         });
+
+        function handleFile(file) {
+            // Validate file type
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                alert('Invalid file type. Only JPG, PNG, GIF allowed.');
+                input.value = '';
+                return;
+            }
+
+            // Validate file size
+            if (file.size > MAX_SIZE) {
+                alert('File too large. Maximum size is 1MB.');
+                input.value = '';
+                return;
+            }
+
+            // Image preview
+            const reader = new FileReader();
+            reader.onload = e => preview.src = e.target.result;
+            reader.readAsDataURL(file);
+        }
+    });
 </script>
 </body>
+
 </html>
