@@ -40,32 +40,29 @@ CREATE TABLE `address` (
   `postcode` varchar(10) NOT NULL,
   `country` varchar(50) NOT NULL,
   `default_flag` tinyint(1) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `latitude` decimal(10,8) DEFAULT NULL,
-  `longitude` decimal(11,8) DEFAULT NULL
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data for table `address`
 --
 
-INSERT INTO `address` (`address_id`, `user_id`, `recipient_name`, `address_line1`, `address_line2`, `city`, `state`, `postcode`, `country`, `default_flag`, `created_at`, `latitude`, `longitude`) VALUES
-('ADRS0001', 'ME0001', 'Mary Lee', '123 Main Street', 'Unit 1A', 'Kuala Lumpur', 'W.P. Kuala Lumpur', '50000', 'Malaysia', 1, '2025-11-01 09:05:00', 3.13900000, 101.68690000),
-('ADRS0002', 'ME0002', 'John Tan', '456 Market Road', '', 'Shah Alam', 'Selangor', '40000', 'Malaysia', 1, '2025-11-02 10:15:00', 3.07380000, 101.51830000),
-('ADRS0003', 'ME0003', 'Lim Wei', '789 Hill Street', 'Apt 12B', 'Penang', 'Penang', '10050', 'Malaysia', 1, '2025-11-03 11:20:00', 5.41640000, 100.33270000),
-('ADRS0004', 'ME0004', 'Nur Aini', '321 River Lane', '', 'Kota Kinabalu', 'Sabah', '88000', 'Malaysia', 1, '2025-11-04 12:25:00', 5.98040000, 116.07350000),
-('ADRS0005', 'ME0005', 'Ahmad Faiz', '654 Garden Avenue', 'Unit 5C', 'Ipoh', 'Perak', '30000', 'Malaysia', 1, '2025-11-05 13:30:00', 4.59750000, 101.09010000),
-('ADRS0006', 'ME0006', 'Siti Hawa', '987 Sunset Blvd', '', 'Petaling Jaya', 'Selangor', '46000', 'Malaysia', 1, '2025-11-06 14:35:00', 3.10730000, 101.60670000),
-('ADRS0007', 'ME0007', 'Lee Chong', '246 Sunrise Street', 'Unit 7B', 'Melaka', 'Melaka', '75000', 'Malaysia', 1, '2025-11-07 15:40:00', 2.18960000, 102.25010000),
-('ADRS0008', 'ME0008', 'Aiman Rahman', '135 Ocean Road', '', 'Ampang', 'Selangor', '68000', 'Malaysia', 1, '2025-11-08 16:45:00', 3.14480000, 101.74150000),
-('ADRS0009', 'ME0009', 'Tan Mei Ling', '864 Mountain Lane', '', 'Penang', 'Penang', '10080', 'Malaysia', 1, '2025-11-09 17:50:00', 5.41640000, 100.33270000),
-('ADRS0010', 'ME0010', 'Kumar Raj', '753 Forest Street', 'Unit 10C', 'Kuala Lumpur', 'W.P. Kuala Lumpur', '50450', 'Malaysia', 1, '2025-11-10 18:55:00', 3.13900000, 101.68690000),
-('ADRS0011', 'ME0011', 'Farah Naz', '951 Riverbank Rd', '', 'Putrajaya', 'W.P. Putrajaya', '62000', 'Malaysia', 1, '2025-11-11 09:00:00', 2.92640000, 101.69640000),
-('ADRS0012', 'ME0012', 'Lim Hui', '159 Hilltop Ave', 'Unit 12B', 'Penang', 'Penang', '10100', 'Malaysia', 1, '2025-11-12 10:05:00', 5.41640000, 100.33270000),
-('ADRS0013', 'ME0013', 'Aizat Amin', '357 Valley Street', 'Unit 13C', 'Kota Bharu', 'Kelantan', '15000', 'Malaysia', 1, '2025-11-13 11:10:00', 6.12500000, 102.23830000),
-('ADRS0014', 'ME0014', 'Hani Syazwani', '753 Garden Lane', '', 'Pahang', 'Pahang', '25000', 'Malaysia', 1, '2025-11-14 12:15:00', 3.80710000, 103.32620000),
-('ADRS0015', 'ME0015', 'Lim Siew', '951 Lakeview Blvd', 'Unit 15A', 'Selangor', 'Selangor', '43000', 'Malaysia', 1, '2025-11-15 13:20:00', 3.07380000, 101.51830000);
-
+INSERT INTO `address` (`address_id`, `user_id`, `recipient_name`, `address_line1`, `address_line2`, `city`, `state`, `postcode`, `country`, `default_flag`, `created_at`) VALUES
+('ADRS0001', 'ME0001', 'Mary Lee', '123 Main Street', 'Unit 1A', 'Kuala Lumpur', 'W.P. Kuala Lumpur', '50000', 'Malaysia', 1, '2025-11-01 09:05:00'),
+('ADRS0002', 'ME0002', 'John Tan', '456 Market Road', '', 'Shah Alam', 'Selangor', '40000', 'Malaysia', 1, '2025-11-02 10:15:00'),
+('ADRS0003', 'ME0003', 'Lim Wei', '789 Hill Street', 'Apt 12B', 'Penang', 'Penang', '10050', 'Malaysia', 1, '2025-11-03 11:20:00'),
+('ADRS0004', 'ME0004', 'Nur Aini', '321 River Lane', '', 'Kota Kinabalu', 'Sabah', '88000', 'Malaysia', 1, '2025-11-04 12:25:00'),
+('ADRS0005', 'ME0005', 'Ahmad Faiz', '654 Garden Avenue', 'Unit 5C', 'Ipoh', 'Perak', '30000', 'Malaysia', 1, '2025-11-05 13:30:00'),
+('ADRS0006', 'ME0006', 'Siti Hawa', '987 Sunset Blvd', '', 'Petaling Jaya', 'Selangor', '46000', 'Malaysia', 1, '2025-11-06 14:35:00'),
+('ADRS0007', 'ME0007', 'Lee Chong', '246 Sunrise Street', 'Unit 7B', 'Melaka', 'Melaka', '75000', 'Malaysia', 1, '2025-11-07 15:40:00'),
+('ADRS0008', 'ME0008', 'Aiman Rahman', '135 Ocean Road', '', 'Ampang', 'Selangor', '68000', 'Malaysia', 1, '2025-11-08 16:45:00'),
+('ADRS0009', 'ME0009', 'Tan Mei Ling', '864 Mountain Lane', '', 'Penang', 'Penang', '10080', 'Malaysia', 1, '2025-11-09 17:50:00'),
+('ADRS0010', 'ME0010', 'Kumar Raj', '753 Forest Street', 'Unit 10C', 'Kuala Lumpur', 'W.P. Kuala Lumpur', '50450', 'Malaysia', 1, '2025-11-10 18:55:00'),
+('ADRS0011', 'ME0011', 'Farah Naz', '951 Riverbank Rd', '', 'Putrajaya', 'W.P. Putrajaya', '62000', 'Malaysia', 1, '2025-11-11 09:00:00'),
+('ADRS0012', 'ME0012', 'Lim Hui', '159 Hilltop Ave', 'Unit 12B', 'Penang', 'Penang', '10100', 'Malaysia', 1, '2025-11-12 10:05:00'),
+('ADRS0013', 'ME0013', 'Aizat Amin', '357 Valley Street', 'Unit 13C', 'Kota Bharu', 'Kelantan', '15000', 'Malaysia', 1, '2025-11-13 11:10:00'),
+('ADRS0014', 'ME0014', 'Hani Syazwani', '753 Garden Lane', '', 'Pahang', 'Pahang', '25000', 'Malaysia', 1, '2025-11-14 12:15:00'),
+('ADRS0015', 'ME0015', 'Lim Siew', '951 Lakeview Blvd', 'Unit 15A', 'Selangor', 'Selangor', '43000', 'Malaysia', 1, '2025-11-15 13:20:00');
 -- --------------------------------------------------------
 
 --
@@ -346,6 +343,8 @@ CREATE TABLE `payment` (
   `card_funding` varchar(10) DEFAULT NULL,
   `last4` varchar(4) DEFAULT NULL,
   `bank_name` varchar(30) DEFAULT NULL,
+  `refund_id` varchar(255) DEFAULT NULL,
+  `refund_date` timestamp NULL DEFAULT NULL,
   `status` varchar(50) NOT NULL,
   `failed_reason` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -354,30 +353,30 @@ CREATE TABLE `payment` (
 -- Dumping data for table `payment`
 --
 
-INSERT INTO `payment` (`payment_id`, `order_id`, `amount`, `transaction_date`, `stripe_session_id`, `stripe_payment_intent`, `stripe_payment_method`, `payment_method_type`, `card_brand`, `card_funding`, `last4`, `bank_name`, `status`, `failed_reason`) VALUES
-('PAY0001', 'OR0001', 630, '2025-11-01 02:02:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0002', 'OR0002', 420, '2025-11-02 03:02:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0003', 'OR0004', 1050, '2025-11-04 05:02:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0004', 'OR0006', 420, '2025-11-06 07:05:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0005', 'OR0007', 420, '2025-11-07 08:02:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0006', 'OR0008', 735, '2025-11-08 09:03:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0007', 'OR0010', 420, '2025-11-10 11:02:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0008', 'OR0012', 700, '2025-11-12 02:32:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0009', 'OR0013', 525, '2025-11-13 03:17:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0010', 'OR0014', 420, '2025-11-14 04:47:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0011', 'OR0003', 210, '2025-11-03 04:00:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0012', 'OR0005', 420, '2025-11-05 06:00:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0013', 'OR0009', 420, '2025-11-09 10:00:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0014', 'OR0011', 210, '2025-11-11 01:00:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0015', 'OR0015', 420, '2025-11-15 05:20:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0016', 'OR0016', 700, '2025-11-05 02:00:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0017', 'OR0017', 420, '2025-11-06 03:00:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0018', 'OR0018', 420, '2025-11-07 04:00:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0019', 'OR0019', 420, '2025-11-08 05:00:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0020', 'OR0020', 630, '2025-11-09 06:00:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0021', 'OR0021', 420, '2025-11-21 09:01:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0022', 'OR0022', 315, '2025-11-22 10:31:00', '', '', '', '', '', '', '', '', 'succeeded', NULL),
-('PAY0023', 'OR0023', 420, '2025-11-23 14:16:00', '', '', '', '', '', '', '', '', 'succeeded', NULL);
+INSERT INTO `payment` (`payment_id`, `order_id`, `amount`, `transaction_date`, `stripe_session_id`, `stripe_payment_intent`, `stripe_payment_method`, `payment_method_type`, `card_brand`, `card_funding`, `last4`, `bank_name`, `refund_id`, `refund_date`, `status`, `failed_reason`) VALUES
+('PAY0001', 'OR0001', 630, '2025-11-01 02:02:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0002', 'OR0002', 420, '2025-11-02 03:02:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0003', 'OR0004', 1050, '2025-11-04 05:02:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0004', 'OR0006', 420, '2025-11-06 07:05:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0005', 'OR0007', 420, '2025-11-07 08:02:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0006', 'OR0008', 735, '2025-11-08 09:03:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0007', 'OR0010', 420, '2025-11-10 11:02:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0008', 'OR0012', 700, '2025-11-12 02:32:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0009', 'OR0013', 525, '2025-11-13 03:17:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0010', 'OR0014', 420, '2025-11-14 04:47:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0011', 'OR0003', 210, '2025-11-03 04:00:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0012', 'OR0005', 420, '2025-11-05 06:00:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0013', 'OR0009', 420, '2025-11-09 10:00:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0014', 'OR0011', 210, '2025-11-11 01:00:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0015', 'OR0015', 420, '2025-11-15 05:20:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0016', 'OR0016', 700, '2025-11-05 02:00:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0017', 'OR0017', 420, '2025-11-06 03:00:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0018', 'OR0018', 420, '2025-11-07 04:00:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0019', 'OR0019', 420, '2025-11-08 05:00:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0020', 'OR0020', 630, '2025-11-09 06:00:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0021', 'OR0021', 420, '2025-11-21 09:01:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0022', 'OR0022', 315, '2025-11-22 10:31:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL),
+('PAY0023', 'OR0023', 420, '2025-11-23 14:16:00', '', '', '', '', '', '', '', '', NULL, NULL, 'succeeded', NULL);
 
 -- --------------------------------------------------------
 
@@ -682,6 +681,7 @@ ALTER TABLE `cart_item`
 --
 ALTER TABLE `payment`
   ADD CONSTRAINT `payment_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `order` (`order_id`);
+COMMIT;
 
 --
 -- Constraints for table `product`
