@@ -170,7 +170,7 @@ $_title = 'Login | Four Eyes Collective';
         <form method="post" class="login-form">
             <div class="form-group">
                 <label for="email">Email *</label>
-                <input type="email" id="email" name="email" class="form-control" placeholder="your@email.com" maxlength="100" value="<?= encode($GLOBALS['email'] ?? '') ?>" required>
+                <input type="email" id="email" name="email" class="form-control" placeholder="your@email.com" maxlength="100" value="<?= encode($GLOBALS['email'] ?? '') ?>" autofocus required>
                 <?= err('email') ?>
             </div>
 

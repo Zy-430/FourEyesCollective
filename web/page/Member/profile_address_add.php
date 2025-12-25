@@ -101,7 +101,7 @@ include '../../_head.php';
 
         <div class="form-group">
             <label>Address Line 1 *</label>
-            <input type="text" name="address_line1" class="form-control" required>
+            <input type="text" name="address_line1" class="form-control" autofocus required>
         </div>
 
         <div class="form-group">
@@ -126,7 +126,7 @@ include '../../_head.php';
 
         <div class="form-group">
             <label>Postcode *</label>
-            <input type="text" name="postcode" class="form-control" required>
+            <input type="text" name="postcode" class="form-control" maxlength="5" required>
         </div>
 
         <div class="form-group">

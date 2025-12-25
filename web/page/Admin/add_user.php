@@ -257,7 +257,7 @@ if (is_post()) {
                 <!-- Email -->
                 <div class="form-group">
                     <label for="email">Email *</label>
-                    <input type="email" id="email" name="email" class="form-control" required
+                    <input type="email" id="email" name="email" class="form-control" required autofocus
                         placeholder="<?= $role ?>@email.com" maxlength="100"
                         value="<?= encode($GLOBALS['email'] ?? '') ?>">
                     <?= err('email') ?>

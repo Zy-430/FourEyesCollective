@@ -192,7 +192,7 @@ if (is_post()) {
                 <div class="form-group">
                     <label><?= $user->role ?> ID</label>
                     <input type="text" id="id" name="user_id" class="form-control" required
-                        value="<?= $user->user_id ?>" readonly>
+                        value="<?= $user->user_id ?>" disabled>
                 </div>
 
                 <!-- Email -->
@@ -314,7 +314,7 @@ if (is_post()) {
                     <label for="registration_date">Registration Date</label>
                     <?php $reg_date = date('Y-m-d', strtotime($user->registration_date)); ?>
                     <input type="date" id="registration_date" name="registration_date" class="form-control"
-                        value="<?= encode($reg_date) ?>" readonly>
+                        value="<?= encode($reg_date) ?>" disabled>
                 </div>
 
                 <!-- Status -->

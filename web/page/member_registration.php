@@ -255,7 +255,7 @@ $_title = 'Member Registration | Four Eyes Collective';
                     <label for="email">Email *</label>
                     <input type="email" id="email" name="email" class="form-control"
                         placeholder="your@email.com" maxlength="100"
-                        value="<?= encode($GLOBALS['email'] ?? '') ?>" required>
+                        value="<?= encode($GLOBALS['email'] ?? '') ?>" autofocus required>
                     <?= err('email') ?>
                 </div>
 

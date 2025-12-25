@@ -68,7 +68,7 @@ $_title = 'Resend Verification Email | Four Eyes Collective"';
                 <label for="email">Email *</label>
                 <input type="email" id="email" name="email" class="form-control" style="width:96%;"
                     placeholder="your@email.com" maxlength="100"
-                    value="<?= encode($GLOBALS['email'] ?? '') ?>" required>
+                    value="<?= encode($GLOBALS['email'] ?? '') ?>" autofocus required>
                 <?= err('email') ?>
             </div>
 

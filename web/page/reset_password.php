@@ -171,7 +171,7 @@ $_title = 'Reset Password | Four Eyes Collective"';
                     <div class="form-group">
                         <label for="password">New Password *</label>
                         <input type="password" id="password" name="password" class="form-control"
-                            placeholder="Enter new password (8-15 characters)" maxlength="15" required
+                            placeholder="Enter new password (8-15 characters)" maxlength="15" autofocus required
                             autocomplete="new-password">
                         <?= err('password') ?>
                     </div>

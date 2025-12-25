@@ -56,7 +56,7 @@ $_title = "Modify Category | Four Eyes Collective";
             <div class="form-row">
                 <div class="form-group">
                     <label>Category ID</label>
-                    <input type="text" value="<?= $c->category_id ?>" readonly class="form-control">
+                    <input type="text" value="<?= $c->category_id ?>" disabled class="form-control">
                 </div>
 
                 <div class="form-group">

@@ -134,7 +134,7 @@ if (is_post()) {
             <div class="form-row">
                 <div class="form-group">
                     <label>Product ID:</label>
-                    <input type="text" value="<?= $p->product_id ?>" class="form-control" readonly>
+                    <input type="text" value="<?= $p->product_id ?>" class="form-control" disabled>
                 </div>
 
                 <div class="form-group">
