@@ -26,7 +26,7 @@ $return_url = trim($return_url);
 $path = parse_url($return_url, PHP_URL_PATH) ?: $return_url;
 
 // Validate return URL to prevent open redirects
-$allowed_returns = ['/page/homepage.php', '/page/shoppage.php', '/page/wishlist.php'];
+$allowed_returns = ['/page/homepage.php', '/page/shoppage.php', '/page/Member/wishlist.php'];
 if (!in_array($path, $allowed_returns)) {
     $return_url = '/page/homepage.php';
 } else {
@@ -60,7 +60,7 @@ $_title = $p->product_name;
 include '../_head.php';
 ?>
 <!-- BACK BUTTON -->
-<div style="margin-bottom: 20px;">
+<div style="margin-top:20px;margin-bottom: 5px;">
     <a href="<?= encode($return_url) ?>" style="text-decoration: none; color: #2c3e50; font-size: 16px; display: inline-flex; align-items: center; gap: 8px;">
         <i class="fa fa-long-arrow-left"></i>
         <span>Back to 
@@ -72,7 +72,7 @@ include '../_head.php';
                 case '/page/shoppage.php':
                     echo 'Shop';
                     break;
-                case '/page/wishlist.php':
+                case '/page/Member/wishlist.php':
                     echo 'Wishlist';
                     break;
                 default:
@@ -365,5 +365,4 @@ include '../_head.php';
 </script>
 
 <script src="/js/notifications.js"></script>
-<script src="/js/wishlist.js"></script>
 <?php include '../_foot.php'; ?>

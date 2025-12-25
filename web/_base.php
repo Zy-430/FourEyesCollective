@@ -400,7 +400,9 @@ function generateAdminID($db)
     return "AD" . str_pad($num, 4, "0", STR_PAD_LEFT);
 }
 
-
+// ============================================================================
+// Admin sidebar state
+// ============================================================================
 function getSidebarState() {
     // Check session first
     if (isset($_SESSION['admin_sidebar_collapsed'])) {

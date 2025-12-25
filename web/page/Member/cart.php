@@ -3,6 +3,8 @@ require '../../_base.php';
 require '../../lib/db.php';
 require '../../lib/category.php';
 
+auth('Member');
+
 if (!$_user) {
     temp('error', 'Please login to view your cart');
     redirect('/page/login.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));

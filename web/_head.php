@@ -131,7 +131,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
                         </span>
                     </a>
 
-                    <a href="/page/wishlist.php" class="wishlist-link">
+                    <a href="/page/Member/wishlist.php" class="wishlist-link">
                         <img src="/images/heart.png" alt="Wishlist">
                     </a>
 
