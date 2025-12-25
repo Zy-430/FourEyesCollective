@@ -142,6 +142,55 @@ body {
     transform: scale(1.1);
 }
 
+/* Prevent sidebar transition on page load - use when collapse sidebar */
+body.sidebar-loading .admin-sidebar,
+body.sidebar-loading .collapse-btn,
+body.sidebar-loading .admin-header,
+body.sidebar-loading .admin-content {
+    transition: none !important;
+}
+
+.admin-sidebar.collapsed {
+    transform: translateX(-300px) !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    overflow: hidden;
+}
+
+.admin-sidebar.collapsed .logo,
+.admin-sidebar.collapsed .admin-menu,
+.admin-sidebar.collapsed .admin-account,
+.admin-sidebar.collapsed .admin-menu a span,
+.admin-sidebar.collapsed .admin-menu a,
+.admin-sidebar.collapsed .admin-menu a i {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.admin-sidebar.collapsed ~ .admin-header {
+    margin-left: 0 !important;
+    padding-left: 80px !important;
+    padding-right: 90px !important;
+}
+
+.admin-sidebar.collapsed ~ .admin-content {
+    margin-left: 20px !important;
+    width: calc(100% - 40px) !important;
+}
+
+.admin-sidebar.collapsed + .collapse-btn {
+    left: 20px !important;
+    background: #162b65 !important;
+}
+
+/* After page loads, restore transitions */
+.admin-sidebar,
+.collapse-btn,
+.admin-header,
+.admin-content {
+    transition: all 0.3s ease;
+}
+
 /* Top section */
 .admin-header {
     padding: 2.5rem;
@@ -386,8 +435,6 @@ i {
     height: 100% !important;
 }
 
-
-
 /* Content Header */
 .content-header {
     display: flex;
@@ -404,7 +451,6 @@ i {
     align-items: center;
     gap: 16px;
 }
-
 
 /* Buttons */
 .btn-default {
@@ -1015,23 +1061,19 @@ i {
 /* Smaller header actions */
 .header-actions.small {
     gap: 10px;
-    /* Reduced gap */
 }
 
 .header-actions.small .btn-default {
     padding: 8px 15px;
-    /* Reduced padding */
     font-size: 12px;
 }
 
 .header-actions.small .btn-add {
     padding: 8px 16px;
-    /* Reduced padding */
 }
 
 .header-actions.small .search-box {
     padding: 6px 14px 6px 36px;
-    /* Reduced padding */
 }
 
 .header-actions.small .search-box i {
@@ -1041,19 +1083,15 @@ i {
 
 .header-actions.small .search-box input {
     width: 160px;
-    /* Smaller search input */
     font-size: 13px;
 }
 
-/* Adjust dropdown button for smaller size */
 .header-actions.small .dropdown .btn-default {
     padding: 8px 15px;
 }
 
-/* Adjust filter dropdown content for smaller size */
 .header-actions.small .dropdown-content {
     min-width: 350px;
-    /* Smaller width */
     padding: 12px;
     margin-top: 8px;
 }
@@ -1079,42 +1117,32 @@ i {
     min-width: 110px !important;
 }
 
-/* Adjust icons in buttons */
 .header-actions.small .btn-default i {
     font-size: 16px;
 }
 
-/* Make the filter tag smaller in header */
 .header-actions.small .filter-tag {
     padding: 3px 8px;
     font-size: 12px;
     margin: 0;
 }
 
-/* Adjust content header spacing when using small header */
 .content-header.compact {
     padding: 15px 0;
     margin-bottom: 20px;
 }
 
-/* Smaller table size - Add this new class */
 .table-small {
     font-size: 0.9em;
-    /* Reduce font size proportionally */
 }
 
-/* Adjust table headers for smaller size */
 .table-small th {
     padding: 12px 8px;
-    /* Reduced padding */
     font-size: 16px;
-    /* Smaller font size */
 }
 
-/* Adjust table cells for smaller size */
 .table-small td {
     padding: 8px 8px;
-    /* Reduced padding */
     font-size: 14px;
 }
 
@@ -1176,7 +1204,6 @@ i {
 /* Adjust filter tags for smaller table */
 .filter-content {
     padding: 8px 20px;
-    /* Reduced padding */
     margin-bottom: 5px;
     margin-top: 5px;
 }
@@ -1190,17 +1217,13 @@ i {
     font-size: 16px;
 }
 
-/* Adjust search box for smaller size */
 .search-box input {
     width: 180px;
-    /* Slightly smaller */
     font-size: 13px;
 }
 
-/* Adjust dropdown content for smaller size */
 .dropdown-content {
     min-width: 400px;
-    /* Reduced width */
     padding: 15px;
 }
 
@@ -1216,12 +1239,10 @@ i {
     min-width: 120px !important;
 }
 
-/* Adjust header actions spacing */
 .header-actions {
     gap: 12px;
 }
 
-/* Adjust content header for smaller size */
 .content-header {
     margin-bottom: 10px;
     padding: 10px 0;
@@ -1235,9 +1256,7 @@ i {
     font-size: clamp(0.9rem, 1.8vw, 1.1rem);
 }
 
-
-/* Product page card design*/
-/* Main layout for view_product.php */
+/* Product page card design for view_product.php */
 .admin-content .view-products-container {
     display: flex;
     gap: 30px;
@@ -1352,10 +1371,8 @@ i {
 .view-products-content {
     flex: 1;
     min-width: 0;
-    /* Prevent flex item overflow */
 }
 
-/* Sort header */
 .view-products-sort-header {
     display: flex;
     justify-content: space-between;
@@ -1556,7 +1573,7 @@ i {
     font-size: 1rem;
 }
 
-/* Hide (visible → hidden) */
+/* Hide (visible to hidden) */
 .toggle-review-btn[data-status="visible"] {
     background: #b42323;
     color: #fff;
@@ -1566,7 +1583,7 @@ i {
     background-color: #c0392b;
 }
 
-/* Unhide (hidden → visible) */
+/* Unhide (hidden to visible) */
 .toggle-review-btn[data-status="hidden"] {
     background: #23b46e;
     color: #fff;
@@ -1581,9 +1598,7 @@ i {
     transform: scale(0.97);
 }
 
-
-/* Profile*/
-/* Profile page wrapper */
+/* Profile page */
 .page-container,
 .profile-section,
 .profile-page {
@@ -1607,8 +1622,6 @@ i {
     width: 100%;
     padding-left: 20px;
 }
-
-
 
 /* Profile container */
 .profile-container,
@@ -2049,7 +2062,6 @@ a[href="javascript:history.back()"] {
     font-size: 12px;
     color: #7f8c8d;
 }
-
 
 /* Return Modal */
 .return-modal {

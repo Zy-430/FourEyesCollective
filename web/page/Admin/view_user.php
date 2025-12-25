@@ -213,7 +213,6 @@ if (get('msg') == 'added') {
                 ?>
 
                 <tr>
-                    
                     <td><?= $u->user_id ?></td>
                     <!-- Show user name and profile photo (click the photo can enlarge it) -->
                     <td class="name-container">
@@ -221,7 +220,7 @@ if (get('msg') == 'added') {
                             class="member-avatar clickable-photo" onclick="openPhotoModal(this.src)">
                         <?= $u->name ?>
                     </td>
-                    <td style="max-width: 150px;"><?= $u->email ?></td>
+                    <td><?= $u->email ?></td>
                     <td><?= $u->gender ?></td>
                     <td>0<?= $u->phone ?></td>
                     <td><?= $u->date_of_birth ?></td>

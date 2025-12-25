@@ -12,6 +12,18 @@ $(document).ready(function () {
     $(document).on("click", function () {
         $(".user-dropdown").removeClass("active");
     });
+    // Apply persisted admin sidebar state (collapsed / expanded)
+    if (typeof applySidebarState === 'function') {
+        try {
+            // Temporarily disable transitions so restoring the state doesn't animate
+            document.body.classList.add('no-transition');
+            applySidebarState();
+            // Force reflow to ensure the styles are applied immediately
+            void document.body.offsetHeight;
+            // Remove the disabling class shortly after
+            setTimeout(() => document.body.classList.remove('no-transition'), 50);
+        } catch (e) { }
+    }
 });
 
 
@@ -47,7 +59,63 @@ function toggleSidebar() {
     } else {
         icon.className = 'fas fa-chevron-left';
     }
+
+    // Persist collapse state in localStorage
+    try {
+        const collapsed = sidebar.classList.contains('collapsed');
+        localStorage.setItem('adminSidebarCollapsed', collapsed ? '1' : '0');
+
+        // Send to server via AJAX to store in session
+        fetch('/page/ajax/sidebar_state.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ collapsed: collapsed })
+        });
+    } catch (e) { }
 }
+
+function applySidebarState() {
+    // Prevent transitions during state restoration
+    document.body.classList.add('no-transition');
+
+    try {
+        const sidebar = document.querySelector('.admin-sidebar');
+        const collapseBtn = document.querySelector('.collapse-btn');
+        const icon = collapseBtn ? collapseBtn.querySelector('i') : null;
+
+        // Check both localStorage and session
+        const collapsed = localStorage.getItem('adminSidebarCollapsed') === '1';
+
+        if (!sidebar) return;
+
+        if (collapsed) {
+            sidebar.classList.add('collapsed');
+        } else {
+            sidebar.classList.remove('collapsed');
+        }
+
+        if (icon) {
+            icon.className = sidebar.classList.contains('collapsed')
+                ? 'fas fa-chevron-right'
+                : 'fas fa-chevron-left';
+        }
+
+        // Force reflow to ensure styles are applied
+        void sidebar.offsetWidth;
+
+    } catch (e) { }
+
+    // Remove the transition block after a short delay
+    setTimeout(() => {
+        document.body.classList.remove('no-transition');
+    }, 50);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    applySidebarState();
+});
 
 // ============================================================================
 // User photo Modal
@@ -383,7 +451,7 @@ function addToCart(productId) {
 }
 
 // Delegate clicks on elements with .add-to-cart to the addToCart function
-$(document).on('click', '.add-to-cart', function(e){
+$(document).on('click', '.add-to-cart', function (e) {
     e.preventDefault();
     const productId = $(this).data('product-id') || $(this).attr('data-product-id');
     if (!productId) return;
