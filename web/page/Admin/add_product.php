@@ -5,7 +5,8 @@ include '../../_admin_head.php';
 require '../../lib/category.php';
 auth('Admin');
 
-$_title = 'Add Product';
+$_title = "Add Product | Four Eyes Collective";
+
 
 // Auto-generate product ID
 function generateProductID($db)
@@ -87,12 +88,12 @@ if (is_post()) {
             <div class="form-row">
                 <div class="form-group">
                     <label>Product ID:</label>
-                    <input type="text" name="product_id" value="<?= $product_id ?>" class="form-control" readonly>
+                    <input type="text" name="product_id" value="<?= $product_id ?>" class="form-control" disabled>
                 </div>
 
                 <div class="form-group">
                     <label>Product Name:</label>
-                    <input type="text" name="product_name" class="form-control" required>
+                    <input type="text" name="product_name" class="form-control" autofocus required>
                 </div>
 
                 <div class="form-group">

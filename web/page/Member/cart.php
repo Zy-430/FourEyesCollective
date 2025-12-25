@@ -3,12 +3,16 @@ require '../../_base.php';
 require '../../lib/db.php';
 require '../../lib/category.php';
 
+auth('Member');
+
 if (!$_user) {
     temp('error', 'Please login to view your cart');
     redirect('/page/login.php?redirect=' . urlencode($_SERVER['REQUEST_URI']));
 }
 
 $user_id = $_user->user_id;
+
+
 
 function is_ajax()
 {
@@ -283,7 +287,4 @@ include '../../_head.php';
         </div>
     <?php endif; ?>
 </div>
-
-<script src="../../js/cart.js"></script>
-
 <?php include '../../_foot.php'; ?>

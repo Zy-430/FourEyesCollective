@@ -61,7 +61,7 @@ if ($token) {
 }
 
 // ----------------------------------------------------------------------------
-$_title = 'Account Verification';
+$_title = 'Account Verification | Four Eyes Collective';
 ?>
 <!DOCTYPE html>
 <html lang="en">

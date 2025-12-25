@@ -2,20 +2,6 @@
 require '../_base.php';
 require '../lib/db.php';
 
-?>
-<script>
-    (function() {
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() {
-                document.body.classList.add('product');
-            });
-        } else {
-            document.body.classList.add('product');
-        }
-    })();
-</script>
-<?php
-
 auth();
 $order_id = $_GET['order_id'] ?? null;
 if (!$order_id) exit("Invalid order");
@@ -36,7 +22,6 @@ $stm = $_db->prepare("
     WHERE o.order_id = ? 
     AND (o.user_id = ? OR ? = 1)
 ");
-
 
 $stm->execute([$order_id, $_user->user_id, $isAdmin ? 1 : 0]);
 $order = $stm->fetch(PDO::FETCH_ASSOC);
@@ -111,10 +96,6 @@ if ($_user->role === 'Admin') {
 
 <div class="page-container">
 
-    <a href="javascript:history.back()" style="text-decoration: none; color: #2c3e50; font-size: 16px; display: inline-flex; align-items: center; gap: 8px;">
-        <i class="fas fa-arrow-left" style="color: black;"></i> Back
-    </a>
-
     <!-- Order Info Card -->
     <div class="card order-card">
         <span class="order-status-badge" style="background:<?= statusColor($order['status']) ?>;">
@@ -160,9 +141,8 @@ if ($_user->role === 'Admin') {
                         <?= ucfirst($order['card_brand'] ?? 'Card') ?>
                         <?php if (!empty($order['card_funding'])): ?> <?= ucfirst($order['card_funding']) ?>
                         <?php endif; ?>
-                        <?php if (!empty($order['last4'])): ?>
-                            <br>
-                            **** **** **** <?= $order['last4'] ?>
+                        <?php if (!empty($order['last4'])): ?> &nbsp;
+                            ( **** **** **** <?= $order['last4'] ?> )
                         <?php endif; ?>
                     <?php elseif ($order['payment_brand'] === 'fpx'): ?>
                         Online Banking
@@ -199,11 +179,37 @@ if ($_user->role === 'Admin') {
     <?php else: ?>
 
         <!-- Payment Summary Card -->
-        <div class="card admin-view">
+        <div class="card">
             <h3>💳 Payment Details</h3>
             <p><strong>Total Amount:</strong> RM <?= number_format($order['total_amount'], 2) ?></p>
-            <p><strong>Payment Method:</strong> <?= $order['payment_brand'] ?? '-' ?></p>
-            <p><strong>Transaction Date:</strong> <?= $order['transaction_date'] ? date('d M Y H:i', strtotime($order['transaction_date'])) : '-' ?></p>
+            <p><strong>Payment Method:</strong>
+                <?php if ($order['payment_brand'] === 'card'): ?>
+                    <?= ucfirst($order['card_brand'] ?? 'Card') ?>
+                    <?php if (!empty($order['card_funding'])): ?> <?= ucfirst($order['card_funding']) ?>
+                    <?php endif; ?>
+                    <?php if (!empty($order['last4'])): ?> &nbsp;
+                        ( **** **** **** <?= $order['last4'] ?> )
+                    <?php endif; ?>
+                <?php elseif ($order['payment_brand'] === 'fpx'): ?>
+                    Online Banking
+                    <?php if (!empty($order['bank_name'])): ?>
+                        <br>
+                        <?= $order['bank_name'] ?>
+                    <?php endif; ?>
+                <?php elseif ($order['payment_brand'] === 'grabpay'): ?>
+                    GrabPay
+                <?php else: ?>
+                    <?= ucfirst($order['payment_brand'] ?? 'Unknown') ?>
+                <?php endif; ?>
+            </p>
+            <p><strong>Transaction Date:</strong>
+                <?= !empty($order['transaction_date']) ? date('d M Y H:i', strtotime($order['transaction_date'])) : '-' ?>
+            </p>
+            <?php if (!empty($order['refund_date'])): ?>
+                <p><strong>Refund Date:</strong>
+                    <?= date('d M Y H:i', strtotime($order['refund_date'])) ?>
+                </p>
+            <?php endif; ?>
         </div>
 
         <!-- Shipping Address Card -->

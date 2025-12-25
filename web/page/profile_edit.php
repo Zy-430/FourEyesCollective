@@ -2,7 +2,7 @@
 require '../_base.php';
 require '../lib/db.php';
 
-auth('Admin', 'Member');
+auth();
 
 $user_id = $_user->user_id;
 
@@ -89,8 +89,13 @@ if (is_post()) {
 }
 
 $_title = "Edit Profile | Four Eyes Collective";
-$_css = ['profile.css'];
-include '../_head.php';
+// Determine which header/footer and CSS to use based on role
+if ($_user->role === 'Admin') {
+    include '../_admin_head.php'; // Admin header
+} else {
+    $_css = ['profile.css'];
+    include '../_head.php'; // Member header
+}
 ?>
 
 <section class="profile-section">
@@ -111,7 +116,7 @@ include '../_head.php';
             <div class="form-group">
                 <label>Phone (+60) *</label>
                 <div style="display:flex; gap:10px;">
-                    <span style="background:#ecf0f1;padding:12px 15px;border-radius:8px;">+60</span>
+                    <span style="font-size:14px;background:#ecf0f1;padding:10px 13px;border-radius:8px;">+60</span>
                     <input type="text" name="phone" class="form-control" style="flex:1;" pattern="[1-9][0-9]{7,9}" required value="<?= ltrim($user->phone, '0') ?>" title="8-10 digits without leading 0. Example: 12345678">
                 </div>
             </div>
@@ -139,15 +144,16 @@ include '../_head.php';
             </div>
 
             <div class="form-actions">
-                <button class="cta-button primary" type="submit">Save Changes</button>
+                <button class="cta-button primary" type="submit">Save</button>
                 <a href="profile_page.php" class="cta-button secondary">Cancel</a>
             </div>
         </form>
     </div>
 </section>
 
-<?php include '../_foot.php'; ?>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="/js/notifications.js"></script>
+
 <script>
     $(function() {
         <?php if (!empty($_SESSION['error'])): ?>
@@ -160,3 +166,13 @@ include '../_head.php';
         <?php endif; ?>
     });
 </script>
+
+<?php
+// Conditionally include footer based on role
+if ($_user->role === 'Admin') {
+    // Admin pages don't have a footer file, just close the HTML
+    echo '</body></html>';
+} else {
+    include '../_foot.php'; // Member footer
+}
+?>

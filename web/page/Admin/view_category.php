@@ -4,7 +4,8 @@ require '../../lib/db.php';
 include '../../_admin_head.php';
 auth('Admin');
 
-$_title = 'Manage Categories';
+$_title = 'Manage Categories | Four Eyes Collective';
+
 
 // Sorting
 $fields = [
@@ -69,8 +70,8 @@ if (get('msg') == 'added') {
 
             <thead>
                 <tr>
-                    <th style="text-align:center;">Actions</th>
                     <?= table_headers($fields, $sort, $dir) ?>
+                    <th style="text-align:center;">Actions</th>
                 </tr>
             </thead>
 
@@ -84,21 +85,6 @@ if (get('msg') == 'added') {
                 <?php else: ?>
                     <?php foreach ($categories as $c): ?>
                         <tr>
-                            <td class="actions-row">
-                                <div class="action-buttons" style="justify-content:center; gap:10px;">
-                                    <a href="modify_category.php?id=<?= $c->category_id ?>" class="btn-default edit-btn">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-
-                                    <a href="delete_category.php?id=<?= $c->category_id ?>"
-                                        onclick="return confirm('⚠ WARNING ⚠\n\nAre you VERY sure you want to delete this category?\n\nCategory: <?= $c->category_id ?>\nFolder will be deleted ONLY if empty.\n\nThis action cannot be undone!');"
-                                        class="btn-default delete-btn">
-
-                                        <i class="fas fa-trash"></i>
-                                    </a>`
-                                </div>
-                            </td>
-
                             <td>
                                 <?= encode($c->category_id) ?>
                             </td>
@@ -106,8 +92,8 @@ if (get('msg') == 'added') {
                             <td>
                                 <?= encode($c->category_name) ?>
                             </td>
-                            
-                            
+
+
                             <td>
                                 <?php if ($c->active_count > 0): ?>
                                     <a href="view_product.php?cat=<?= $c->category_id ?>&status=active"
@@ -119,7 +105,7 @@ if (get('msg') == 'added') {
                                     <span style="color:#95a5a6;">0</span>
                                 <?php endif; ?>
                             </td>
-                            
+
                             <td>
                                 <?php if ($c->inactive_count > 0): ?>
                                     <a href="view_product.php?cat=<?= $c->category_id ?>&status=inactive"
@@ -144,6 +130,22 @@ if (get('msg') == 'added') {
                                 <?php endif; ?>
                             </td>
 
+                            <td class="actions-row">
+                                <div class="action-buttons" style="justify-content:center; gap:10px;">
+                                    <a href="modify_category.php?id=<?= $c->category_id ?>" class="btn-default edit-btn">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+
+                                    <a href="delete_category.php?id=<?= $c->category_id ?>"
+                                        onclick="return confirm('⚠ WARNING ⚠\n\nAre you VERY sure you want to delete this category?\n\nCategory: <?= $c->category_id ?>\nFolder will be deleted ONLY if empty.\n\nThis action cannot be undone!');"
+                                        class="btn-default delete-btn">
+
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+
+
                         </tr>
                     <?php endforeach; ?>
                 <?php endif; ?>
@@ -155,8 +157,8 @@ if (get('msg') == 'added') {
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-    <?php if ($notification_message): ?>
-        showNotification('<?= addslashes($notification_message) ?>', '<?= $notification_type ?>');
-    <?php endif; ?>
-});
+        <?php if ($notification_message): ?>
+            showNotification('<?= addslashes($notification_message) ?>', '<?= $notification_type ?>');
+        <?php endif; ?>
+    });
 </script>

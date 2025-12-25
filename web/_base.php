@@ -399,3 +399,18 @@ function generateAdminID($db)
     $num = intval(substr($last, 2)) + 1;
     return "AD" . str_pad($num, 4, "0", STR_PAD_LEFT);
 }
+
+// ============================================================================
+// Admin sidebar state
+// ============================================================================
+function getSidebarState() {
+    // Check session first
+    if (isset($_SESSION['admin_sidebar_collapsed'])) {
+        return $_SESSION['admin_sidebar_collapsed'];
+    }
+    return false; // Default expanded
+}
+
+function setSidebarState($collapsed) {
+    $_SESSION['admin_sidebar_collapsed'] = $collapsed;
+}

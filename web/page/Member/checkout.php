@@ -23,10 +23,8 @@ $stm = $_db->prepare("
 $stm->execute([$user_id]);
 $cart_items = $stm->fetchAll(PDO::FETCH_OBJ);
 
-// Check if this is likely a refresh after payment initiation
+// Handle page refresh without POST data
 if (empty($_POST) && !$cart_items) {
-    // No items in checkout and not a form submission = likely a refresh
-    // Check if user has any orders in pending_payment
     $stm = $_db->prepare("
         SELECT order_id FROM `order` 
         WHERE user_id = ? AND status = 'pending_payment' 
@@ -34,13 +32,11 @@ if (empty($_POST) && !$cart_items) {
     ");
     $stm->execute([$user_id]);
     $pendingOrder = $stm->fetch(PDO::FETCH_OBJ);
-    
+
     if ($pendingOrder) {
-        // Cancel the pending order since user refreshed
         header("Location: cancel_payment.php?order_id=" . $pendingOrder->order_id);
         exit;
     } else {
-        // Just redirect to cart
         header("Location: cart.php");
         exit;
     }
@@ -96,7 +92,7 @@ $stm = $_db->prepare("SELECT * FROM address WHERE user_id = ? ORDER BY default_f
 $stm->execute([$user_id]);
 $addresses = $stm->fetchAll(PDO::FETCH_OBJ);
 
-// Handle form submission - RESTORED THE ORIGINAL LOGIC
+// Handle form submission for payment
 if (is_post()) {
     $address_id = post('address_id');
     $action = post('action');
@@ -130,7 +126,7 @@ if (is_post()) {
         $max = $stm->fetch()->maxid ?? 0;
         $order_id = "OR" . str_pad($max + 1, 4, "0", STR_PAD_LEFT);
 
-        // Insert order with initial status 'pending_payment' - RESTORED ORIGINAL STATUS
+        // Insert order with initial status 'pending_payment'
         $stm = $_db->prepare("
             INSERT INTO `order` (order_id, user_id, address_id, order_date, total_amount, status, cancelled_reason)
             VALUES (?, ?, ?, NOW(), ?, 'pending_payment', NULL)
@@ -251,6 +247,7 @@ if (is_post()) {
     <link rel="stylesheet" href="/css/app.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="/js/notifications.js"></script>
+    <script src="/js/checkout_flow.js"></script>
 </head>
 
 <body>
@@ -379,8 +376,14 @@ if (is_post()) {
                             <span id="btnLoading" style="display: none;" class="loading"></span>
                         </button>
 
-                        <div id="paymentError" class="error-message" style="display: none; margin-top: 15px;"></div>
-                        <div id="paymentSuccess" class="success-message" style="display: none; margin-top: 15px;"></div>
+                        <!--Cancel Button-->
+                        <a href="cancel_checkout.php" class="btn btn-secondary"
+                            id="cancelCheckoutBtn"
+                            data-user="<?= encode($_user->email) ?>"
+                            data-confirm="Are you sure you want to cancel checkout ? Your selected items will be returned to cart.">
+                            Cancel Checkout
+                        </a>
+
 
                         <p style="text-align: center; margin-top: 15px; color: #7f8c8d; font-size: 0.9rem;">
                             By completing your purchase, you agree to our <a href="#" style="color: #2c3e50;">Terms & Conditions</a>
@@ -391,7 +394,6 @@ if (is_post()) {
         </form>
     </div>
 
-    <script src="/js/checkout_flow.js"></script>
 </body>
 
 </html>

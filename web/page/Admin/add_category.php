@@ -33,7 +33,7 @@ if (is_post()) {
     header("Location: view_category.php?msg=added&cat_id=$category_id");
     exit;
 }
-
+$_title = "Add Category | Four Eyes Collective";
 ?>
 
 <div class="admin-content">
@@ -47,12 +47,12 @@ if (is_post()) {
             <div class="form-row">
                 <div class="form-group">
                     <label>Category ID</label>
-                    <input type="text" value="<?= $newCategoryId ?>" class="form-control" readonly>
+                    <input type="text" value="<?= $newCategoryId ?>" class="form-control" disabled>
                 </div>
 
                 <div class="form-group">
                     <label>Category Name</label>
-                    <input type="text" name="category_name" class="form-control" required>
+                    <input type="text" name="category_name" class="form-control" autofocus required>
                 </div>
 
                 <div class="form-group">

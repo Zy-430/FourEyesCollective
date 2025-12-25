@@ -5,7 +5,7 @@ require '../lib/category.php';
 require '../lib/SimplePager.php';
 require '../lib/product_stats.php';
 
-$_title = 'Home | Shop';
+$_title = 'Shoppage | Four Eyes Collective ';
 include '../_head.php';
 
 // Get filter parameters

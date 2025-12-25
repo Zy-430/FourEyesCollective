@@ -5,9 +5,10 @@ require '../../lib/db.php';
 auth('Member');
 $user_id = $_user->user_id;
 
-// Sorting and tab filtering (both require server-side reload)
+// Sorting, tab filtering, and search
 $sort = $_GET['sort'] ?? 'date_desc';
 $tabActive = $_GET['tab'] ?? 'all';
+$search = trim($_GET['search'] ?? '');
 
 $orderBy = match ($sort) {
     'date_asc' => 'o.order_date ASC',
@@ -25,35 +26,63 @@ if ($tabActive === 'to-ship') {
     $statusFilter = " AND o.status = '$tabActive'";
 }
 
+// Search condition
+$searchCondition = '';
+$searchParams = [];
+if ($search !== '') {
+    $searchCondition = " AND (o.order_id LIKE ? OR o.order_id IN (
+        SELECT DISTINCT oi.order_id 
+        FROM order_item oi 
+        JOIN product p ON oi.product_id = p.product_id 
+        WHERE p.product_name LIKE ?
+    ))";
+    $searchTerm = "%$search%";
+    $searchParams = [$searchTerm, $searchTerm];
+}
+
 // Pagination settings
 $page = max(1, (int)($_GET['page'] ?? 1));
 $limit = 3; // orders per page
 $offset = ($page - 1) * $limit;
 
-// Then prepare the paginated query
-$stm = $_db->prepare("
-    SELECT o.order_id, o.total_amount, o.status, o.order_date, o.delivered_at
+// Count total orders with filters
+$countSql = "
+    SELECT COUNT(DISTINCT o.order_id) 
     FROM `order` o 
-    WHERE o.user_id=? $statusFilter 
-    ORDER BY $orderBy
-    LIMIT ? OFFSET ?
-");
-
-$stm->bindValue(1, $user_id, PDO::PARAM_STR);
-$stm->bindValue(2, $limit, PDO::PARAM_INT);
-$stm->bindValue(3, $offset, PDO::PARAM_INT);
-$stm->execute();
-$orders = $stm->fetchAll(PDO::FETCH_ASSOC);
-
-$stm_count = $_db->prepare("
-    SELECT COUNT(*) 
-    FROM `order` o 
-    WHERE o.user_id=? $statusFilter
-");
-$stm_count->execute([$user_id]);
+    WHERE o.user_id=? $statusFilter $searchCondition
+";
+$stm_count = $_db->prepare($countSql);
+$stm_count->bindValue(1, $user_id, PDO::PARAM_STR);
+if ($search !== '') {
+    $stm_count->bindValue(2, $searchTerm, PDO::PARAM_STR);
+    $stm_count->bindValue(3, $searchTerm, PDO::PARAM_STR);
+}
+$stm_count->execute();
 $totalItems = $stm_count->fetchColumn();
 $totalPages = ceil($totalItems / $limit);
 
+// Fetch paginated orders
+$ordersSql = "
+    SELECT DISTINCT o.order_id, o.total_amount, o.status, o.order_date, o.delivered_at
+    FROM `order` o 
+    WHERE o.user_id=? $statusFilter $searchCondition
+    ORDER BY $orderBy
+    LIMIT ? OFFSET ?
+";
+
+$stm = $_db->prepare($ordersSql);
+$stm->bindValue(1, $user_id, PDO::PARAM_STR);
+
+$paramIndex = 2;
+if ($search !== '') {
+    $stm->bindValue($paramIndex++, $searchTerm, PDO::PARAM_STR);
+    $stm->bindValue($paramIndex++, $searchTerm, PDO::PARAM_STR);
+}
+
+$stm->bindValue($paramIndex++, $limit, PDO::PARAM_INT);
+$stm->bindValue($paramIndex, $offset, PDO::PARAM_INT);
+$stm->execute();
+$orders = $stm->fetchAll(PDO::FETCH_ASSOC);
 
 // Fetch categories for images
 $stm_cat = $_db->query("SELECT category_id, folder FROM category");
@@ -66,6 +95,7 @@ include '../../_head.php';
 
 <section class="hero-section">
     <div class="hero-inner">
+
         <h1 class="hero-title">My Orders</h1>
         <p class="hero-subtitle">Track your orders, view history, and see details of each purchase.</p>
     </div>
@@ -77,7 +107,7 @@ include '../../_head.php';
         $tabs = ['all' => 'All', 'to-ship' => 'To Ship', 'to-receive' => 'To Receive', 'completed' => 'Completed', 'cancelled' => 'Cancelled', 'returned' => 'Returned'];
         foreach ($tabs as $key => $label):
             $activeClass = $key === $tabActive ? 'active' : '';
-            $href = "?tab=" . urlencode($key) . "&sort=" . urlencode($sort);
+            $href = "?tab=" . urlencode($key) . "&sort=" . urlencode($sort) . "&search=" . urlencode($search);
         ?>
             <a href="<?= $href ?>" class="tab-button <?= $activeClass ?>">
                 <?php if ($key !== 'all'): ?>
@@ -88,20 +118,66 @@ include '../../_head.php';
         <?php endforeach; ?>
     </div>
 
-    <form method="get" class="sort-form">
-        <input type="hidden" name="tab" value="<?= htmlspecialchars($tabActive) ?>">
-        <select name="sort" class="custom-select sort-select">
-            <option value="date_desc" <?= $sort === 'date_desc' ? 'selected' : '' ?>>Newest</option>
-            <option value="date_asc" <?= $sort === 'date_asc' ? 'selected' : '' ?>>Oldest</option>
-            <option value="total_desc" <?= $sort === 'total_desc' ? 'selected' : '' ?>>Total: High → Low</option>
-            <option value="total_asc" <?= $sort === 'total_asc' ? 'selected' : '' ?>>Total: Low → High</option>
-        </select>
-    </form>
+    <!-- Combined Search and Sort Row -->
+    <div class="filter-row">
+        <!-- Search Bar -->
+        <div class="search-container">
+            <form method="get" class="search-form">
+                <input type="hidden" name="tab" value="<?= htmlspecialchars($tabActive) ?>">
+                <input type="hidden" name="sort" value="<?= htmlspecialchars($sort) ?>">
+                <input type="hidden" name="page" value="1">
+
+                <div class="search-wrapper">
+                    <input type="text"
+                        name="search"
+                        value="<?= htmlspecialchars($search) ?>"
+                        placeholder="Search by Order ID or Product Name..."
+                        class="search-input">
+                    <button type="submit" class="search-button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+
+                <?php if ($search !== ''): ?>
+                    <a href="?tab=<?= urlencode($tabActive) ?>&sort=<?= urlencode($sort) ?>"
+                        class="clear-search">
+                        <i class="fas fa-times"></i> Clear Search
+                    </a>
+                <?php endif; ?>
+            </form>
+        </div>
+
+        <!-- Sort Dropdown -->
+        <form method="get" class="sort-form">
+            <input type="hidden" name="tab" value="<?= htmlspecialchars($tabActive) ?>">
+            <input type="hidden" name="search" value="<?= htmlspecialchars($search) ?>">
+            <input type="hidden" name="page" value="1">
+            <select name="sort" class="sort-select">
+                <option value="date_desc" <?= $sort === 'date_desc' ? 'selected' : '' ?>>Sort: Newest First</option>
+                <option value="date_asc" <?= $sort === 'date_asc' ? 'selected' : '' ?>>Sort: Oldest First</option>
+                <option value="total_desc" <?= $sort === 'total_desc' ? 'selected' : '' ?>>Sort: Total High → Low</option>
+                <option value="total_asc" <?= $sort === 'total_asc' ? 'selected' : '' ?>>Sort: Total Low → High</option>
+            </select>
+        </form>
+    </div>
 
     <div id="orders-container" class="orders-container">
         <?php if (empty($orders)): ?>
-            <p class="no-orders">No orders found.</p>
+            <div class="no-orders" style="text-align: center; padding: 40px;">
+                <?php if ($search !== ''): ?>
+                    <p>No orders found matching "<strong><?= htmlspecialchars($search) ?></strong>".</p>
+                    <p><a href="?tab=<?= urlencode($tabActive) ?>&sort=<?= urlencode($sort) ?>" style="color: #3498db;">Clear search to see all orders</a></p>
+                <?php else: ?>
+                    <p>No orders found.</p>
+                <?php endif; ?>
+            </div>
         <?php else: ?>
+            <?php if ($search !== ''): ?>
+                <div class="search-results-info" style="margin-bottom: 15px; color: #666; font-size: 14px;">
+                    Found <?= $totalItems ?> order<?= $totalItems !== 1 ? 's' : '' ?> matching "<strong><?= htmlspecialchars($search) ?></strong>"
+                </div>
+            <?php endif; ?>
+
             <?php foreach ($orders as $order): ?>
                 <?php
                 $canReturn = false;
@@ -143,13 +219,15 @@ include '../../_head.php';
 
                     <div class="order-images">
                         <?php
-                        $stm_items = $_db->prepare("SELECT p.product_image, p.category_id FROM order_item oi JOIN product p ON oi.product_id = p.product_id WHERE oi.order_id=?");
+                        $stm_items = $_db->prepare("SELECT p.product_image, p.category_id, p.product_name FROM order_item oi JOIN product p ON oi.product_id = p.product_id WHERE oi.order_id=?");
                         $stm_items->execute([$order['order_id']]);
                         $items = $stm_items->fetchAll(PDO::FETCH_ASSOC);
                         foreach ($items as $item):
                             $images = explode(',', $item['product_image']);
                         ?>
-                            <img src="/images/product/<?= encode($categories[$item['category_id']] ?? 'other') ?>/<?= trim(encode($images[0])) ?>" class="order-thumb">
+                            <div class="order-image-item" title="<?= htmlspecialchars($item['product_name']) ?>">
+                                <img src="/images/product/<?= encode($categories[$item['category_id']] ?? 'other') ?>/<?= trim(encode($images[0])) ?>" class="order-thumb">
+                            </div>
                         <?php endforeach; ?>
                     </div>
 
@@ -191,7 +269,7 @@ include '../../_head.php';
             <?php if ($totalPages > 1): ?>
                 <div style="margin-top:30px; display:flex; gap:8px; justify-content:center;">
                     <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                        <a href="?page=<?= $i ?>&tab=<?= urlencode($tabActive) ?>&sort=<?= urlencode($sort) ?>"
+                        <a href="?page=<?= $i ?>&tab=<?= urlencode($tabActive) ?>&sort=<?= urlencode($sort) ?>&search=<?= urlencode($search) ?>"
                             style="padding:6px 12px; border-radius:4px; text-decoration:none; font-size:14px; <?= $i == $page ? 'background:#2c3e50;color:white;' : 'background:#ecf0f1;color:#333;' ?>">
                             <?= $i ?>
                         </a>
@@ -230,6 +308,9 @@ include '../../_head.php';
         </div>
     </div>
 </div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="/js/notifications.js"></script>
 
 <script>
     $(document).ready(function() {
