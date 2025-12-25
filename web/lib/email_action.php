@@ -4,7 +4,7 @@ require '../lib/db.php';
 require_once '../lib/PHPMailer.php';
 
 
-// Use for account verification and password reset
+// Use for account verification and password reset (with token)
 // For account verification - when user is pending , it will send link to email to activate account
 // For reset password - it will send link to email to let user reset their password 
 function sendEmailAction(string $email, string $type)

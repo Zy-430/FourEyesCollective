@@ -178,7 +178,6 @@ if (is_post()) {
     }
 }
 
-
 ?>
 
 <div class="admin-content">

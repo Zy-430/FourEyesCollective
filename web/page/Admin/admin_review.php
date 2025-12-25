@@ -92,18 +92,6 @@ $query_params[] = "dir=" . urlencode($currentDir);
 
 $query_string = implode('&', $query_params);
 
-?>
-<script>
-    (function(){
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function(){ document.body.classList.add('product'); });
-        } else {
-            document.body.classList.add('product');
-        }
-    })();
-</script>
-<?php
-
 $_title = "Admin Review | Four Eyes Collective";
 ?>
 

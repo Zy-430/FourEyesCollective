@@ -98,19 +98,6 @@ if (get('msg') == 'added') {
 } elseif (get('msg') == 'restored') {
     $notification_message = 'Product (' . $product_id . ') restored successfully!';
 } 
-
-// Use to ensure this page's body has the `product` class for page-specific styling
-?>
-<script>
-    (function(){
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function(){ document.body.classList.add('product'); });
-        } else {
-            document.body.classList.add('product');
-        }
-    })();
-</script>
-<?php
 ?>
 
 <div class="admin-content">

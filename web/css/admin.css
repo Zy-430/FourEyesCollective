@@ -5,17 +5,6 @@ body {
     font-size: 1rem;
     display: flex;
     flex-direction: column;
-    position: fixed;
-}
-
-body.product {
-    overflow-x: auto;
-    overflow-y: auto;
-    width: 98%;
-    font-size: 1rem;
-    display: block !important;
-    position: static !important;
-    flex-direction: initial !important;
 }
 
 /* Sidebar */
