@@ -496,6 +496,15 @@ footer {
     transition: all 0.4s ease;
 }
 
+.top5-product .product-name {
+    font-size: 16px;       
+    line-height: 1.2;      
+    font-weight: 600;      
+    overflow: hidden;     
+    text-overflow: ellipsis; 
+    white-space: nowrap;   
+}
+
 .top-product-sold {
     position: absolute;
     bottom: 0;
