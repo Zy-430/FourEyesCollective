@@ -147,8 +147,6 @@ if ($_user->role === 'Admin') {
                     <?php elseif ($order['payment_brand'] === 'fpx'): ?>
                         Online Banking
                         <?php if (!empty($order['bank_name'])): ?>
-                            <br>
-                            <?= $order['bank_name'] ?>
                         <?php endif; ?>
                     <?php elseif ($order['payment_brand'] === 'grabpay'): ?>
                         GrabPay
