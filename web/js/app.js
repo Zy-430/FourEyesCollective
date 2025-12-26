@@ -12,18 +12,6 @@ $(document).ready(function () {
     $(document).on("click", function () {
         $(".user-dropdown").removeClass("active");
     });
-    // Apply persisted admin sidebar state (collapsed / expanded)
-    if (typeof applySidebarState === 'function') {
-        try {
-            // Temporarily disable transitions so restoring the state doesn't animate
-            document.body.classList.add('no-transition');
-            applySidebarState();
-            // Force reflow to ensure the styles are applied immediately
-            void document.body.offsetHeight;
-            // Remove the disabling class shortly after
-            setTimeout(() => document.body.classList.remove('no-transition'), 50);
-        } catch (e) { }
-    }
 });
 
 
@@ -46,74 +34,58 @@ $(() => {
 // ============================================================================
 // Admin sidebar
 // ============================================================================
-function toggleSidebar() {
-    const sidebar = document.querySelector('.admin-sidebar');
-    const collapseBtn = document.querySelector('.collapse-btn');
-    const icon = collapseBtn.querySelector('i');
+$(function () {
 
-    sidebar.classList.toggle('collapsed');
+    const $sidebar = $('.admin-sidebar');
+    const $collapseBtn = $('.collapse-btn');
+    const $icon = $collapseBtn.find('i');
 
-    // Change icon
-    if (sidebar.classList.contains('collapsed')) {
-        icon.className = 'fas fa-chevron-right';
-    } else {
-        icon.className = 'fas fa-chevron-left';
-    }
+    // Toggle sidebar on button click
+    $collapseBtn.on('click', function () {
+        $sidebar.toggleClass('collapsed');
 
-    // Persist collapse state in localStorage
-    try {
-        const collapsed = sidebar.classList.contains('collapsed');
+        // Update icon
+        if ($sidebar.hasClass('collapsed')) {
+            $icon.removeClass('fa-chevron-left').addClass('fa-chevron-right');
+        } else {
+            $icon.removeClass('fa-chevron-right').addClass('fa-chevron-left');
+        }
+
+        // Persist state in localStorage
+        const collapsed = $sidebar.hasClass('collapsed');
         localStorage.setItem('adminSidebarCollapsed', collapsed ? '1' : '0');
 
         // Send to server via AJAX to store in session
-        fetch('/page/ajax/sidebar_state.php', {
+        $.ajax({
+            url: '/page/ajax/sidebar_state.php',
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ collapsed: collapsed })
+            contentType: 'application/json',
+            data: JSON.stringify({ collapsed: collapsed }),
+            error: function () { console.warn('Failed to save sidebar state to server'); }
         });
-    } catch (e) { }
-}
+    });
 
-function applySidebarState() {
-    // Prevent transitions during state restoration
-    document.body.classList.add('no-transition');
+    // Apply sidebar state on page load
+    function applySidebarState() {
+        // Temporarily disable transition
+        $sidebar.addClass('no-transition');
 
-    try {
-        const sidebar = document.querySelector('.admin-sidebar');
-        const collapseBtn = document.querySelector('.collapse-btn');
-        const icon = collapseBtn ? collapseBtn.querySelector('i') : null;
-
-        // Check both localStorage and session
+        // Check localStorage first
         const collapsed = localStorage.getItem('adminSidebarCollapsed') === '1';
+        if (collapsed) $sidebar.addClass('collapsed');
+        else $sidebar.removeClass('collapsed');
 
-        if (!sidebar) return;
+        // Update icon
+        if (collapsed) $icon.removeClass('fa-chevron-left').addClass('fa-chevron-right');
+        else $icon.removeClass('fa-chevron-right').addClass('fa-chevron-left');
 
-        if (collapsed) {
-            sidebar.classList.add('collapsed');
-        } else {
-            sidebar.classList.remove('collapsed');
-        }
+        // Force reflow
+        $sidebar[0].offsetHeight;
 
-        if (icon) {
-            icon.className = sidebar.classList.contains('collapsed')
-                ? 'fas fa-chevron-right'
-                : 'fas fa-chevron-left';
-        }
+        // Remove transition block shortly after
+        setTimeout(() => $sidebar.removeClass('no-transition'), 50);
+    }
 
-        // Force reflow to ensure styles are applied
-        void sidebar.offsetWidth;
-
-    } catch (e) { }
-
-    // Remove the transition block after a short delay
-    setTimeout(() => {
-        document.body.classList.remove('no-transition');
-    }, 50);
-}
-
-document.addEventListener('DOMContentLoaded', function () {
     applySidebarState();
 });
 
