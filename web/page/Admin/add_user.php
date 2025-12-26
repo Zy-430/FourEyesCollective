@@ -85,7 +85,7 @@ if (is_post()) {
         if (!str_starts_with($photo['type'], 'image/')) {
             $_err['photo'] = 'Must be an image';
         } else if (!in_array($ext, $allowed)) {
-            $_err['photo'] = 'Only JPG, PNG, GIF files are allowed';
+            $_err['photo'] = 'Only JPG, JPEG, PNG, GIF files are allowed';
         } else if ($photo['size'] > 1 * 1024 * 1024) {
             $_err['photo'] = 'Maximum 1MB';
         }
@@ -324,7 +324,7 @@ if (is_post()) {
                             <input type="file" id="photo" name="photo" accept="image/*" style="display: none;">
                         </label>
                         <div class="upload-instructions">
-                            <p>• Accepted formats: JPG, PNG</p>
+                            <p>• Accepted formats: JPG, JPEG, PNG, GIF</p>
                             <p>• Maximum size: 1MB</p>
                             <p>• Optional - Provides a default photo</p>
                         </div>
