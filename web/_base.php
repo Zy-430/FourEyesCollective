@@ -241,12 +241,6 @@ function err($key)
 // Global Constants and Variables
 // ============================================================================
 
-$_genders = [
-    'F' => 'Female',
-    'M' => 'Male',
-    'N' => 'Prefer not to say'
-];
-
 $_days = [];
 for ($i = 1; $i <= 31; $i++) {
     $_days[$i] = $i;
@@ -272,12 +266,6 @@ $current_year = date('Y');
 for ($i = $current_year; $i >= $current_year - 100; $i--) {
     $_years[$i] = $i;
 }
-
-$_user_statuses = [
-    'Pending' => 'Pending Verification',
-    'Active' => 'Active',
-    'Blocked' => 'Blocked'
-];
 
 // ============================================================================
 // Security
