@@ -210,7 +210,7 @@ $_title = 'Member Registration | Four Eyes Collective';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $_title ?? 'Four Eyes Collective' ?></title>
-    <link rel="shortcut icon" href="/images/WIS_logo_1.png">
+    <link rel="shortcut icon" href="/images/WIS_logo_white.png">
     <link rel="stylesheet" href="/css/app.css">
     <link rel="stylesheet" href="/css/user.css">
     <style>

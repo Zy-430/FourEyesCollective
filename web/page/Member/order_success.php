@@ -172,7 +172,7 @@ try {
         $paymentExtra = '';
         if ($methodType === 'card') {
             $paymentLabel = ucfirst($brand) . ' ' . ucfirst($funding) . ' Card';
-            $paymentExtra = '•••• ' . $last4;
+            $paymentExtra = '•••• •••• •••• ' . $last4;
         } elseif ($methodType === 'fpx') {
             $paymentLabel = 'FPX Online Banking';
             $paymentExtra = strtoupper($bank);
