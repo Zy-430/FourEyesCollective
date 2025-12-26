@@ -21,22 +21,31 @@ if (!$order) exit("Order not found");
 
 // Fetch existing invoice token or create a new one
 $stm = $_db->prepare("
-    SELECT token, expiry, is_used 
-    FROM email_verification 
+    SELECT token_id as token, expire, type 
+    FROM token 
     WHERE user_id = ? AND type = 'invoice' 
-    ORDER BY created_at DESC LIMIT 1
+    ORDER BY expire DESC LIMIT 1
 ");
 $stm->execute([$order['user_id']]);
 $tokenData = $stm->fetch(PDO::FETCH_ASSOC);
 
-if (!$tokenData || strtotime($tokenData['expiry']) < time() || $tokenData['is_used']) {
-    $token  = bin2hex(random_bytes(16));
+// Check if token exists, is valid, and not expired
+$current_time = date('Y-m-d H:i:s');
+if (!$tokenData || strtotime($tokenData['expire']) < time() || $tokenData['type'] !== 'invoice') {
+    $token = bin2hex(random_bytes(16));
     $expiry = date('Y-m-d H:i:s', strtotime('+24 hours'));
 
+    // Remove old invoice tokens for this user
     $_db->prepare("
-        INSERT INTO email_verification (user_id, token, expiry, type)
+        DELETE FROM token 
+        WHERE user_id = ? AND type = 'invoice'
+    ")->execute([$order['user_id']]);
+
+    // Insert new token
+    $_db->prepare("
+        INSERT INTO token (token_id, expire, user_id, type)
         VALUES (?, ?, ?, 'invoice')
-    ")->execute([$order['user_id'], $token, $expiry]);
+    ")->execute([$token, $expiry, $order['user_id']]);
 } else {
     $token = $tokenData['token'];
 }
@@ -47,7 +56,7 @@ $invoice_link = base("page/order_invoice.php?order_id={$order_id}&token={$token}
 // ======================
 // SEND EMAIL (using get_mail())
 // ======================
-$m = get_mail(); // returns pre-configured PHPMailer instance
+$m = get_mail(); 
 $m->addAddress($order['email'], $order['name']);
 $m->isHTML(true);
 $m->Subject = "Invoice for Order {$order_id}";
@@ -63,6 +72,7 @@ $m->Body = "
     .header { background: #2c3e50; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
     .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
     .button { display: inline-block; background: #2c3e50; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 15px 0; }
+    .warning {padding-top: 10px; padding-bottom:10px; color:red; font-style:italic;}
     .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #777; font-size: 12px; }
 </style>
 </head>
@@ -78,10 +88,14 @@ $m->Body = "
             <p style='text-align: center;'>
                 <a href='{$invoice_link}' class='button'>View Invoice</a>
             </p>
-            <p>Or copy and paste this link into your browser:</p>
+            <p>You may also use the link below:</p>
             <p><code>{$invoice_link}</code></p>
-            <p>This link will expire in 24 hours.</p>
+            <div class='warning'>
+                <p>* This link will expire in 24 hours.</p>
+            </div>
             <p>Thank you for shopping with us!</p>
+            <p>Best regards,<br>
+             <strong>The Four Eyes Collective Team</strong></p>
         </div>
         <div class='footer'>
             <p>This is an automated message, please do not reply.</p>

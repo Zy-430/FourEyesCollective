@@ -200,7 +200,15 @@ if (get('msg') == 'added') {
                         $imgArr = explode(",", $p->product_image);
                         $img = trim($imgArr[0]); ?>
                         <div class="product-card" style="border:1px solid #f5b5b5; padding:15px; border-radius:8px; background:#ffeaea;">
-                            <img src="/images/product/<?= $folder ?>/<?= $img ?>" style="width:100%; height:180px; object-fit:cover; border-radius:6px; margin-bottom:10px;">
+                            <?php
+                            $imgPath = "/images/product/$folder/$img";
+                            $serverPath = $_SERVER['DOCUMENT_ROOT'] . $imgPath;
+
+                            if (!$img || !file_exists($serverPath)) {
+                                $imgPath = "/images/product/no-image.png";
+                            }
+                            ?>
+                            <img src="<?= $imgPath ?>" style="width:100%; height:180px; object-fit:cover; border-radius:6px; margin-bottom:10px;">
                             <h3><?= encode($p->product_name) ?></h3>
                             <p>RM <?= number_format($p->product_price, 2) ?></p>
                             <p><strong>Stock: <?= $p->product_stock ?></strong></p>
@@ -231,7 +239,15 @@ if (get('msg') == 'added') {
                     $imgArr = explode(",", $p->product_image);
                     $img = trim($imgArr[0]); ?>
                     <div class="product-card" style="border:1px solid #ddd; padding:15px; border-radius:8px; background:white;">
-                        <img src="/images/product/<?= $folder ?>/<?= $img ?>" style="width:100%; height:170px; object-fit:cover; border-radius:6px; margin-bottom:10px;">
+                        <?php
+                        $imgPath = "/images/product/$folder/$img";
+                        $serverPath = $_SERVER['DOCUMENT_ROOT'] . $imgPath;
+
+                        if (!$img || !file_exists($serverPath)) {
+                            $imgPath = "/images/product/no-image.png";
+                        }
+                        ?>
+                        <img src="<?= $imgPath ?>" style="width:100%; height:170px; object-fit:cover; border-radius:6px; margin-bottom:10px;">
                         <h3><?= encode($p->product_name) ?></h3>
                         <p>RM <?= number_format($p->product_price, 2) ?></p>
                         <p>Stock: <strong><?= $p->product_stock ?></strong></p>
