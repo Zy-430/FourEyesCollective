@@ -10,17 +10,15 @@ $_title = 'Product Sales Report | Four Eyes Collective';
 <div class="admin-content view-product-report">
     <div class="content-header">
         <h1 class="dashboard-title">Top Selling Products Report</h1>
-        <div style="margin-bottom:20px;">
+        <div class="header-actions small">
             <button onclick="window.print()"
-                style="padding:10px 18px; background:#2c3e50; color:white;
-                    border:none; border-radius:5px; cursor:pointer; margin-top:20px;">
-                🖨 Print Report
+                class="btn-default btn-add">
+                <i class="fa-solid fa-print"></i>  Print
             </button>
 
             <button onclick="downloadChart()"
-                style="padding:10px 18px; background:#2c3e50; color:white;
-                    border:none; border-radius:5px; cursor:pointer; margin-left:10px; margin-top:20px;">
-                ⬇ Download Chart
+                class="btn-default btn-add">
+                <i class="fa-solid fa-download"></i> Download
             </button>
         </div>
     </div>
