@@ -95,6 +95,12 @@ function initializeCheckoutCancellation() {
     var paymentSubmitted = false;
     var $cancelBtn = $('#cancelCheckoutBtn');
     var currentUser = $cancelBtn.data('user') || '';
+    var skipBeforeUnload = false;
+
+    // Skip beforeunload when adding address
+    $(document).on('click', 'a.add-address-link, a[href*="profile_address_add.php"]', function(e) {
+        skipBeforeUnload = true;
+    });
 
     // Handle cancel checkout button using AJAX and unified notification
     $(document).on('click', '#cancelCheckoutBtn', function(e) {
@@ -173,8 +179,8 @@ function initializeCheckoutCancellation() {
     
     // Handle beforeunload to cancel checkout if navigating away
     $(window).on('beforeunload', function(e) {
-        // Only trigger if checkout is in progress and payment not submitted
-        if (checkoutInProgress && !paymentSubmitted) {
+        // Only trigger if checkout is in progress, payment not submitted, and not skipping
+        if (checkoutInProgress && !paymentSubmitted && !skipBeforeUnload) {
             // Send beacon to cancel checkout
             var formData = new FormData();
             formData.append('cancel_reason', 'browser_navigation');

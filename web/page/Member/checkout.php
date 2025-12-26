@@ -379,7 +379,6 @@ if (is_post()) {
                         <!--Cancel Button-->
                         <a href="cancel_checkout.php" class="btn btn-secondary"
                             id="cancelCheckoutBtn"
-                            data-user="<?= encode($_user->email) ?>"
                             data-confirm="Are you sure you want to cancel checkout ? Your selected items will be returned to cart.">
                             Cancel Checkout
                         </a>

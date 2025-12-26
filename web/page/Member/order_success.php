@@ -218,7 +218,6 @@ try {
                     <div class="success-message">
                         <p>Thank you <strong><?= encode($_user->name) ?></strong></p>
                         <p>Your order <strong><?= encode($order->order_id) ?></strong> has been confirmed.</p>
-                        <p>A confirmation email has been sent to <strong><?= encode($_user->email) ?></strong></p>
                     </div>
 
                     <!-- Order Summary -->
