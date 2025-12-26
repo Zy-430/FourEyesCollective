@@ -15,7 +15,7 @@ $ratingFilter = (int)($_GET['rating'] ?? 0);
 $statusFilter = $_GET['status'] ?? 'rated';
 
 // Build WHERE clause
-$where = "o.user_id = ?";
+$where = "o.user_id = ? AND o.status = 'Completed'";
 $params = [$user_id];
 
 if ($statusFilter === 'rated') {
