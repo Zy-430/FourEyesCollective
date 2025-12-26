@@ -81,9 +81,11 @@ $_title = "Set Your Password | Four Eyes Collective";
     ?>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        $(function() {
             <?php if (!empty($__temp_info)): ?>
-                if (typeof showNotification === 'function') showNotification("<?= addslashes($__temp_info) ?>", 'info');
+                if (typeof showNotification === 'function') {
+                    showNotification("<?= addslashes($__temp_info) ?>", 'info');
+                }
             <?php endif; ?>
         });
     </script>
