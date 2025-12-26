@@ -2,6 +2,8 @@
 require '../_base.php';
 require '../lib/db.php';
 
+$__temp_info = temp('info');
+
 // For user created by admin (which with default password, so need to reset their password when first time login)
 // Check if user is in temp session (first login after admin creation)
 if (!isset($_SESSION['temp_user'])) {
@@ -75,19 +77,6 @@ $_title = "Set Your Password | Four Eyes Collective";
 <!DOCTYPE html>
 <html lang="en">
 
-<?php
-    // Read temporary flash messages
-    $__temp_info = temp('info');
-    ?>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            <?php if (!empty($__temp_info)): ?>
-                if (typeof showNotification === 'function') showNotification("<?= addslashes($__temp_info) ?>", 'info');
-            <?php endif; ?>
-        });
-    </script>
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -95,11 +84,21 @@ $_title = "Set Your Password | Four Eyes Collective";
     <link rel="shortcut icon" href="/images/WIS_logo_white.png">
     <link rel="stylesheet" href="/css/app.css">
     <link rel="stylesheet" href="/css/user.css">
-        <script src="/js/notifications.js"></script>
+    <script src="/js/notifications.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 
 <body class="login-page">
+    <script>
+        $(function() {
+            <?php if (!empty($__temp_info)): ?>
+                if (typeof showNotification === 'function') {
+                    showNotification("<?= addslashes($__temp_info) ?>", 'info');
+                }
+            <?php endif; ?>
+
+        });
+    </script>
     <div class="login-container">
         <!-- Header -->
         <div class="login-header">

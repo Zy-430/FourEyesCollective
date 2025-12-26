@@ -44,7 +44,7 @@ if (is_post()) {
     $password = trim($password);
 
     if (!is_strong_password($password)) {
-        $_err['password'] =='Invalid password format';
+        $_err['password'] == 'Invalid password format';
     }
 
     // Validate Confirm password 
@@ -390,69 +390,77 @@ $_title = 'Member Registration | Four Eyes Collective';
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        $(function() {
 
-            const input = document.getElementById('photo');
-            const preview = document.getElementById('photoPreview');
-            const dropZone = document.getElementById('photoDropZone');
-            const label = document.querySelector('.photo-upload-label');
+            const $input = $('#photo');
+            const $preview = $('#photoPreview');
+            const $dropZone = $('#photoDropZone');
+            const $label = $('.photo-upload-label');
 
-            // Upload validation
             const MAX_SIZE = 1024 * 1024; // 1MB
-            const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
+            const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/jpg'];
 
-            // Handle normal file selection (click the area and choose file)
-            input.addEventListener('change', function() {
-                if (this.files[0]) handleFile(this.files[0]);
+            // Normal file select
+            $input.on('change', function() {
+                if (this.files && this.files[0]) {
+                    handleFile(this.files[0]);
+                }
             });
 
-            // Highlight the drop zone during drag
-            ['dragenter', 'dragover'].forEach(event => {
-                dropZone.addEventListener(event, e => {
-                    e.preventDefault();
-                    dropZone.classList.add('dragover');
-                    label.classList.add('dragover');
-                });
+            // Drag enter / over
+            $dropZone.on('dragenter dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $dropZone.addClass('dragover');
+                $label.addClass('dragover');
             });
 
-            // Remove highlight when drag ends
-            ['dragleave', 'drop'].forEach(event => {
-                dropZone.addEventListener(event, e => {
-                    e.preventDefault();
-                    dropZone.classList.remove('dragover');
-                    label.classList.remove('dragover');
-                });
+            // Drag leave / drop
+            $dropZone.on('dragleave drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $dropZone.removeClass('dragover');
+                $label.removeClass('dragover');
             });
 
-            // Handle drag-drop file uploaded
-            dropZone.addEventListener('drop', function(e) {
-                const file = e.dataTransfer.files[0];
-                if (file) {
-                    input.files = e.dataTransfer.files; // Assign file to input
-                    handleFile(file); // File validation
+            // Handle drop
+            $dropZone.on('drop', function(e) {
+                const files = e.originalEvent.dataTransfer.files;
+                if (files && files[0]) {
+                    $input[0].files = files; // assign dropped file to input
+                    handleFile(files[0]);
                 }
             });
 
             function handleFile(file) {
-                // Validate file type
+
+                // Validate type
                 if (!ALLOWED_TYPES.includes(file.type)) {
                     alert('Invalid file type. Only JPG, PNG, GIF allowed.');
-                    input.value = '';
+                    resetFile();
                     return;
                 }
 
-                // Validate file size
+                // Validate size
                 if (file.size > MAX_SIZE) {
                     alert('File too large. Maximum size is 1MB.');
-                    input.value = '';
+                    resetFile();
                     return;
                 }
 
-                // Image preview
+                // Preview image
                 const reader = new FileReader();
-                reader.onload = e => preview.src = e.target.result;
+                reader.onload = function(e) {
+                    $preview.attr('src', e.target.result);
+                };
                 reader.readAsDataURL(file);
             }
+
+            function resetFile() {
+                $input.val('');
+                $preview.attr('src', '/images/upload.png');
+            }
+
         });
     </script>
 </body>

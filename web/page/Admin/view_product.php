@@ -274,9 +274,9 @@ if (get('msg') == 'added') {
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-    <?php if ($notification_message): ?>
-        showNotification('<?= addslashes($notification_message) ?>', '<?= $notification_type ?>');
-    <?php endif; ?>
-});
+    $(function () {
+        <?php if ($notification_message): ?>
+            showNotification('<?= addslashes($notification_message) ?>','<?= $notification_type ?>');
+        <?php endif; ?>
+    });
 </script>
