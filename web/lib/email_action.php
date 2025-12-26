@@ -81,6 +81,7 @@ function sendEmailAction(string $email, string $type, array $data = [])
                                 <strong>The Four Eyes Collective Team</strong></p>
                             </div>
                             <div class='footer'>
+                                <p>This is an automated message, please do not reply.</p>
                                 <p>&copy; " . date('Y') . " Four Eyes Collective. All rights reserved.</p>
                             </div>
                         </div>
@@ -132,6 +133,7 @@ function sendEmailAction(string $email, string $type, array $data = [])
                                 <strong>Four Eyes Collective System Administration</strong></p>
                             </div>
                             <div class='footer'>
+                                <p>This is an automated message, please do not reply.</p>
                                 <p>&copy; " . date('Y') . " Four Eyes Collective. All rights reserved.</p>
                             </div>
                         </div>
@@ -185,7 +187,7 @@ function sendEmailAction(string $email, string $type, array $data = [])
                 <style>
                     body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
                     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                    .header { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+                    .header { background: #2c3e50; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
                     .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
                     #a_verify {color: #f9f9f9;}
                     .button { display: inline-block; background: #2c3e50; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 15px 0; }
@@ -221,6 +223,7 @@ function sendEmailAction(string $email, string $type, array $data = [])
                         <strong>The Four Eyes Collective Team</strong></p>
                     </div>
                     <div class='footer'>
+                        <p>This is an automated message, please do not reply.</p>
                         <p>&copy; " . date('Y') . " Four Eyes Collective. All rights reserved.</p>
                     </div>
                 </div>
@@ -240,7 +243,7 @@ function sendEmailAction(string $email, string $type, array $data = [])
                 <style>
                     body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
                     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-                    .header { background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+                    .header { background: #2c3e50; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
                     .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
                     #a_reset {color: #f9f9f9;}
                     .button { display: inline-block; background: #2c3e50; color: #ddd; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 15px 0; }
@@ -276,6 +279,7 @@ function sendEmailAction(string $email, string $type, array $data = [])
                         <strong>The Four Eyes Collective Team</strong></p>
                     </div>
                     <div class='footer'>
+                        <p>This is an automated message, please do not reply.</p>
                         <p>&copy; " . date('Y') . " Four Eyes Collective. All rights reserved.</p>
                     </div>
                 </div>
