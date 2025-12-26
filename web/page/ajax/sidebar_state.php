@@ -1,5 +1,4 @@
 <?php
-// sidebar_state.php
 require_once '../../_base.php';
 auth('Admin');
 

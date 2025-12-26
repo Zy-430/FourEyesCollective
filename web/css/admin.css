@@ -142,19 +142,23 @@ body {
     transform: scale(1.1);
 }
 
+/* sidebar when collapsed */
+.admin-sidebar.collapsed {
+    transform: translateX(-300px) !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    overflow: hidden;
+}
+
+.admin-sidebar.collapsed~.admin-header .admin-title {
+    left: 50%;
+}
 /* Prevent sidebar transition on page load - use when collapse sidebar */
 body.sidebar-loading .admin-sidebar,
 body.sidebar-loading .collapse-btn,
 body.sidebar-loading .admin-header,
 body.sidebar-loading .admin-content {
     transition: none !important;
-}
-
-.admin-sidebar.collapsed {
-    transform: translateX(-300px) !important;
-    width: 0 !important;
-    min-width: 0 !important;
-    overflow: hidden;
 }
 
 .admin-sidebar.collapsed .logo,
@@ -181,6 +185,19 @@ body.sidebar-loading .admin-content {
 .admin-sidebar.collapsed + .collapse-btn {
     left: 20px !important;
     background: #162b65 !important;
+}
+
+.admin-sidebar.collapsed~.page-container,
+.admin-sidebar.collapsed~.profile-page {
+    margin-left: 0;
+    width: 100%;
+    padding-left: 80px;
+}
+
+.admin-sidebar.collapsed~.profile-section {
+    margin-left: 0;
+    width: 100%;
+    padding-left: 20px;
 }
 
 /* After page loads, restore transitions */
@@ -225,46 +242,6 @@ body.sidebar-loading .admin-content {
 i {
     font-size: 20px;
     color: black;
-}
-
-/* sidebar when collapsed */
-.admin-sidebar.collapsed {
-    width: 0 !important;
-    min-width: 0 !important;
-    overflow: hidden;
-    transform: translateX(-300px);
-}
-
-.admin-sidebar.collapsed .logo,
-.admin-sidebar.collapsed .admin-menu,
-.admin-sidebar.collapsed .admin-account,
-.admin-sidebar.collapsed .admin-menu a span,
-.admin-sidebar.collapsed .admin-menu a,
-.admin-sidebar.collapsed .admin-menu a i {
-    opacity: 0;
-    visibility: hidden;
-}
-
-/* adjust header */
-.admin-sidebar.collapsed~.admin-header {
-    margin-left: 0;
-    padding-left: 80px;
-    padding-right: 90px;
-}
-
-.admin-sidebar.collapsed~.admin-header .admin-title {
-    left: 50%;
-}
-
-/* adjust content when sidebar collapsed */
-.admin-sidebar.collapsed~.admin-content {
-    margin-left: 20px;
-    width: calc(100% - 40px);
-}
-
-.admin-sidebar.collapsed+.collapse-btn {
-    left: 20px;
-    background: #162b65;
 }
 
 .profile-section,
@@ -1607,20 +1584,6 @@ i {
     width: calc(100% - 18%);
     min-height: calc(100vh - 80px);
     box-sizing: border-box;
-}
-
-/* Adjust when sidebar is collapsed */
-.admin-sidebar.collapsed~.page-container,
-.admin-sidebar.collapsed~.profile-page {
-    margin-left: 0;
-    width: 100%;
-    padding-left: 80px;
-}
-
-.admin-sidebar.collapsed~.profile-section {
-    margin-left: 0;
-    width: 100%;
-    padding-left: 20px;
 }
 
 /* Profile container */
