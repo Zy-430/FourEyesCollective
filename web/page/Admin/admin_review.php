@@ -290,6 +290,7 @@ $_title = "Admin Review | Four Eyes Collective";
 
                     // Update data-status
                     $btn.data('status', updatedStatus);
+                    $btn.attr('data-status', updatedStatus);
 
                     // Update status badge text and class
                     var $badge = $row.find('.status-badge');
