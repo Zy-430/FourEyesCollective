@@ -310,7 +310,7 @@ if ($_user->role === 'Admin') {
 
 </div>
 
-<!-- Return Modal (hidden) -->
+<!-- Return Modal (only for completed/delivered status) -->
 <div id="returnModal" class="return-modal" aria-hidden="true">
     <div class="modal-box">
         <h4>Return Order</h4>
