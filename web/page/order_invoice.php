@@ -109,6 +109,28 @@ foreach($items as $item){
     $pdf->Cell(35,6,number_format($item['price']*$item['product_qty'],2),1,1,'R');
 }
 
+// Compute subtotal and delivery fee
+$subtotal = 0;
+foreach($items as $item){
+    $subtotal += $item['price'] * $item['product_qty'];
+}
+$delivery_fee = $order['total_amount'] - $subtotal;
+if ($delivery_fee < 0) $delivery_fee = 0;
+
+// Subtotal row
+$pdf->SetFont('Arial','',12);
+$pdf->Cell(155,8,"Subtotal",1,0,'R');
+$pdf->Cell(35,8,number_format($subtotal,2),1,1,'R');
+
+// Delivery fee row
+$pdf->SetFont('Arial','',12);
+$pdf->Cell(155,8,"Delivery Fee",1,0,'R');
+if ($delivery_fee > 0) {
+    $pdf->Cell(35,8,number_format($delivery_fee,2),1,1,'R');
+} else {
+    $pdf->Cell(35,8,"FREE",1,1,'R');
+}
+
 // Total row
 $pdf->SetFont('Arial','B',12);
 $pdf->Cell(155,8,"Total Amount",1,0,'R'); // 90+25+40 = 155
