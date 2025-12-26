@@ -45,7 +45,7 @@ if (is_post()) {
 
     if (!is_strong_password($password)) {
         $_err['password'] =
-            'Password must be at least 8 characters and include uppercase, lowercase, number and symbol';
+            'Password format is invalid.';
     }
 
     // Validate Confirm password 
@@ -275,6 +275,7 @@ $_title = 'Member Registration | Four Eyes Collective';
                     <label for="password">Password *</label>
                     <input type="password" id="password" name="password" class="form-control"
                         placeholder="Create a password (8-15 characters)" maxlength="15" required>
+                    <small><i>* Strong password: mix uppercase, lowercase, numbers & symbols.</i></small>
                     <?= err('password') ?>
                 </div>
 
@@ -428,8 +429,8 @@ $_title = 'Member Registration | Four Eyes Collective';
             dropZone.addEventListener('drop', function(e) {
                 const file = e.dataTransfer.files[0];
                 if (file) {
-                    input.files = e.dataTransfer.files;  // Assign file to input
-                    handleFile(file);  // File validation
+                    input.files = e.dataTransfer.files; // Assign file to input
+                    handleFile(file); // File validation
                 }
             });
 
@@ -456,4 +457,5 @@ $_title = 'Member Registration | Four Eyes Collective';
         });
     </script>
 </body>
+
 </html>
