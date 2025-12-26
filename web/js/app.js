@@ -94,24 +94,20 @@ $(function () {
 // ============================================================================
 // User photo preview
 function openPhotoModal(src) {
-    const modal = document.getElementById('photoModal');
-    const modalImg = document.getElementById('modalImg');
-    modal.style.display = "block";
-    modalImg.src = src;
+    $('#photoModal').fadeIn();       // Show modal with fade
+    $('#modalImg').attr('src', src); // Set image source
 }
 
 function closePhotoModal() {
-    document.getElementById('photoModal').style.display = "none";
+    $('#photoModal').fadeOut();       // Hide modal with fade
 }
 
-const flashMsgs = document.querySelectorAll('.flash-msg');
-
-flashMsgs.forEach(msg => {
-    setTimeout(() => {
-        msg.style.transition = "opacity 0.5s";
-        msg.style.opacity = 0;
-        setTimeout(() => msg.remove(), 500);
-    }, 4000);
+// Close modal when clicking outside the image
+$(function() {
+    $('#photoModal').on('click', function(e) {
+        if ($(e.target).is('#modalImg')) return; 
+        $(this).fadeOut();
+    });
 });
 
 
@@ -375,7 +371,7 @@ $(function () {
 // ---------------------------------------------------------------------------
 // Homepage
 // ---------------------------------------------------------------------------
-// Homepage specific JS - uses jQuery and project conventions
+// Homepage specific JS
 $(document).ready(function () {
     // Category card hover effects (no inline event attributes)
     $(document).on('mouseenter', '.category-card', function () {
@@ -671,7 +667,3 @@ if (typeof window.showNotification !== 'function') {
         });
     });
 })(jQuery);
-
-
-
-
