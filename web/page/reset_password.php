@@ -166,6 +166,8 @@ $_title = 'Reset Password | Four Eyes Collective"';
                     <p style="margin: 8px 0 0 0;">Please reset your password below.</p>
                 </div>
 
+                <small><i>Your password should be strong and unique, including uppercase, lowercase, number, and symbol.</i></small><br><br>
+
                 <!-- Form content -->
                 <form method="post">
                     <div class="form-group">
