@@ -2,7 +2,7 @@
 require '../_base.php';
 require '../lib/db.php';
 
-$_title = "About Us";
+$_title = "About Us | Four Eyes Collective";
 include '../_head.php';
 ?>
 

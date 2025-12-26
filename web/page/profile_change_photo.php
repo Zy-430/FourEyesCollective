@@ -2,7 +2,7 @@
 require '../_base.php';
 require '../lib/db.php';
 
-auth('Admin', 'Member');
+auth();
 
 $user_id = $_user->user_id;
 
@@ -19,6 +19,7 @@ if (!$user) {
 // Handle upload
 if (is_post() && isset($_FILES['profile_photo'])) {
     $file = $_FILES['profile_photo'];
+    $success = '';
 
     // Validate
     $allowed = ['jpg', 'jpeg', 'png', 'gif'];
@@ -32,19 +33,51 @@ if (is_post() && isset($_FILES['profile_photo'])) {
         $upload_dir = '../images/users/';
         if (!is_dir($upload_dir)) mkdir($upload_dir, 0755, true);
 
-        // Determine filename
-        if (empty($user->photo)) {
-            $filename = 'user_' . $user_id . '.' . $ext;
-            $_db->prepare("UPDATE users SET photo = ? WHERE user_id = ?")
-                ->execute([$filename, $user_id]);
+        // Generate unique filename based on user info
+        $sanitized_name = preg_replace('/[^a-zA-Z0-9]/', '', strtolower($user->name));
+        if (empty($sanitized_name)) {
+            $sanitized_name = 'user';
+        }
+
+        $filename = '';
+
+        // If current photo is NOT user_default.jpg, keep the same filename
+        if ($user->photo && $user->photo !== 'user_default.jpg') {
+            // Replace extension if needed
+            $current_ext = pathinfo($user->photo, PATHINFO_EXTENSION);
+            if (strtolower($current_ext) !== $ext) {
+                // If extension changed, create new filename
+                $counter = 1;
+                do {
+                    $filename = $sanitized_name . sprintf('_%02d', $counter) . '.' . $ext;
+                    $file_path = $upload_dir . $filename;
+                    $counter++;
+                } while (file_exists($file_path) && $counter <= 99);
+            } else {
+                // Keep same filename
+                $filename = $user->photo;
+            }
         } else {
-            $filename = $user->photo;
+            // If current photo is user_default.jpg, then create new unique filename (avoid replace defualt user image)
+            $counter = 1;
+            do {
+                $filename = $sanitized_name . sprintf('_%02d', $counter) . '.' . $ext;
+                $file_path = $upload_dir . $filename;
+                $counter++;
+            } while (file_exists($file_path) && $counter <= 99);
         }
 
         $file_path = $upload_dir . $filename;
 
+        // Move uploaded file
         if (move_uploaded_file($file['tmp_name'], $file_path)) {
-            $success = "Profile photo updated successfully!";
+            // Update database
+            $updateStmt = $_db->prepare("UPDATE users SET photo = ? WHERE user_id = ?");
+            if ($updateStmt->execute([$filename, $user_id])) {
+                $success = "Profile photo updated successfully!";
+            } else {
+                $error = "Failed to update database.";
+            }
         } else {
             $error = "Failed to upload file.";
         }
@@ -63,7 +96,7 @@ if ($_user->role === 'Admin') {
 // Display current photo or default
 $current_photo = (!empty($user->photo) && file_exists('../images/users/' . $user->photo))
     ? $user->photo
-    : 'default.jpg';
+    : 'user_default.jpg';
 ?>
 
 <section class="profile-section">

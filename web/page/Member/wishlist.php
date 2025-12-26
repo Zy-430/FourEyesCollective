@@ -1,11 +1,13 @@
 <?php
-require '../_base.php';
-require '../lib/db.php';
-require '../lib/category.php';
-require '../lib/product_stats.php';
+require '../../_base.php';
+require '../../lib/db.php';
+require '../../lib/category.php';
+require '../../lib/product_stats.php';
 
-$_title = 'My Wishlist';
-include '../_head.php';
+auth('Member');
+
+$_title = 'My Wishlist | Four Eyes Collective';
+include '../../_head.php';
 
 // Get all wishlist items for the current user
 $userId = $_user->user_id ?? '';
@@ -30,14 +32,14 @@ if ($_user) {
 <?php if (!$_user): ?>
     <div style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 8px;">
         <p style="font-size: 18px; color: #666;">Please login to view your wishlist</p>
-        <a href="/page/login.php" style="display:inline-block; padding:10px 20px; background:#2c3e50; color:white; border-radius:5px; text-decoration:none;">
+        <a href="../login.php" style="display:inline-block; padding:10px 20px; background:#2c3e50; color:white; border-radius:5px; text-decoration:none;">
             Login Now
         </a>
     </div>
 <?php elseif (count($wishlistItems) == 0): ?>
     <div style="text-align: center; padding: 40px; background: #f8f9fa; border-radius: 8px;">
         <p style="font-size: 18px; color: #666;">Your wishlist is empty</p>
-        <a href="/page/shoppage.php" style="display:inline-block; padding:10px 20px; background:#2c3e50; color:white; border-radius:5px; text-decoration:none;">
+        <a href="../shoppage.php" style="display:inline-block; padding:10px 20px; background:#2c3e50; color:white; border-radius:5px; text-decoration:none;">
             Browse Products
         </a>
     </div>
@@ -54,7 +56,7 @@ if ($_user) {
             // Get sold count for product
             $soldCount = getProductSoldCount($item->product_id);
             ?>
-            <a href="product_detail.php?id=<?= $item->product_id ?>&return_url=/page/wishlist.php" class="product-card">
+            <a href="../product_detail.php?id=<?= $item->product_id ?>&return_url=/page/Member/wishlist.php" class="product-card">
                 <!-- Image Container -->
                 <div class="product-image-container">
                     <img src="<?= $imgPath ?>" alt="<?= encode($item->product_name) ?>">
@@ -94,4 +96,4 @@ if ($_user) {
         <?php endforeach; ?>
     </div>
 <?php endif; ?>
-<?php include '../_foot.php'; ?>
+<?php include '../../_foot.php'; ?>

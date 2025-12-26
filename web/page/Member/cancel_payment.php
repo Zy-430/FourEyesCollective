@@ -33,7 +33,7 @@ if (!$order_id) {
                 </div>
                 <div class="action-buttons">
                     <a href="cart.php" class="btn btn-secondary">Return to Cart</a>
-                    <a href="shoppage.php" class="btn btn-primary">Continue Shopping</a>
+                    <a href="../shoppage.php" class="btn btn-primary">Continue Shopping</a>
                 </div>
             </div>
         </div>
@@ -211,7 +211,7 @@ try {
                 </div>
 
                 <div class="action-buttons">
-                    <a href="shoppage.php" class="btn btn-warning">Shop Other Products</a>
+                    <a href="../shoppage.php" class="btn btn-warning">Shop Other Products</a>
                     <a href="cart.php" class="btn btn-secondary">View Cart</a>
                 </div>
                 <!-- <div style="">

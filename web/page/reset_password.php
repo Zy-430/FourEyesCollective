@@ -77,7 +77,7 @@ if ($id) {
 }
 
 // ----------------------------------------------------------------------------
-$_title = 'Reset Password';
+$_title = 'Reset Password | Four Eyes Collective"';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -115,48 +115,12 @@ $_title = 'Reset Password';
             color: #0c5460;
             border: 1px solid #bee5eb;
         }
-
-        .login-redirect {
-            text-align: center;
-            margin-top: 30px;
-            padding: 20px;
-        }
-
-        .login-redirect a {
-            color: #2c3e50;
-            font-weight: 600;
-            text-decoration: none;
-        }
-
-        .login-redirect a:hover {
-            text-decoration: underline;
-        }
-
-
-        .instruction-text {
-            color: #666;
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 25px;
-            text-align: center;
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
     </style>
 </head>
 
 <body class="login-page">
     <div class="login-container">
+        <!-- Header -->
         <div class="login-header">
             <div class="header-content">
                 <div class="logo-container">
@@ -169,7 +133,9 @@ $_title = 'Reset Password';
             </div>
         </div>
 
+        <!-- Form content -->
         <div class="login-form">
+            <!-- If the token not exist or expired -->
             <?php if ($error): ?>
                 <!-- Error Message -->
                 <div class="alert-message alert-error">
@@ -181,6 +147,7 @@ $_title = 'Reset Password';
                     <button class="btn btn-white"><a href="login.php" style="color: #2c3e50; text-decoration:none">Go to Login</a></button>
                 </div>
 
+            <!-- Successfully reset -->
             <?php elseif ($success): ?>
                 <!-- Success Message -->
                 <div class="alert-message alert-success">
@@ -191,6 +158,7 @@ $_title = 'Reset Password';
                     <a href="login.php">Back to Login</a>
                 </div>
 
+            <!-- Valid token then show pasword reset form -->
             <?php elseif ($valid_token): ?>
                 <!-- Reset Password Form -->
                 <div class="alert-message alert-info">
@@ -198,11 +166,12 @@ $_title = 'Reset Password';
                     <p style="margin: 8px 0 0 0;">Please reset your password below.</p>
                 </div>
 
+                <!-- Form content -->
                 <form method="post">
                     <div class="form-group">
                         <label for="password">New Password *</label>
                         <input type="password" id="password" name="password" class="form-control"
-                            placeholder="Enter new password (8-15 characters)" maxlength="15" required
+                            placeholder="Enter new password (8-15 characters)" maxlength="15" autofocus required
                             autocomplete="new-password">
                         <?= err('password') ?>
                     </div>
@@ -225,8 +194,8 @@ $_title = 'Reset Password';
                     Remember your password? <a href="login.php">Sign in here</a>
                 </div>
 
+            <!-- Invalid State -->
             <?php else: ?>
-                <!-- Invalid State -->
                 <div class="alert-message alert-error">
                     <strong>Invalid Request</strong>
                     <p>Unable to process password reset request.</p>
@@ -241,12 +210,8 @@ $_title = 'Reset Password';
                         <a href="login.php">Back to Login</a>
                     </div>
                 </div>
-
             <?php endif; ?>
         </div>
     </div>
-
-
 </body>
-
 </html>

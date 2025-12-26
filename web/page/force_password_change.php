@@ -2,20 +2,21 @@
 require '../_base.php';
 require '../lib/db.php';
 
+// For user created by admin (which with default password, so need to reset their password when first time login)
 // Check if user is in temp session (first login after admin creation)
 if (!isset($_SESSION['temp_user'])) {
     // If no temp user, check if logged in user needs password change
     if ($_user && $_user->force_password_change == 1) {
         $temp_user = $_user;
     } else {
-        // No user needs password change, redirect to login
+        // If not then redirect to login
         redirect('login.php');
     }
 } else {
     $temp_user = $_SESSION['temp_user'];
 }
 
-// Handle form submission
+// Form submission
 if (is_post()) {
     $new_password = $_POST['new_password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
@@ -27,23 +28,21 @@ if (is_post()) {
         $_err['password'] =
             'Password must be at least 8 characters and include uppercase, lowercase, number and symbol';
     } else {
-        // Update password in database
+        // Hash password 
         $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
 
         // Begin transaction
         $_db->beginTransaction();
 
         try {
-            // Update password and clear force_password_change flag
+            // Update password and reset the force_password_change flag to 0
             $stmt = $_db->prepare("
                 UPDATE users 
                 SET password = ?, force_password_change = 0 
                 WHERE user_id = ?
             ");
             $stmt->execute([$hashed_password, $temp_user->user_id]);
-
             $_db->commit();
-
 
             // Get updated user data
             $stm = $_db->prepare("SELECT * FROM users WHERE user_id = ?");
@@ -54,8 +53,10 @@ if (is_post()) {
             unset($_SESSION['temp_user']);
 
             if ($updated_user->role === 'Member') {
+                temp('success', 'Login successfully!');
                 login($updated_user, 'homepage.php?msg=password_changed');
             } elseif ($updated_user->role === 'Admin') {
+                temp('success', 'Login successfully!');
                 login($updated_user, 'Admin/admin_dashboard.php?msg=password_changed');
             } else {
                 login($updated_user, '/');
@@ -67,12 +68,25 @@ if (is_post()) {
     }
 }
 
+// ----------------------------------------------------------------------
 $_title = "Set Your Password | Four Eyes Collective";
-$_css = ['profile.css'];
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
+<?php
+    // Read temporary flash messages
+    $__temp_info = temp('info');
+    ?>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            <?php if (!empty($__temp_info)): ?>
+                if (typeof showNotification === 'function') showNotification("<?= addslashes($__temp_info) ?>", 'info');
+            <?php endif; ?>
+        });
+    </script>
 
 <head>
     <meta charset="UTF-8">
@@ -81,13 +95,14 @@ $_css = ['profile.css'];
     <link rel="shortcut icon" href="/images/WIS_logo_white.png">
     <link rel="stylesheet" href="/css/app.css">
     <link rel="stylesheet" href="/css/user.css">
+        <script src="/js/notifications.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 
 <body class="login-page">
-
     <div class="login-container">
-        <div class="login-header" >
+        <!-- Header -->
+        <div class="login-header">
             <div class="header-content">
                 <div class="logo-container">
                     <img src="/images/WIS_logo_white.png" alt="Four Eyes Collective Logo" class="header-logo">
@@ -99,6 +114,7 @@ $_css = ['profile.css'];
             </div>
         </div>
 
+        <!-- Form content-->
         <form method="post" class="login-form">
             <small><i>Your password should be strong and unique, including uppercase, lowercase, number, and symbol.</i></small><br><br>
 
@@ -124,7 +140,6 @@ $_css = ['profile.css'];
             </div>
         </form>
     </div>
-
 </body>
 
 </html>

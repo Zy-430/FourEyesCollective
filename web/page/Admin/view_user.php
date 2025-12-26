@@ -2,10 +2,11 @@
 require '../../_base.php';
 require '../../lib/db.php';
 include '../../_admin_head.php';
+require_once '../../lib/SimplePager.php';
 
 auth('Admin');
 
-$_title = 'Manage User';
+$_title = 'Manage User | Four Eyes Collective';
 
 $role = req('role', 'Member');
 $user_id = get('user_id');
@@ -51,7 +52,6 @@ in_array($dir, ['asc', 'desc']) || $dir = 'asc';
 
 // Pagination
 $page = req('page', 1);
-require_once '../../lib/SimplePager.php';
 
 // Build query 
 $where = [];
@@ -213,7 +213,6 @@ if (get('msg') == 'added') {
                 ?>
 
                 <tr>
-                    
                     <td><?= $u->user_id ?></td>
                     <!-- Show user name and profile photo (click the photo can enlarge it) -->
                     <td class="name-container">
@@ -221,7 +220,7 @@ if (get('msg') == 'added') {
                             class="member-avatar clickable-photo" onclick="openPhotoModal(this.src)">
                         <?= $u->name ?>
                     </td>
-                    <td style="max-width: 150px;"><?= $u->email ?></td>
+                    <td><?= $u->email ?></td>
                     <td><?= $u->gender ?></td>
                     <td>0<?= $u->phone ?></td>
                     <td><?= $u->date_of_birth ?></td>

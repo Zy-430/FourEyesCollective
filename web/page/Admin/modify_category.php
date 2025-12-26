@@ -41,6 +41,7 @@ if (is_post()) {
     header("Location: view_category.php?msg=updated&cat_id=$id");
     exit;
 }
+$_title = "Modify Category | Four Eyes Collective";
 
 ?>
 
@@ -55,7 +56,7 @@ if (is_post()) {
             <div class="form-row">
                 <div class="form-group">
                     <label>Category ID</label>
-                    <input type="text" value="<?= $c->category_id ?>" readonly class="form-control">
+                    <input type="text" value="<?= $c->category_id ?>" disabled class="form-control">
                 </div>
 
                 <div class="form-group">
@@ -72,6 +73,7 @@ if (is_post()) {
             <div class="form-row button-row">
                 <button type="button" class="btn btn-white" onclick="location.href='view_category.php'">Back</button>
                 <button type="submit" class="btn btn-add">Update</button>
+                <button type="reset" class="btn btn-white">Reset</button>
             </div>
 
         </form>

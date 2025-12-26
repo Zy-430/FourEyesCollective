@@ -42,10 +42,12 @@ $current_url = $_SERVER['REQUEST_URI'];
                 if (typeof showNotification === 'function') showNotification("<?= addslashes($__temp_info) ?>", 'info');
             <?php endif; ?>
         });
+
+        
     </script>
 
     <!-- Sidebar -->
-    <aside class="admin-sidebar">
+    <aside class="admin-sidebar <?= getSidebarState() ? 'collapsed' : '' ?>">
         <div class="logo">
             <img src="/images/WIS_logo_white.png" alt="Logo">
         </div>
@@ -112,7 +114,7 @@ $current_url = $_SERVER['REQUEST_URI'];
 
     <!-- Collapse sidebar -->
     <button class="collapse-btn" onclick="toggleSidebar()">
-        <i class="fas fa-chevron-left"></i>
+    <i class="fas <?= getSidebarState() ? 'fa-chevron-right' : 'fa-chevron-left' ?>"></i>
     </button>
 
     <div class="admin-header">

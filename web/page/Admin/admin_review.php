@@ -4,18 +4,6 @@ require '../../lib/db.php';
 include '../../_admin_head.php';
 require_once '../../lib/SimplePager.php';
 
-?>
-<script>
-    (function(){
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function(){ document.body.classList.add('product'); });
-        } else {
-            document.body.classList.add('product');
-        }
-    })();
-</script>
-<?php
-
 auth('Admin');
 $admin_id = $_user->user_id;
 
@@ -104,7 +92,7 @@ $query_params[] = "dir=" . urlencode($currentDir);
 
 $query_string = implode('&', $query_params);
 
-$_title = "Admin Review Management | Four Eyes Collective";
+$_title = "Admin Review | Four Eyes Collective";
 ?>
 
 <div class="admin-content">

@@ -4,7 +4,6 @@ require '../lib/db.php';
 require '../lib/PHPMailer.php';
 require '../lib/email_action.php';
 
-
 if (is_post()) {
     $email = req('email');
 
@@ -21,24 +20,20 @@ if (is_post()) {
         if (!$user) {
             $_err['email'] = 'Email not found';
         } elseif ($user->status == 'Active') {
-            $_err['email'] = 'Account is already activated';
+            $_err['email'] = 'Your account is already active. You can log in now.';
         }
     }
 
     if (!$_err) {
         sendEmailAction($email, 'verification');
 
-        temp(
-            'success',
-            'A verification email has been sent. Please check your inbox (or spam).'
-        );
+        temp('success', 'A verification email has been sent. Please check your inbox (or spam).');
         redirect('login.php');
     }
 }
 
-
 // ----------------------------------------------------------------------------
-$_title = 'Resend Verification Email';
+$_title = 'Resend Verification Email | Four Eyes Collective"';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -54,6 +49,7 @@ $_title = 'Resend Verification Email';
 
 <body class="login-page">
     <div class="login-container">
+        <!-- Header -->
         <div class="login-header">
             <div class="header-content">
                 <div class="logo-container">
@@ -66,12 +62,13 @@ $_title = 'Resend Verification Email';
             </div>
         </div>
 
+        <!-- Form content -->
         <form method="post" class="login-form">
             <div class="form-group">
                 <label for="email">Email *</label>
                 <input type="email" id="email" name="email" class="form-control" style="width:96%;"
                     placeholder="your@email.com" maxlength="100"
-                    value="<?= encode($GLOBALS['email'] ?? '') ?>" required>
+                    value="<?= encode($GLOBALS['email'] ?? '') ?>" autofocus required>
                 <?= err('email') ?>
             </div>
 

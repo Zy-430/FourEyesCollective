@@ -2,7 +2,7 @@
 require '../../_base.php';
 require '../../lib/db.php';
 include '../../_admin_head.php';
-$_title = 'Modify User';
+$_title = "Modify Users | Four Eyes Collective";
 
 auth('Admin');
 
@@ -48,6 +48,8 @@ if (is_post()) {
     //Validate name
     if (strlen($name) > 100) {
         $_err['name'] = 'Maximum length 100';
+    } elseif (!preg_match('/^[A-Za-z ]+$/', $name)) {
+        $errors[] = "Name can only contain letters and spaces.";
     }
 
     //Validate gender
@@ -55,7 +57,7 @@ if (is_post()) {
         $_err['gender'] = 'Invalid value';
     }
 
-   $photo_filename = $user->photo; // keep current photo by default
+    $photo_filename = $user->photo; // keep current photo by default
 
     if ($photo && $photo['error'] == 0 && $photo['size'] > 0) {
         // Only validate if a photo was uploaded
@@ -74,7 +76,7 @@ if (is_post()) {
     //Validate phone number
     if (!preg_match('/^[1-9][0-9]{7,9}$/', $phone)) {
         $_err['phone'] = 'Phone number must be in format 0XXXXXXXXX';
-    } else if (!is_unique($phone, 'users', 'phone')) {
+    } else if (!is_unique_except($phone, 'users', 'phone', 'user_id', $user_id)) {
         $_err['phone'] = 'Duplicated phone number';
     }
 
@@ -113,12 +115,14 @@ if (is_post()) {
 
             // Delete old photo if it's not the default user image
             $old_photo_path = $upload_dir . $user->photo;
-            if ($user->photo !== 'user_default.jpg' &&  
-                file_exists($old_photo_path)) {
+            if (
+                $user->photo !== 'user_default.jpg' &&
+                file_exists($old_photo_path)
+            ) {
                 unlink($old_photo_path);
             }
 
-             // Sanitize username for new filename
+            // Sanitize username for new filename
             $sanitized_name = preg_replace('/[^a-zA-Z0-9]/', '', strtolower($name));
             if (empty($sanitized_name)) {
                 $sanitized_name = 'user';
@@ -174,7 +178,6 @@ if (is_post()) {
     }
 }
 
-
 ?>
 
 <div class="admin-content">
@@ -189,7 +192,7 @@ if (is_post()) {
                 <div class="form-group">
                     <label><?= $user->role ?> ID</label>
                     <input type="text" id="id" name="user_id" class="form-control" required
-                        value="<?= $user->user_id ?>" readonly>
+                        value="<?= $user->user_id ?>" disabled>
                 </div>
 
                 <!-- Email -->
@@ -287,8 +290,8 @@ if (is_post()) {
             <div class="form-row">
                 <div class="form-group">
                     <label>Profile Photo </label>
-                    <div class="upload-photo-container">
-                        <label class="photo-upload-label" for="photo" tabindex="0">
+                    <div class="upload-photo-container" id="photoDropZone">
+                        <label class="photo-label" for="photo" tabindex="0">
                             <div class="photo-preview">
                                 <img id="photoPreview"
                                     src="/images/users/<?= encode($user->photo) ?>">
@@ -311,7 +314,7 @@ if (is_post()) {
                     <label for="registration_date">Registration Date</label>
                     <?php $reg_date = date('Y-m-d', strtotime($user->registration_date)); ?>
                     <input type="date" id="registration_date" name="registration_date" class="form-control"
-                        value="<?= encode($reg_date) ?>" readonly>
+                        value="<?= encode($reg_date) ?>" disabled>
                 </div>
 
                 <!-- Status -->
@@ -355,14 +358,67 @@ if (is_post()) {
 
 </div>
 <script>
-    // Photo preview function
-    document.getElementById('photo').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('photoPreview').src = e.target.result;
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const input = document.getElementById('photo');
+        const preview = document.getElementById('photoPreview');
+        const dropZone = document.getElementById('photoDropZone');
+        const label = document.querySelector('.photo-label');
+
+        // Upload validation
+        const MAX_SIZE = 1024 * 1024; // 1MB
+        const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
+
+        // Handle normal file selection (click the area and choose file)
+        input.addEventListener('change', function() {
+            if (this.files[0]) handleFile(this.files[0]);
+        });
+
+        // Highlight the drop zone during drag
+        ['dragenter', 'dragover'].forEach(event => {
+            dropZone.addEventListener(event, e => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+                label.classList.add('dragover');
+            });
+        });
+
+        // Remove highlight when drag ends
+        ['dragleave', 'drop'].forEach(event => {
+            dropZone.addEventListener(event, e => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                label.classList.remove('dragover');
+            });
+        });
+
+        // Handle drag-drop file uploaded
+        dropZone.addEventListener('drop', function(e) {
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                input.files = e.dataTransfer.files; // Assign file to input
+                handleFile(file); // File validation
             }
+        });
+
+        function handleFile(file) {
+            // Validate file type
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                alert('Invalid file type. Only JPG, PNG, GIF allowed.');
+                input.value = '';
+                return;
+            }
+
+            // Validate file size
+            if (file.size > MAX_SIZE) {
+                alert('File too large. Maximum size is 1MB.');
+                input.value = '';
+                return;
+            }
+
+            // Image preview
+            const reader = new FileReader();
+            reader.onload = e => preview.src = e.target.result;
             reader.readAsDataURL(file);
         }
     });

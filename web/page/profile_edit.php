@@ -2,7 +2,7 @@
 require '../_base.php';
 require '../lib/db.php';
 
-auth('Admin', 'Member');
+auth();
 
 $user_id = $_user->user_id;
 
