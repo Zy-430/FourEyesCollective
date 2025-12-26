@@ -294,10 +294,9 @@ if (get('msg') == 'added') {
     <?php endif; ?>
 </div>
 <script>
-    // Show notification on page load if there's a message
-    document.addEventListener('DOMContentLoaded', function() {
+    $(function () {
         <?php if ($notification_message): ?>
-            showNotification('<?= addslashes($notification_message) ?>', '<?= $notification_type ?>');
+            showNotification('<?= addslashes($notification_message) ?>','<?= $notification_type ?>');
         <?php endif; ?>
     });
 </script>
