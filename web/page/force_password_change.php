@@ -76,19 +76,9 @@ $_title = "Set Your Password | Four Eyes Collective";
 <html lang="en">
 
 <?php
-    // Read temporary flash messages
-    $__temp_info = temp('info');
-    ?>
-
-    <script>
-        $(function() {
-            <?php if (!empty($__temp_info)): ?>
-                if (typeof showNotification === 'function') {
-                    showNotification("<?= addslashes($__temp_info) ?>", 'info');
-                }
-            <?php endif; ?>
-        });
-    </script>
+// Read temporary flash messages
+$flash_info    = temp('info');
+?>
 
 <head>
     <meta charset="UTF-8">
@@ -97,11 +87,21 @@ $_title = "Set Your Password | Four Eyes Collective";
     <link rel="shortcut icon" href="/images/WIS_logo_white.png">
     <link rel="stylesheet" href="/css/app.css">
     <link rel="stylesheet" href="/css/user.css">
-        <script src="/js/notifications.js"></script>
+    <script src="/js/notifications.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 </head>
 
 <body class="login-page">
+    <script>
+        $(function() {
+            <?php if (!empty($flash_info)): ?>
+                if (typeof showNotification === 'function') {
+                    showNotification("<?= addslashes($flash_info) ?>", 'info');
+                }
+            <?php endif; ?>
+
+        });
+    </script>
     <div class="login-container">
         <!-- Header -->
         <div class="login-header">
