@@ -64,6 +64,7 @@ $_title = "Add Category | Four Eyes Collective";
             <div class="form-row button-row">
                 <button type="button" class="btn btn-white" onclick="location.href='view_category.php'">Back</button>
                 <button type="submit" class="btn btn-add">Add</button>
+                <button type="reset" class="btn btn-white">Reset</button>
             </div>
 
         </form>

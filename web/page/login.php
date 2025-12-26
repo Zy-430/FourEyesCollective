@@ -61,7 +61,7 @@ if (is_post()) {
                     $_err['email'] = 'Your account is not activated ! <br> Please check your email for the verification link or
                          <a href="resend_verification.php" style="color: #1580ebff; font-size: 13px;">Resend verification email</a>';
                 } elseif ($user->status === 'Blocked') {
-                    $_err['email'] = 'Your account has been blocked by administrator. <br> Please contact support at <a href="mailto:support@foureyes.com" style="color: #1580ebff; font-size: 13px;">support@foureyes.com</a> for assistance.';
+                    $_err['email'] = 'Your account has been blocked by administrator. <br> Please contact support at <a href="mailto:hello@foureyescollective.com" style="color: #1580ebff; font-size: 13px;">hello@foureyescollective.com</a> for assistance.';
                 } else {
                     // Check if user needs to change password (for first login)
                     if ($user->force_password_change == 1) {
