@@ -33,7 +33,7 @@ if ($id) {
             $password = trim($password);
             if (!is_strong_password($password)) {
                 $_err['password'] =
-                    'Password must be at least 8 characters and include uppercase, lowercase, number and symbol';
+                    'Invalid password format';
             }
 
             // Validate confirm password
