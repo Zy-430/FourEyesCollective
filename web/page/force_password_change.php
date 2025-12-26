@@ -2,6 +2,8 @@
 require '../_base.php';
 require '../lib/db.php';
 
+$__temp_info = temp('info');
+
 // For user created by admin (which with default password, so need to reset their password when first time login)
 // Check if user is in temp session (first login after admin creation)
 if (!isset($_SESSION['temp_user'])) {
@@ -75,11 +77,6 @@ $_title = "Set Your Password | Four Eyes Collective";
 <!DOCTYPE html>
 <html lang="en">
 
-<?php
-// Read temporary flash messages
-$flash_info    = temp('info');
-?>
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -94,9 +91,9 @@ $flash_info    = temp('info');
 <body class="login-page">
     <script>
         $(function() {
-            <?php if (!empty($flash_info)): ?>
+            <?php if (!empty($__temp_info)): ?>
                 if (typeof showNotification === 'function') {
-                    showNotification("<?= addslashes($flash_info) ?>", 'info');
+                    showNotification("<?= addslashes($__temp_info) ?>", 'info');
                 }
             <?php endif; ?>
 
