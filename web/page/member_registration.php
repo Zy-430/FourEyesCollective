@@ -44,7 +44,7 @@ if (is_post()) {
     $password = trim($password);
 
     if (!is_strong_password($password)) {
-        $_err['password'] == 'Invalid password format';
+        $_err['password'] = 'Invalid password format';
     }
 
     // Validate Confirm password 
