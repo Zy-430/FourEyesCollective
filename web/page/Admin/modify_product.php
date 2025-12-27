@@ -187,19 +187,19 @@ if (is_post()) {
                                 <a href="modify_product.php?id=<?= $p->product_id ?>&delete_img=<?= $img ?>"
                                     onclick="return confirm('Remove this image?');"
                                     style="
-                    position:absolute;
-                    top:-8px;
-                    right:-8px;
-                    background:#e74c3c;
-                    color:white;
-                    width:25px;
-                    height:25px;
-                    text-align:center;
-                    line-height:25px;
-                    border-radius:50%;
-                    text-decoration:none;
-                    font-weight:bold;
-                    cursor:pointer;">
+                                        position:absolute;
+                                        top:-8px;
+                                        right:-8px;
+                                        background:#e74c3c;
+                                        color:white;
+                                        width:25px;
+                                        height:25px;
+                                        text-align:center;
+                                        line-height:25px;
+                                        border-radius:50%;
+                                        text-decoration:none;
+                                        font-weight:bold;
+                                        cursor:pointer;">
                                     ×
                                 </a>
 
@@ -216,8 +216,10 @@ if (is_post()) {
 
                 <div class="form-group">
                     <label>Upload Additional Images:</label>
-                    <input type="file" name="product_images[]" multiple accept="image/*"
+                    <input type="file" id="product-images" accept="image/*" multiple 
                         style="width:100%; padding:8px; margin-bottom:15px;">
+                    <div id="image-preview" class="preview-container"></div>
+
                 </div>
                 <div class="form-group">
                     <label>Status:</label>
@@ -241,6 +243,118 @@ if (is_post()) {
 
     </div>
 </div>
+
+<script>
+let selectedImages = []; // resized images stored here
+
+$(document).ready(function () {
+    const fileInput = $("#product-images");
+    const preview = $("#image-preview");
+
+    fileInput.on("change", function (e) {
+        const files = Array.from(e.target.files);
+
+        files.forEach(file => {
+            if (!file.type.startsWith("image/")) {
+                alert("Only images allowed.");
+                return;
+            }
+
+            resizeImage(file, 120, 120, (resizedBlob) => {
+                if (selectedImages.length >= 10) {
+                    alert("Max 10 photos allowed.");
+                    return;
+                }
+
+                resizedBlob.originalName = file.name;
+                selectedImages.push(resizedBlob);
+                renderPreview();
+            });
+        });
+
+        fileInput.val(""); 
+    });
+
+    function renderPreview() {
+        preview.empty();
+
+        selectedImages.forEach((blob, index) => {
+            const url = URL.createObjectURL(blob);
+
+            preview.append(`
+                <div class="preview-item" data-index="${index}">
+                    <img src="${url}" class="preview-thumb">
+                    <div class="preview-remove" data-index="${index}">×</div>
+                </div>
+            `);
+        });
+
+        $(".preview-remove").click(function () {
+            const index = $(this).data("index");
+            selectedImages.splice(index, 1);
+            renderPreview();
+        });
+    }
+
+    function resizeImage(file, maxWidth, maxHeight, callback) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            const img = new Image();
+            img.onload = function () {
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth || height > maxHeight) {
+                    if (width / height > maxWidth / maxHeight) {
+                        height *= maxWidth / width;
+                        width = maxWidth;
+                    } else {
+                        width *= maxHeight / height;
+                        height = maxHeight;
+                    }
+                }
+
+                const canvas = document.createElement("canvas");
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, width, height);
+
+                canvas.toBlob(
+                    blob => callback(blob),
+                    file.type,
+                    0.85
+                );
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    $("form").on("submit", function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        selectedImages.forEach(blob => {
+            formData.append("product_images[]", blob, blob.originalName);
+        });
+
+        $.ajax({
+            url: this.action,
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function () {
+                window.location.reload();
+            }
+        });
+    });
+});
+</script>
+
 </body>
 
 </html
