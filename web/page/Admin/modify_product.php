@@ -260,7 +260,7 @@ $(document).ready(function () {
                 return;
             }
 
-            resizeImage(file, 120, 120, (resizedBlob) => {
+            resizeImage(file, 1000, 1000, (resizedBlob) => {
                 if (selectedImages.length >= 10) {
                     alert("Max 10 photos allowed.");
                     return;
