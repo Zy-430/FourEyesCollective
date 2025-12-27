@@ -332,10 +332,79 @@ if ($_user->role === 'Admin') {
     </div>
 </div>
 
+<!-- Cancel Modal -->
+<div id="cancelModal" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;justify-content:center;align-items:center;">
+    <div style="background:white;padding:25px;border-radius:6px;width:350px;box-shadow:0 2px 10px rgba(0,0,0,0.2);">
+        <h3 style="margin-top:0;">Cancel Order</h3>
+        <p>Please select a reason for cancellation:</p>
+        <select id="cancelReason" style="width:100%;padding:8px;margin-bottom:15px;">
+            <option value="">-- Select a reason --</option>
+            <option value="Changed my mind">Changed my mind</option>
+            <option value="Found a better price">Found a better price</option>
+            <option value="Ordered by mistake">Ordered by mistake</option>
+            <option value="Delivery taking too long">Delivery taking too long</option>
+            <option value="Incorrect item selected">Incorrect item selected</option>
+            <option value="Other">Other</option>
+        </select>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+            <button type="button" id="closeCancelBtn"
+                style="padding:8px 15px;background:#bdc3c7;border:none;border-radius:4px;">
+                Close
+            </button>
+            <button id="confirmCancelBtn"
+                style="padding:8px 15px;background:#e74c3c;color:white;border:none;border-radius:4px;">
+                Confirm Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="/js/notifications.js"></script>
 
 <script>
+    // Cancel Modal
+    var cancelId = null;
+    var $modal = $('#cancelModal');
+    var $reasonInput = $('#cancelReason');
+
+    $('.cancel-btn').on('click', function(e) {
+        e.stopPropagation();
+        cancelId = $(this).data('id');
+        $reasonInput.val('');
+        $modal.css('display', 'flex');
+    });
+
+    $('#confirmCancelBtn').on('click', function() {
+        var reason = $reasonInput.val();
+        if (!reason) {
+            if (typeof showNotification === 'function') showNotification('Please select a reason', 'error');
+            return;
+        }
+
+        $.ajax({
+            url: '/page/Member/order_cancel.php',
+            method: 'POST',
+            data: {
+                order_id: cancelId,
+                cancelled_reason: reason
+            },
+            dataType: 'text'
+        }).done(function() {
+            if (typeof showNotification === 'function') showNotification('Order cancelled successfully', 'success');
+            setTimeout(function() {
+                location.reload();
+            }, 1200);
+        }).fail(function() {
+            if (typeof showNotification === 'function') showNotification('Failed to cancel order', 'error');
+        });
+    });
+
+    // Close cancel modal
+    window.closeCancelModal = function() {
+        $modal.css('display', 'none');
+    };
+
     $(function() {
         var $returnModal = $('#returnModal');
         var $returnReason = $('#returnReason');
