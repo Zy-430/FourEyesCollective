@@ -9,7 +9,7 @@ Four Eyes Collective is an online eyewear shopping platform featuring a collecti
 ## Features
 
 ### Customer Features
-- **Member Registration & Login** – Create an account and securely log in to the platform.
+- **Member Registration & Login** – Create an account and log in to the platform.
 - **Product Browsing** – Explore eyewear products across different categories.
 - **Product Details** – View product descriptions, prices, images, and availability.
 - **Shopping Cart** – Add products to the cart and manage item quantities.
@@ -23,16 +23,21 @@ Four Eyes Collective is an online eyewear shopping platform featuring a collecti
 
 ## Technologies Used
 
-- **Backend:** PHP
-- **Frontend:** HTML, CSS, JavaScript
-- **Database:** MySQL
-- **Styling:** CSS
-- **Client-side Interaction:** JavaScript
+| Category | Technologies |
+|---|---|
+| Backend | PHP |
+| Frontend | HTML, CSS, JavaScript |
+| Database | MySQL |
+| Database Connectivity | PHP PDO |
+| Local Development Environment | XAMPP |
 
 ## Project Structure
 
 ```text
 FourEyesCollective/
+│
+├── database/
+│   └── foureyescollective.sql
 │
 └── web/
     ├── css/
@@ -65,6 +70,7 @@ FourEyesCollective/
     ├── _head.php
     ├── _foot.php
     └── index.php
+
 ```
 
 ## Getting Started
@@ -72,34 +78,59 @@ FourEyesCollective/
 ### Prerequisites
 
 Make sure you have installed:
-- XAMPP (Apache and MySQL)
+
+- [XAMPP](https://www.apachefriends.org/) (Apache and MySQL)
 - PHP
 - MySQL
 - A web browser
 
 ### Installation
 
-1. Clone the repository:
+1. **Clone the repository**
 
    ```bash
    git clone https://github.com/YOUR-USERNAME/FourEyesCollective.git
    ```
 
-2. Move the project folder into the XAMPP `htdocs` directory.
+2. **Move the project folder**
 
-3. Start **Apache** and **MySQL** using the XAMPP Control Panel.
+   Move the cloned `FourEyesCollective` folder into the XAMPP `htdocs` directory.
 
-4. Create a MySQL database named:
+3. **Start Apache and MySQL**
 
-   ```sql
-   CREATE DATABASE foureyescollective;
+   Open the XAMPP Control Panel and start both Apache and MySQL.
+
+4. **Open phpMyAdmin**
+
+   Navigate to:
+
+   ```text
+   http://localhost/phpmyadmin
    ```
 
-5. Configure the database connection in `web/lib/db.php` according to your MySQL settings.
+5. **Create the database**
 
-6. Set up the required database tables before running the application.
+   Create a new MySQL database named:
 
-7. Open your browser and navigate to:
+   ```text
+   foureyescollective
+   ```
+
+6. **Import the database**
+
+   Select the `foureyescollective` database in phpMyAdmin and import the SQL file located at:
+
+   ```text
+   database/foureyescollective.sql
+   ```
+
+7. **Configure the database connection**
+
+   Open `web/lib/db.php` and ensure the database connection settings match your local MySQL configuration.
+
+8. **Run the application**
+
+   Open your browser and navigate to:
 
    ```text
    http://localhost/FourEyesCollective/web/
@@ -107,9 +138,13 @@ Make sure you have installed:
 
 ## Database Configuration
 
-The project uses PHP PDO to connect to the MySQL database.
+The project uses **MySQL** as its database and **PHP PDO** for database connectivity.
 
-Default database configuration in `web/lib/db.php`:
+**Database Name:** `foureyescollective`
+
+The database connection is configured in `web/lib/db.php`.
+
+Default configuration:
 
 ```php
 $_db = new PDO(
@@ -119,12 +154,11 @@ $_db = new PDO(
 );
 ```
 
-Update the database credentials according to your local environment.
-
-**Note:** The database SQL export is not included in this repository. You will need the corresponding database schema and tables to run the application successfully.
+Update the database credentials according to your local MySQL configuration.
 
 ## Project Purpose
 
 This project was developed to gain practical experience in full-stack web development, particularly in PHP backend programming, MySQL database integration, frontend development, and implementing e-commerce functionalities.
 
 ---
+
